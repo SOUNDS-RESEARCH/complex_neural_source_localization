@@ -145,3 +145,4 @@ cython_debug/
 *.DS_Store
 
 generated_dataset/
+tests/temp
