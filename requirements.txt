@@ -1,0 +1,17 @@
+catalyst
+flake8
+h5py
+librosa
+pandas
+scikit-learn
+torch
+torchaudio
+torchlibrosa
+torchsummary
+tensorboardX
+tqdm
+wget
+joblib
+matplotlib
+pytest
+pydub
