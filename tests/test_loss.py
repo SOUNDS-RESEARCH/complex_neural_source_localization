@@ -16,9 +16,9 @@ def test_yoho_loss():
     dataset = TdoaDataset(n_samples=1, dataset_dir=temp_dataset_path)
 
     sample = dataset[0]
-    target = sample["target"]
+    target = sample["targets"]
 
-    model_output = model(sample["signal"].unsqueeze(0))
+    model_output = model(sample["signals"].unsqueeze(0))
     
     loss = loss_fn(model_output, torch.Tensor([[target]]))
 

@@ -2,12 +2,13 @@ import os
 import numpy as np
 import pandas as pd
 import random
+import pyroomacoustics as pra
 import soundfile
 
 from pathlib import Path
 from tqdm import tqdm
 
-import pyroomacoustics as pra
+from datasets.math_utils import normalize, compute_distance
 from datasets.settings import (
     SAMPLE_DURATION_IN_SECS,
     SPEED_OF_SOUND,
@@ -15,9 +16,11 @@ from datasets.settings import (
     ROOM_DIMS,
     MIC_POSITIONS,
     N_SAMPLES, 
-    SOURCE_HEIGHT,
     DEFAULT_OUTPUT_DATASET_DIR
 )
+
+METADATA_FILENAME = "metadata.csv"
+DEFAULT_DEVICE_HEIGHT = 1
 
 
 def generate_dataset(
@@ -25,7 +28,6 @@ def generate_dataset(
     room_dims=ROOM_DIMS,
     mic_positions=MIC_POSITIONS,
     num_samples=N_SAMPLES,
-    source_height=SOURCE_HEIGHT,
     sample_duration_in_secs=SAMPLE_DURATION_IN_SECS,
     sr=SR):
 
@@ -34,55 +36,29 @@ def generate_dataset(
 
     os.makedirs(output_samples_dir, exist_ok=True)
 
-    max_tdoa = _compute_distance(mic_positions[0], mic_positions[1])
-    min_tdoa = -max_tdoa
-
-    samples_data = []
+    experiment_configs = []
     for num_sample in tqdm(range(num_samples)):
-        source_x = random.uniform(0, room_dims[0])
-        source_y = random.uniform(0, room_dims[1])
-        source_position = [source_x, source_y, source_height]
+        experiment_config = _generate_random_experiment_settings(
+            room_dims, mic_positions, sr, sample_duration_in_secs)
+        
+        experiment_config["signals_dir"] = output_samples_dir / str(num_sample)
+        experiment_configs.append(experiment_config)
 
-        output_signals = _simulate(room_dims,
-                                   source_position,
-                                   mic_positions,
-                                   sr,
-                                   sample_duration_in_secs)
+        _generate_sample(experiment_config)
 
-        output_sample_dir = output_samples_dir / str(num_sample)
-        os.makedirs(output_sample_dir, exist_ok=True)
+    _save_experiment_metadata(experiment_configs, output_dir)
 
-        for i, signal in enumerate(output_signals):
-            file_name = output_sample_dir / f"{i}.wav"
-            soundfile.write(file_name, signal, sr)
 
-        tdoa = _compute_tdoa(source_position, mic_positions)
-        samples_data.append({
-            "signals_dir": output_sample_dir,
-            "source_x": source_x,
-            "source_y": source_y,
-            "tdoa": tdoa,
-            "normalized_tdoa": _normalize(tdoa, min_tdoa, max_tdoa)
-        })
-    
-    df = pd.DataFrame(samples_data)
-    
-    df.to_csv(output_dir / "metadata.csv")
+def _simulate(experiment_settings):
 
-def _simulate(room_dims,
-              source_position,
-              microphone_positions,
-              sr,
-              sample_duration_in_secs):
+    room = pra.ShoeBox(experiment_settings["room_dims"],
+                       fs=experiment_settings["sr"])
 
-    room = pra.ShoeBox(room_dims,
-                       fs=sr)
+    room.add_microphone_array(experiment_settings["mic_coordinates"])
 
-    room.add_microphone_array(np.array(microphone_positions).T)
-
-    num_samples = sr*sample_duration_in_secs
-    source_signal = np.random.normal(size=num_samples)
-    room.add_source(np.array(source_position).T, source_signal)
+    room.add_source(experiment_settings["source_coordinates"],
+        experiment_settings["source_signal"]
+    )
 
     room.simulate()
 
@@ -90,25 +66,98 @@ def _simulate(room_dims,
     
     return signals
 
+def _generate_random_experiment_settings(room_dims=ROOM_DIMS,
+                                         microphone_coordinates=None,
+                                         sr=SR,
+                                         sample_duration_in_secs=SAMPLE_DURATION_IN_SECS):
+
+    if microphone_coordinates is None:
+        microphone_coordinates = _generate_random_microphone_coordinates(room_dims)
+
+    max_tdoa = compute_distance(
+                    microphone_coordinates[0],
+                    microphone_coordinates[1]
+    )/SPEED_OF_SOUND
+    min_tdoa = -max_tdoa
+
+    source_x = random.uniform(0, room_dims[0])
+    source_y = random.uniform(0, room_dims[1])
+    source_coordinates = [source_x, source_y, microphone_coordinates[0][2]]
+
+
+    tdoa = _compute_tdoa(source_coordinates, microphone_coordinates)
+
+    num_samples = sr*sample_duration_in_secs
+    gain = np.random.uniform()
+    source_signal = np.random.normal(size=num_samples)*gain
+    return {
+        "room_dims": room_dims,
+        "source_x": source_x,
+        "source_y": source_y,
+        "source_coordinates": np.array(source_coordinates).T,
+        "mic_coordinates": np.array(microphone_coordinates).T,
+        "tdoa": tdoa,
+        "normalized_tdoa": normalize(tdoa, min_tdoa, max_tdoa),
+        "num_samples": num_samples,
+        "sr": sr,
+        "source_signal": source_signal,
+        "gain": gain
+    }
+
+
+def _generate_sample(experiment_settings):
+    output_signals = _simulate(experiment_settings)
+
+    os.makedirs(experiment_settings["signals_dir"], exist_ok=True)
+    _save_signals(output_signals,
+                  experiment_settings["sr"],
+                  experiment_settings["signals_dir"])
+
+
+def _generate_random_microphone_coordinates(room_dims,
+                                            height=DEFAULT_DEVICE_HEIGHT):
+    mic_1_x = random.uniform(0, room_dims[0])
+    mic_2_x = random.uniform(0, room_dims[0])
+
+    mic_1_y = random.uniform(0, room_dims[1])
+    mic_2_y = random.uniform(0, room_dims[1])
+
+    return [
+        [mic_1_x, mic_1_y, height],
+        [mic_2_x, mic_2_y, height],
+    ]
+
 
 def _compute_tdoa(source, microphones):
-    dist_0 = _compute_distance(source, microphones[0])
-    dist_1 = _compute_distance(source, microphones[1])
+    dist_0 = compute_distance(source, microphones[0])
+    dist_1 = compute_distance(source, microphones[1])
 
     return (dist_0 - dist_1)/SPEED_OF_SOUND
 
 
-def _compute_distance(p1, p2):
-    "Compute the euclidean distance between two points"
-
-    p1 = np.array(p1)
-    p2 = np.array(p2)
-
-    return np.linalg.norm(p1 - p2)
+def _save_signals(signals, sr, output_dir):
+    for i, signal in enumerate(signals):
+        file_name = output_dir / f"{i}.wav"
+        soundfile.write(file_name, signal, sr)
 
 
-def _normalize(x, min_x, max_x):
-    return (x - min_x)/(max_x - min_x)
+def _save_experiment_metadata(experiment_configs, output_dir):
+    output_keys = [
+        "source_x", "source_y", "tdoa", "normalized_tdoa", "signals_dir"
+    ]
+    
+    def filter_keys(experiment_config):
+        output_dict = {
+            key: value for key, value in experiment_config.items()
+            if key in output_keys
+        }
+
+        return output_dict
+    
+    output_dicts = [filter_keys(exp) for exp in experiment_configs]
+
+    df = pd.DataFrame(output_dicts)
+    df.to_csv(output_dir / METADATA_FILENAME)
 
 
 if __name__ == "__main__":
