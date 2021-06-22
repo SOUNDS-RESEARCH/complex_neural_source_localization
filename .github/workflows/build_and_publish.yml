@@ -2,8 +2,8 @@ name: Build
 on:
   push:
     # Pattern matched against refs/tags
-    tags: 
-      - '*'           # Push events to every tag not containing /
+    # tags: 
+    #   - '*'           # Push events to every tag not containing /
 jobs:
   build:
     runs-on: ubuntu-latest
