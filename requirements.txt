@@ -1,6 +1,5 @@
 catalyst
 flake8
-h5py
 librosa
 pandas
 scikit-learn
@@ -14,4 +13,3 @@ wget
 joblib
 matplotlib
 pytest
-pydub
