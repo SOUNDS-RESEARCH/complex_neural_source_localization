@@ -113,7 +113,7 @@ class TdoaDCCRN(nn.Module):
 
         for idx in range(len(self.kernel_num) - 1):
             self.convs.append(
-                _encoder_block(idx, self.kernel_num, kernel_size, use_cbn)
+                _conv_block(idx, self.kernel_num, kernel_size, use_cbn)
             )
 
     def _init_lstms(self, rnn_layers, bidirectional):
@@ -150,7 +150,7 @@ class TdoaDCCRN(nn.Module):
 
 
 
-def _encoder_block(idx, kernel_num, kernel_size, use_cbn):
+def _conv_block(idx, kernel_num, kernel_size, use_cbn):
     block = nn.Sequential(
         #nn.ConstantPad2d([0, 0, 0, 0], 0),
         ComplexConv2d(
