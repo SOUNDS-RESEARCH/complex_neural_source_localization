@@ -6,7 +6,7 @@ from neural_tdoa.models.tdoa_crnn10 import TdoaCrnn10
 from datasets.dataset import TdoaDataset
 
 
-def test_yoho_loss():
+def test_neural_tdoa_loss():
     temp_dataset_path = "tests/temp/dataset"
     shutil.rmtree(temp_dataset_path, ignore_errors=True)
     

@@ -1,6 +1,4 @@
-input/
-output/
-logs/
+logs*/
 runs/
 .vscode
 

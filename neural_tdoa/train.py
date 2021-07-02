@@ -3,7 +3,7 @@ import torch
 import torch.optim as optim
 
 BATCH_SIZE = 32
-NUM_EPOCHS = 15
+NUM_EPOCHS = 8
 LEARNING_RATE = 0.0001
 
 
@@ -28,7 +28,7 @@ def train(model, loss_function, dataset_train, dataset_val,
     model.to(device)
 
     # Optimizer
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
     # Loss
     criterion = loss_function.to(device)

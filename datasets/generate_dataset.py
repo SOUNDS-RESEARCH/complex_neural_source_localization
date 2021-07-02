@@ -1,10 +1,12 @@
-import os
+import librosa.display
 import numpy as np
+import os
 import pandas as pd
 import random
 import pyroomacoustics as pra
 import soundfile
 
+import matplotlib.pyplot as plt
 from pathlib import Path
 from tqdm import tqdm
 
@@ -18,6 +20,9 @@ from datasets.settings import (
     N_SAMPLES, 
     DEFAULT_OUTPUT_DATASET_DIR
 )
+from neural_tdoa.models.settings import (
+    N_FFT, N_MELS, HOP_LENGTH
+)
 
 METADATA_FILENAME = "metadata.csv"
 DEFAULT_DEVICE_HEIGHT = 1
@@ -29,7 +34,8 @@ def generate_dataset(
     mic_positions=MIC_POSITIONS,
     num_samples=N_SAMPLES,
     sample_duration_in_secs=SAMPLE_DURATION_IN_SECS,
-    sr=SR):
+    sr=SR,
+    save_melspectogram=False):
 
     output_dir = Path(output_dir)
     output_samples_dir = output_dir / "samples"
@@ -44,7 +50,7 @@ def generate_dataset(
         experiment_config["signals_dir"] = output_samples_dir / str(num_sample)
         experiment_configs.append(experiment_config)
 
-        _generate_sample(experiment_config)
+        _generate_sample(experiment_config, save_melspectogram)
 
     _save_experiment_metadata(experiment_configs, output_dir)
 
@@ -105,13 +111,14 @@ def _generate_random_experiment_settings(room_dims=ROOM_DIMS,
     }
 
 
-def _generate_sample(experiment_settings):
+def _generate_sample(experiment_settings, save_melspectogram=False):
     output_signals = _simulate(experiment_settings)
 
     os.makedirs(experiment_settings["signals_dir"], exist_ok=True)
     _save_signals(output_signals,
                   experiment_settings["sr"],
-                  experiment_settings["signals_dir"])
+                  experiment_settings["signals_dir"],
+                  save_melspectogram)
 
 
 def _generate_random_microphone_coordinates(room_dims,
@@ -135,11 +142,20 @@ def _compute_tdoa(source, microphones):
     return (dist_0 - dist_1)/SPEED_OF_SOUND
 
 
-def _save_signals(signals, sr, output_dir):
+def _save_signals(signals, sr, output_dir, save_melspectogram=False):
+    
     for i, signal in enumerate(signals):
         file_name = output_dir / f"{i}.wav"
         soundfile.write(file_name, signal, sr)
 
+        if save_melspectogram:
+            file_name = output_dir / f"{i}.png"
+            S = librosa.feature.melspectrogram(
+                    signal, SR, n_fft=N_FFT, n_mels=N_MELS)
+            librosa.display.specshow(S, x_axis='time',
+                         y_axis='mel', sr=SR)
+
+            plt.savefig(file_name)
 
 def _save_experiment_metadata(experiment_configs, output_dir):
     output_keys = [

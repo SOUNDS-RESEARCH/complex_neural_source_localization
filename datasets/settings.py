@@ -7,8 +7,8 @@ N_SAMPLES = 100
 ROOM_DIMS = [5, 3, 3]
 
 MIC_POSITIONS = [
-    [1, 1, 1],
-    [2, 2, 1]
+    [1.01, 1, 1],
+    [1, 1, 1]
 ]
 N_MICS = len(MIC_POSITIONS)
 
