@@ -4,10 +4,11 @@ import torch.nn as nn
 from neural_tdoa.models.common.model_utilities import (
     ConvBlock, init_gru, init_layer)
 from neural_tdoa.models.settings import (
-    N_FFT, N_MELS, HOP_LENGTH, POOL_SIZE, POOL_TYPE, MAX_FILTERS
+    N_FFT, POOL_SIZE, POOL_TYPE, MAX_FILTERS
 )
 from neural_tdoa.models.dccrn.conv_stft import MultichannelConvSTFT
 from neural_tdoa.models.dccrn.complexnn import ComplexConv2d, ComplexBatchNorm
+from neural_tdoa.models.dccrn.show import show_params, show_model
 
 from datasets.settings import SR
 from datasets.settings import N_MICS
@@ -18,9 +19,7 @@ class TdoaComplexCrnn10(nn.Module):
         self,
         n_model_input_in_seconds=1,
         n_input_channels=N_MICS,
-        sr=SR, n_fft=N_FFT, n_mels=N_MELS,
-        hop_length=HOP_LENGTH,
-        pool_type=POOL_TYPE, pool_size=POOL_SIZE,
+        sr=SR, pool_type=POOL_TYPE, pool_size=POOL_SIZE,
         max_filters=MAX_FILTERS
     ):
 
@@ -46,13 +45,16 @@ class TdoaComplexCrnn10(nn.Module):
 
         self.init_weights()
 
+        show_model(self)
+        show_params(self)
+
     def _create_conv_layers(self, n_input_channels, max_filters):
         n_layer_outputs = [max_filters//8, max_filters//4, max_filters//2, max_filters]
 
-        self.conv_block1 = _conv_block(n_input_channels*2, n_layer_outputs[0]*2)
-        self.conv_block2 = _conv_block(n_layer_outputs[0]*2, n_layer_outputs[1]*2)
-        self.conv_block3 = _conv_block(n_layer_outputs[1]*2, n_layer_outputs[2]*2)
-        self.conv_block4 = _conv_block(n_layer_outputs[2]*2, n_layer_outputs[3]*2)
+        self.conv_block1 = _conv_block(n_input_channels*2, n_layer_outputs[0])
+        self.conv_block2 = _conv_block(n_layer_outputs[0], n_layer_outputs[1])
+        self.conv_block3 = _conv_block(n_layer_outputs[1], n_layer_outputs[2])
+        self.conv_block4 = _conv_block(n_layer_outputs[2], n_layer_outputs[3])
 
     def init_weights(self):
         init_gru(self.gru)
