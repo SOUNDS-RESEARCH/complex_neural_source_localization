@@ -9,7 +9,7 @@ from neural_tdoa.models.settings import (
 )
 
 
-class MelSpectrogramArray(Module):
+class MfccArray(Module):
     def __init__(self, sample_rate=SR,
                  n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS):
 
@@ -52,8 +52,9 @@ class StftArray(Module):
 
         for i in range(n_arrays):
             x = X[:, i, :]
+            stft_output = torch.stft(x, self.n_fft, self.hop_length, return_complex=True)
             result.append(
-                torch.stft(x, self.n_fft, self.hop_length, return_complex=True)
-            )
+                stft_output[:, 1:, :]
+            ) # Ignore frequency 0
 
         return torch.stack(result, dim=1)

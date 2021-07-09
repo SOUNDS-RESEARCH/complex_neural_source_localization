@@ -3,7 +3,7 @@ from datasets.settings import SR
 # NN Model settings
 POOL_TYPE = "avg" # "max" | "avg"
 POOL_SIZE = (2, 2)
-MAX_FILTERS = 512
+OUTPUT_CHANNELS = 512
 
 # Feature params
 N_FFT = 1024

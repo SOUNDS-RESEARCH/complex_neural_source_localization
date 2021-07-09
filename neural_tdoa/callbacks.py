@@ -1,15 +1,16 @@
 from catalyst.dl import FunctionalMetricCallback
 from catalyst.callbacks import CheckpointCallback
 
-from neural_tdoa.metrics.scores import average_l1_distance
+from neural_tdoa.metrics import average_rms_error
 
-def make_callbacks():
+
+def make_callbacks(log_dir="logs/"):
     callbacks = [
-        CheckpointCallback(logdir="logs/"),
+        CheckpointCallback(logdir=log_dir),
         FunctionalMetricCallback(
             "model_output", "targets",
-            average_l1_distance,
-            "l1_error"
+            average_rms_error,
+            "rms_error"
         )
     ]
     
