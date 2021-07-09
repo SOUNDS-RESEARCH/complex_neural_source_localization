@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 
-from neural_tdoa.models.common.model_utilities import (
-    ConvBlock, init_gru, init_layer)
+from neural_tdoa.models.common.model_utilities import init_gru, init_layer
 from neural_tdoa.models.settings import (
     N_FFT, POOL_SIZE, POOL_TYPE, MAX_FILTERS
 )

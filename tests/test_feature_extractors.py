@@ -1,7 +1,7 @@
 import numpy as np
 import torchaudio
 
-from neural_tdoa.models.common.model_utilities import (
+from neural_tdoa.models.common.feature_extractors import (
     SpectrogramArray, MelSpectrogramArray
 )
 

@@ -3,29 +3,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchaudio.transforms import MelSpectrogram
-
-from datasets.settings import SR
-from neural_tdoa.models.settings import (
-    N_FFT, N_MELS, HOP_LENGTH
-)
-
-
-def interpolate(x, ratio):
-    """
-
-    Interpolate the x to have equal time steps as targets
-
-    Input:
-        x: (batch_size, time_steps, class_num)
-    Output:
-        out: (batch_size, time_steps*ratio, class_num)
-    """
-    (batch_size, time_steps, classes_num) = x.shape
-    upsampled = x[:, :, None, :].repeat(1, 1, ratio, 1)
-    upsampled = upsampled.reshape(batch_size, time_steps * ratio, classes_num)
-
-    return upsampled
 
 
 def init_layer(layer, nonlinearity='leaky_relu'):
@@ -69,57 +46,6 @@ def init_gru(rnn):
             [_inner_uniform, _inner_uniform, nn.init.orthogonal_]
         )
         torch.nn.init.constant_(getattr(rnn, 'bias_hh_l{}'.format(i)), 0)
-
-
-class MelSpectrogramArray(nn.Module):
-    def __init__(self, sample_rate=SR,
-                 n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS):
-
-        super().__init__()
-
-        self.mel_spectrogram = MelSpectrogram(
-            sample_rate=sample_rate, n_fft=n_fft,
-            hop_length=hop_length, n_mels=n_mels
-        )
-
-    def forward(self, X):
-        "Expected input has shape (batch_size, n_arrays, time_steps)"
-
-        result = []
-
-        n_arrays = X.shape[1]
-
-        for i in range(n_arrays):
-            x = X[:, i, :]
-            result.append(self.mel_spectrogram(x))
-
-        return torch.stack(result, dim=1)
-
-
-
-class SpectrogramArray(nn.Module):
-    def __init__(self,
-                 n_fft=N_FFT, hop_length=HOP_LENGTH):
-
-        super().__init__()
-
-        self.n_fft = n_fft
-        self.hop_length = hop_length
-
-    def forward(self, X):
-        "Expected input has shape (batch_size, n_arrays, time_steps)"
-
-        result = []
-
-        n_arrays = X.shape[1]
-
-        for i in range(n_arrays):
-            x = X[:, i, :]
-            result.append(
-                torch.stft(x, self.n_fft, self.hop_length, return_complex=True)
-            )
-
-        return torch.stack(result, dim=1)
 
 
 class ConvBlock(nn.Module):

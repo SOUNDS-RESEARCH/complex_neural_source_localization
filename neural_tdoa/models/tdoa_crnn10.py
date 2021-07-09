@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 
 from neural_tdoa.models.common.model_utilities import (
-    ConvBlock, init_gru, init_layer, MelSpectrogramArray)
+    ConvBlock, init_gru, init_layer)
+from neural_tdoa.models.common.feature_extractors import MelSpectrogramArray
 from neural_tdoa.models.settings import (
     N_FFT, N_MELS, HOP_LENGTH, POOL_SIZE, POOL_TYPE, MAX_FILTERS
 )
