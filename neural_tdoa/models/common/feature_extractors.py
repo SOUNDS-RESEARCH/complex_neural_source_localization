@@ -34,7 +34,7 @@ class MelSpectrogramArray(Module):
         return torch.stack(result, dim=1)
 
 
-class SpectrogramArray(Module):
+class StftArray(Module):
     def __init__(self,
                  n_fft=N_FFT, hop_length=HOP_LENGTH):
 
