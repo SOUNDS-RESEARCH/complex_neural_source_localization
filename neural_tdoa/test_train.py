@@ -1,18 +1,12 @@
 import logging
-from neural_tdoa.models.tdoa_simple_cnn import TdoaSimpleCnn
 import shutil
 
 from datasets.dataset import TdoaDataset
 from neural_tdoa.train import train
-from neural_tdoa.loss import Loss
-from neural_tdoa.callbacks import make_callbacks
+from neural_tdoa.metrics import Loss
+from neural_tdoa.utils.callbacks import make_callbacks
 
-from neural_tdoa.models.tdoa_simple_cnn import TdoaSimpleCnn
-from neural_tdoa.models.tdoa_crnn10 import TdoaCrnn10
-from neural_tdoa.models.tdoa_cnn14 import TdoaCnn14
-from neural_tdoa.models.tdoa_dccrn import TdoaDCCRN
-from neural_tdoa.models.tdoa_complex_crnn10 import TdoaComplexCrnn10
-
+from neural_tdoa.model import TdoaCrnn10
 
 
 NUM_TRAIN_SAMPLES = 350
@@ -25,7 +19,7 @@ TRAIN_DIR = "tests/temp/train_dataset_dir"
 def test_train(regenerate_datasets=False):
     _setup(regenerate_datasets)
 
-    model = TdoaComplexCrnn10()
+    model = TdoaCrnn10()
 
     logging.info(f"Creating training dataset with {NUM_TRAIN_SAMPLES}")
     dataset_train = TdoaDataset(n_samples=NUM_TRAIN_SAMPLES, dataset_dir=TRAIN_DIR)

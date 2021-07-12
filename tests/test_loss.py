@@ -1,8 +1,8 @@
 import shutil
 import torch
 
-from neural_tdoa.loss import Loss
-from neural_tdoa.models.tdoa_crnn10 import TdoaCrnn10
+from neural_tdoa.metrics import Loss
+from neural_tdoa.model import TdoaCrnn10
 from datasets.dataset import TdoaDataset
 
 

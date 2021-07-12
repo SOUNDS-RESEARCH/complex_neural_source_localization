@@ -1,13 +1,14 @@
 import shutil
 
 from datasets.dataset import TdoaDataset
-from neural_tdoa.models.tdoa_base_crnn10 import TdoaBaseCrnn10
+from neural_tdoa.model import TdoaCrnn10
 
-def test_tdoa_base_crnn10():
+
+def test_tdoa_crnn10_with_stft():
     temp_dataset_path = "tests/temp/dataset"
     shutil.rmtree(temp_dataset_path, ignore_errors=True)
 
-    model = TdoaBaseCrnn10()
+    model = TdoaCrnn10()
 
     dataset = TdoaDataset(n_samples=1, dataset_dir=temp_dataset_path)
 
@@ -19,11 +20,11 @@ def test_tdoa_base_crnn10():
     assert model_output.shape == (1, 1)
 
 
-def test_tdoa_base_crnn10_with_mfcc():
+def test_tdoa_crnn10_with_mfcc():
     temp_dataset_path = "tests/temp/dataset"
     shutil.rmtree(temp_dataset_path, ignore_errors=True)
 
-    model = TdoaBaseCrnn10(feature_extractor="mfcc")
+    model = TdoaCrnn10(feature_type="mfcc")
 
     dataset = TdoaDataset(n_samples=1, dataset_dir=temp_dataset_path)
 

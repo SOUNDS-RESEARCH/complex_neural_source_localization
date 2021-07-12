@@ -5,11 +5,8 @@ pandas
 scikit-learn
 torch
 torchaudio
-torchlibrosa
-torchsummary
 tqdm
-wget
-joblib
 matplotlib
 pytest
 complexPyTorch
+catalyst

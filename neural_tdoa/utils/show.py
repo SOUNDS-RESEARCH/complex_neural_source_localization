@@ -3,10 +3,6 @@
 
 # Copyright  2018  Northwestern Polytechnical University (author: Ke Wang)
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 
 def show_params(nnet):
     print("=" * 40, "Model Parameters", "=" * 40)

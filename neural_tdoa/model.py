@@ -6,68 +6,57 @@ from complexPyTorch.complexFunctions import complex_relu
 from torch.nn.modules.batchnorm import BatchNorm2d
 from torch.nn.modules.conv import Conv2d
 
-from neural_tdoa.models.common.model_utilities import init_gru, init_layer
-from neural_tdoa.models.common.feature_extractors import MfccArray, StftArray
-from neural_tdoa.models.common.show import show_params, show_model
+from neural_tdoa.utils.initializers import init_gru, init_linear_layer
+from neural_tdoa.feature_extractors import (
+    MfccArray, StftArray, StftMagnitudeArray
+)
+from neural_tdoa.utils.show import show_params, show_model
 
-from neural_tdoa.models.settings import OUTPUT_CHANNELS
+from neural_tdoa.settings import N_OUTPUT_CHANNELS, N_CONV_LAYERS
 
 from datasets.settings import N_MICS
 
 
-class TdoaBaseCrnn10(nn.Module):
+class TdoaCrnn10(nn.Module):
     def __init__(
         self,
-        feature_extractor="stft",
+        feature_type="stft",
         n_input_channels=N_MICS,
-        output_channels=OUTPUT_CHANNELS
+        output_channels=N_OUTPUT_CHANNELS,
+        n_conv_layers=N_CONV_LAYERS
     ):
 
         super().__init__()
 
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
 
-        if feature_extractor == "stft":
-            self.feature_extractor = StftArray()
-            self.are_features_complex = True
-        elif feature_extractor == "mfcc":
-            self.feature_extractor = MfccArray()
-            self.are_features_complex = False
-
-        self._create_conv_layers(n_input_channels, output_channels)
-
-        self.gru = nn.GRU(
-            input_size=output_channels, hidden_size=output_channels//2,
-            num_layers=1, batch_first=True, bidirectional=True
-        )
-
-        self.fc_output = nn.Linear(output_channels, self.n_model_output, bias=True)
-
-        self.init_weights()
+        self._create_feature_extractor_layer(feature_type)
+        self._create_conv_layers(n_input_channels, n_conv_layers, output_channels)
+        self._create_gru_layer(output_channels)
+        self._create_output_layer(output_channels)
 
         show_model(self)
         show_params(self)
 
-    def _create_conv_layers(self, n_input_channels, max_filters):
+    def _create_conv_layers(self, n_input_channels, n_layers, max_filters):
+        n_layer_outputs = [
+            max_filters//(2**(n_layers - i))
+            for i in range(1, n_layers + 1)
+        ]
+        
+        # n_layer_outputs = [
+        #     max_filters//8,
+        #     max_filters//4,
+        #     max_filters//2,
+        #     max_filters
+        # ]
+        
         if self.are_features_complex:
-            n_layer_inputs = [
-                n_input_channels,
-                max_filters//16,
-                max_filters//8,
-                max_filters//4,
-                max_filters//2
-            ]
-        else:
-            n_layer_inputs = [
-                n_input_channels,
-                max_filters//8,
-                max_filters//4,
-                max_filters//2,
-                max_filters
-            ]
-
-        self.n_conv_blocks = len(n_layer_inputs) - 1
-
+            n_layer_outputs = [n//2 for n in n_layer_outputs]
+    
+        self.n_conv_blocks = len(n_layer_outputs)
+        
+        n_layer_inputs = [n_input_channels] + n_layer_outputs
         self.conv_blocks = nn.ModuleList([
             ConvBlock(
                 n_layer_inputs[i],
@@ -76,10 +65,30 @@ class TdoaBaseCrnn10(nn.Module):
             )
             for i in range(self.n_conv_blocks)
         ])
+        
+    def _create_feature_extractor_layer(self, feature_type):
+        if feature_type == "stft":
+            self.feature_extractor = StftArray()
+            self.are_features_complex = True
+        elif feature_type == "stft_magnitude":
+            self.feature_extractor = StftMagnitudeArray()
+            self.are_features_complex = False
+        elif feature_type == "mfcc":
+            self.feature_extractor = MfccArray()
+            self.are_features_complex = False
 
-    def init_weights(self):
+    def _create_gru_layer(self, n_output_channels):
+        self.gru = nn.GRU(
+            input_size=n_output_channels, hidden_size=n_output_channels//2,
+            num_layers=1, batch_first=True, bidirectional=True
+        )
         init_gru(self.gru)
-        init_layer(self.fc_output)
+
+    def _create_output_layer(self, n_input_channels):
+        self.fc_output = nn.Linear(n_input_channels,
+                                   self.n_model_output,
+                                   bias=True)
+        init_linear_layer(self.fc_output)
 
     def forward(self, x):
         """
@@ -91,13 +100,14 @@ class TdoaBaseCrnn10(nn.Module):
         """        
 
         x = self.feature_extractor(x)
-        # feature_extractor_output: (batch_size, n_channels, time_steps, freq_bins)
+        # Feature extractor output: (batch_size, n_channels, time_steps, freq_bins)
         for i in range(self.n_conv_blocks):
             x = self.conv_blocks[i](x)
-        # Conv output: (batch_size, feature_maps, freq_bins, time_steps)
+        # Conv layer output: (batch_size, feature_maps, freq_bins, time_steps)
 
         if self.are_features_complex:
             x = _convert_complex_tensor_to_real(x)
+        # Output: (batch_size, 2*feature_maps, freq_bins, time_steps)
 
         x = torch.mean(x, dim=2)
         # Aggregated conv output (batch_size, feature_maps, time_steps)
@@ -108,10 +118,8 @@ class TdoaBaseCrnn10(nn.Module):
         x = self.fc_output(x)
         # Output: (batch_size, time_steps, n_output)"""
 
-        # Experimental: Output 2d (batch_size, 1)
-        # (xmax, _) = torch.max(x, dim=1)
         x = torch.mean(x, dim=1)
-        # x = x + xmax
+        # Output: (batch_size, 1)
 
         return torch.sigmoid(x)
     

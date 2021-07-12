@@ -4,7 +4,7 @@ from torch.nn import Module
 from torchaudio.transforms import MelSpectrogram
 
 from datasets.settings import SR
-from neural_tdoa.models.settings import (
+from neural_tdoa.settings import (
     N_FFT, N_MELS, HOP_LENGTH
 )
 
@@ -58,3 +58,15 @@ class StftArray(Module):
             ) # Ignore frequency 0
 
         return torch.stack(result, dim=1)
+
+
+class StftMagnitudeArray(StftArray):
+    def forward(self, X):
+        stft = super().forward(X)
+        return stft.abs()
+
+
+class StftPhaseArray(StftArray):
+    def forward(self, X):
+        stft = super().forward(X)
+        return stft.angle()

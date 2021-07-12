@@ -20,7 +20,7 @@ from datasets.settings import (
     N_SAMPLES, 
     DEFAULT_OUTPUT_DATASET_DIR
 )
-from neural_tdoa.models.settings import (
+from neural_tdoa.settings import (
     N_FFT, N_MELS, HOP_LENGTH
 )
 
