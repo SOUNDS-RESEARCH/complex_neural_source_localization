@@ -1,15 +1,13 @@
-import librosa.display
+from math import exp
 import numpy as np
 import os
-import pandas as pd
 import random
-import pyroomacoustics as pra
-import soundfile
-
-import matplotlib.pyplot as plt
 from pathlib import Path
 from tqdm import tqdm
 
+from pyroomasync.pyroomasync import ConnectedShoeBox, simulate
+
+from datasets.logger import save_experiment_metadata, save_signals
 from datasets.math_utils import normalize, compute_distance
 from datasets.settings import (
     SAMPLE_DURATION_IN_SECS,
@@ -17,67 +15,86 @@ from datasets.settings import (
     SR,
     ROOM_DIMS,
     MIC_POSITIONS,
+    MIC_SAMPLING_RATES,
+    MIC_DELAYS,
     N_SAMPLES, 
     DEFAULT_OUTPUT_DATASET_DIR
 )
-from neural_tdoa.settings import (
-    N_FFT, N_MELS, HOP_LENGTH
-)
 
-METADATA_FILENAME = "metadata.csv"
 DEFAULT_DEVICE_HEIGHT = 1
 
 
-def generate_dataset(
-    output_dir=DEFAULT_OUTPUT_DATASET_DIR,
-    room_dims=ROOM_DIMS,
-    mic_positions=MIC_POSITIONS,
-    num_samples=N_SAMPLES,
-    sample_duration_in_secs=SAMPLE_DURATION_IN_SECS,
-    sr=SR,
-    save_melspectogram=False):
+def generate_dataset(output_dir=DEFAULT_OUTPUT_DATASET_DIR,
+                     room_dims=ROOM_DIMS,
+                     mic_positions=MIC_POSITIONS,
+                     num_samples=N_SAMPLES,
+                     sample_duration_in_secs=SAMPLE_DURATION_IN_SECS,
+                     mic_sampling_rates=MIC_SAMPLING_RATES,
+                     base_sampling_rate=SR,
+                     mic_delays=MIC_DELAYS,
+                     log_melspectrogram=False):
 
     output_dir = Path(output_dir)
     output_samples_dir = output_dir / "samples"
-
     os.makedirs(output_samples_dir, exist_ok=True)
+
+    base_experiment_config = {
+        "room_dims": room_dims,
+        "mic_coordinates": mic_positions,
+        "mic_sampling_rates": mic_sampling_rates,
+        "mic_delays":mic_delays,
+        "sample_duration_in_secs": sample_duration_in_secs,
+        "base_sampling_rate": base_sampling_rate
+    }
 
     experiment_configs = []
     for num_sample in tqdm(range(num_samples)):
         experiment_config = _generate_random_experiment_settings(
-            room_dims, mic_positions, sr, sample_duration_in_secs)
+                                base_experiment_config)
         
         experiment_config["signals_dir"] = output_samples_dir / str(num_sample)
         experiment_configs.append(experiment_config)
 
-        _generate_sample(experiment_config, save_melspectogram)
+        _generate_sample(experiment_config,
+                         log_melspectrogram=log_melspectrogram)
 
-    _save_experiment_metadata(experiment_configs, output_dir)
+    save_experiment_metadata(experiment_configs, output_dir)
 
 
 def _simulate(experiment_settings):
+    base_sr = experiment_settings["sr"]
 
-    room = pra.ShoeBox(experiment_settings["room_dims"],
-                       fs=experiment_settings["sr"])
+    room = ConnectedShoeBox(experiment_settings["room_dims"], fs=base_sr)
 
-    room.add_microphone_array(experiment_settings["mic_coordinates"])
+    room.add_microphone_array(experiment_settings["mic_coordinates"],
+                              delay=experiment_settings["mic_delays"])
 
     room.add_source(experiment_settings["source_coordinates"],
         experiment_settings["source_signal"]
     )
 
-    room.simulate()
+    signals = simulate(room)
 
-    signals = room.mic_array.signals
+    max_delay = max(experiment_settings["mic_delays"])
+    max_delay_in_samples = int(max_delay*base_sr)
+
+    # Remove silence in the beginning of signals which might make
+    # Detecting the delays "too easy", then truncate to experiment output size
+    signals = signals[:, max_delay_in_samples:]
+    signals = signals[:, :experiment_settings["num_samples"]]
     
     return signals
 
-def _generate_random_experiment_settings(room_dims=ROOM_DIMS,
-                                         microphone_coordinates=None,
-                                         sr=SR,
-                                         sample_duration_in_secs=SAMPLE_DURATION_IN_SECS):
+def _generate_random_experiment_settings(base_config):
+    microphone_coordinates = base_config["mic_coordinates"]
+    room_dims = base_config["room_dims"]
+    sample_duration_in_secs = base_config["sample_duration_in_secs"]
+    base_sampling_rate = base_config["base_sampling_rate"]
+    mic_delays = base_config["mic_delays"]
+    max_delay = max(mic_delays)
+    total_duration = sample_duration_in_secs + max_delay
 
-    if microphone_coordinates is None:
+    if base_config["mic_coordinates"] is None:
         microphone_coordinates = _generate_random_microphone_coordinates(room_dims)
 
     max_tdoa = compute_distance(
@@ -90,35 +107,35 @@ def _generate_random_experiment_settings(room_dims=ROOM_DIMS,
     source_y = random.uniform(0, room_dims[1])
     source_coordinates = [source_x, source_y, microphone_coordinates[0][2]]
 
-
     tdoa = _compute_tdoa(source_coordinates, microphone_coordinates)
 
-    num_samples = sr*sample_duration_in_secs
+    num_samples = base_sampling_rate*int(total_duration)
     gain = np.random.uniform()
     source_signal = np.random.normal(size=num_samples)*gain
     return {
         "room_dims": room_dims,
         "source_x": source_x,
         "source_y": source_y,
-        "source_coordinates": np.array(source_coordinates).T,
-        "mic_coordinates": np.array(microphone_coordinates).T,
+        "source_coordinates": source_coordinates,
+        "mic_coordinates": microphone_coordinates,
+        "mic_delays": mic_delays,
         "tdoa": tdoa,
         "normalized_tdoa": normalize(tdoa, min_tdoa, max_tdoa),
         "num_samples": num_samples,
-        "sr": sr,
+        "sr": base_sampling_rate,
         "source_signal": source_signal,
         "gain": gain
     }
 
 
-def _generate_sample(experiment_settings, save_melspectogram=False):
+def _generate_sample(experiment_settings, log_melspectrogram=False):
     output_signals = _simulate(experiment_settings)
 
     os.makedirs(experiment_settings["signals_dir"], exist_ok=True)
-    _save_signals(output_signals,
+    save_signals(output_signals,
                   experiment_settings["sr"],
                   experiment_settings["signals_dir"],
-                  save_melspectogram)
+                  log_melspectrogram)
 
 
 def _generate_random_microphone_coordinates(room_dims,
@@ -140,40 +157,6 @@ def _compute_tdoa(source, microphones):
     dist_1 = compute_distance(source, microphones[1])
 
     return (dist_0 - dist_1)/SPEED_OF_SOUND
-
-
-def _save_signals(signals, sr, output_dir, save_melspectogram=False):
-    
-    for i, signal in enumerate(signals):
-        file_name = output_dir / f"{i}.wav"
-        soundfile.write(file_name, signal, sr)
-
-        if save_melspectogram:
-            file_name = output_dir / f"{i}.png"
-            S = librosa.feature.melspectrogram(
-                    signal, SR, n_fft=N_FFT, n_mels=N_MELS)
-            librosa.display.specshow(S, x_axis='time',
-                         y_axis='mel', sr=SR)
-
-            plt.savefig(file_name)
-
-def _save_experiment_metadata(experiment_configs, output_dir):
-    output_keys = [
-        "source_x", "source_y", "tdoa", "normalized_tdoa", "signals_dir"
-    ]
-    
-    def filter_keys(experiment_config):
-        output_dict = {
-            key: value for key, value in experiment_config.items()
-            if key in output_keys
-        }
-
-        return output_dict
-    
-    output_dicts = [filter_keys(exp) for exp in experiment_configs]
-
-    df = pd.DataFrame(output_dicts)
-    df.to_csv(output_dir / METADATA_FILENAME)
 
 
 if __name__ == "__main__":

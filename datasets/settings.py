@@ -10,6 +10,9 @@ MIC_POSITIONS = [
     [1.01, 1, 1],
     [1, 1, 1]
 ]
+MIC_SAMPLING_RATES = [SR, SR - 10]
+MIC_DELAYS = [0, 1e-2]
+
 N_MICS = len(MIC_POSITIONS)
 
 DEFAULT_OUTPUT_DATASET_DIR = "generated_dataset"
