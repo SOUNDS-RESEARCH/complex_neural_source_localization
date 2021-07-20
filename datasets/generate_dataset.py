@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 from tqdm import tqdm
 
-from pyroomasync.pyroomasync import ConnectedShoeBox, simulate
+from pyroomasync import ConnectedShoeBox, simulate
 
 from datasets.logger import save_experiment_metadata, save_signals
 from datasets.math_utils import normalize, compute_distance
