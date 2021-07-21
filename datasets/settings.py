@@ -16,3 +16,14 @@ MIC_DELAYS = [0, 1e-2]
 N_MICS = len(MIC_POSITIONS)
 
 DEFAULT_OUTPUT_DATASET_DIR = "generated_dataset"
+
+BASE_DATASET_CONFIG = {
+    "base_sampling_rate": SR,
+    "sample_duration_in_secs": SAMPLE_DURATION_IN_SECS,
+    "n_training_samples": N_SAMPLES,
+    "room_dims": ROOM_DIMS,
+    "mic_coordinates": MIC_POSITIONS,
+    "mic_sampling_rates": MIC_SAMPLING_RATES,
+    "mic_delays": MIC_DELAYS,
+    "dataset_dir": DEFAULT_OUTPUT_DATASET_DIR
+}

@@ -1,3 +1,4 @@
+from datasets.settings import BASE_DATASET_CONFIG
 import shutil
 
 from datasets.dataset import TdoaDataset
@@ -10,8 +11,11 @@ def test_tdoa_crnn10_with_stft():
 
     model = TdoaCrnn10()
 
-    dataset = TdoaDataset(n_samples=1, dataset_dir=temp_dataset_path)
-
+    dataset_config = BASE_DATASET_CONFIG
+    dataset_config["n_training_samples"] = 1
+    dataset_config["dataset_dir"] = temp_dataset_path
+    dataset = TdoaDataset(dataset_config)
+    
     sample = dataset[0]
     target = sample["targets"]
 
@@ -26,7 +30,10 @@ def test_tdoa_crnn10_with_mfcc():
 
     model = TdoaCrnn10(feature_type="mfcc")
 
-    dataset = TdoaDataset(n_samples=1, dataset_dir=temp_dataset_path)
+    dataset_config = BASE_DATASET_CONFIG
+    dataset_config["n_training_samples"] = 1
+    dataset_config["dataset_dir"] = temp_dataset_path
+    dataset = TdoaDataset(dataset_config)
 
     sample = dataset[0]
     target = sample["targets"]

@@ -25,20 +25,21 @@ def save_signals(signals, sr, output_dir, log_melspectrogram=False):
 
             plt.savefig(file_name)
 
-def save_experiment_metadata(experiment_configs, output_dir):
+
+def save_dataset_metadata(training_sample_configs, output_dir):
     output_keys = [
         "source_x", "source_y", "tdoa", "normalized_tdoa", "signals_dir"
     ]
     
-    def filter_keys(experiment_config):
+    def filter_keys(training_sample_config):
         output_dict = {
-            key: value for key, value in experiment_config.items()
+            key: value for key, value in training_sample_config.items()
             if key in output_keys
         }
 
         return output_dict
     
-    output_dicts = [filter_keys(exp) for exp in experiment_configs]
+    output_dicts = [filter_keys(exp) for exp in training_sample_configs]
 
     df = pd.DataFrame(output_dicts)
     df.to_csv(output_dir / METADATA_FILENAME)

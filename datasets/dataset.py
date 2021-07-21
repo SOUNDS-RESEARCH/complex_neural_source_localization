@@ -6,28 +6,21 @@ import torchaudio
 from pathlib import Path
 
 from datasets.generate_dataset import generate_dataset
-from datasets.settings import (
-    N_SAMPLES, SR, DEFAULT_OUTPUT_DATASET_DIR, N_MICS, SAMPLE_DURATION_IN_SECS
-)
+from datasets.settings import BASE_DATASET_CONFIG
 
 
 class TdoaDataset(torch.utils.data.Dataset):
     def __init__(self,
-                 sr=SR,
-                 n_samples=N_SAMPLES,
-                 dataset_dir=DEFAULT_OUTPUT_DATASET_DIR,
-                 sample_duration_in_secs=SAMPLE_DURATION_IN_SECS,
-                 n_mics=N_MICS):
+                 dataset_config=BASE_DATASET_CONFIG):
 
-        self.sr = sr
-        self.sample_duration_in_secs = sample_duration_in_secs
-        self.sample_duration = sr*sample_duration_in_secs
-        self.n_mics = n_mics
+        self.sr = dataset_config["base_sampling_rate"]
+        self.sample_duration_in_secs = dataset_config["sample_duration_in_secs"]
+        self.sample_duration = self.sr*self.sample_duration_in_secs
+        self.n_mics = len(dataset_config["mic_coordinates"])
+        dataset_dir = dataset_config["dataset_dir"]
 
         if not os.path.exists(dataset_dir):
-            generate_dataset(dataset_dir,
-                             num_samples=n_samples,
-                             sample_duration_in_secs=sample_duration_in_secs)
+            generate_dataset(dataset_config)
 
         self.df = pd.read_csv(Path(dataset_dir) / "metadata.csv") 
 
