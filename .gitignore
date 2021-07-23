@@ -143,4 +143,5 @@ cython_debug/
 *.DS_Store
 
 generated_dataset/
+validation_dataset/
 tests/temp

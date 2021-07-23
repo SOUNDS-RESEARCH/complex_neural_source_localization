@@ -9,7 +9,9 @@ LEARNING_RATE = 0.0001
 
 def train(model, loss_function, dataset_train, dataset_val,
           batch_size=BATCH_SIZE, num_epochs=NUM_EPOCHS,
-          learning_rate=LEARNING_RATE, callbacks=[]):
+          learning_rate=LEARNING_RATE, callbacks=[],
+          logs_dir="logs/"):
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     loaders = {
@@ -47,6 +49,6 @@ def train(model, loss_function, dataset_train, dataset_val,
         optimizer=optimizer,
         num_epochs=num_epochs,
         verbose=True,
-        logdir="logs/",
+        logdir=logs_dir,
         callbacks=callbacks
     )

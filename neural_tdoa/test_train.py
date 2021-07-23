@@ -1,6 +1,6 @@
-import logging
 import shutil
 
+from datasets.settings import BASE_DATASET_CONFIG
 from datasets.dataset import TdoaDataset
 from neural_tdoa.train import train
 from neural_tdoa.metrics import Loss
@@ -8,24 +8,22 @@ from neural_tdoa.utils.callbacks import make_callbacks
 
 from neural_tdoa.model import TdoaCrnn10
 
+DATASET_CONFIG = BASE_DATASET_CONFIG
+DATASET_CONFIG["n_training_samples"] = 350
+DATASET_CONFIG["n_validation_samples"] = 150
 
-NUM_TRAIN_SAMPLES = 350
-NUM_VALIDATION_SAMPLES = 150
-
-VALIDATION_DIR = "tests/temp/validation_dataset_dir"
-TRAIN_DIR = "tests/temp/train_dataset_dir"
+DATASET_CONFIG["training_dataset_dir"] = "tests/temp/train_dataset_dir"
+DATASET_CONFIG["validation_dataset_dir"] = "tests/temp/validation_dataset_dir"
 
 
 def test_train(regenerate_datasets=False):
     _setup(regenerate_datasets)
 
     model = TdoaCrnn10()
+    
+    dataset_train = TdoaDataset(DATASET_CONFIG)
 
-    logging.info(f"Creating training dataset with {NUM_TRAIN_SAMPLES}")
-    dataset_train = TdoaDataset(n_samples=NUM_TRAIN_SAMPLES, dataset_dir=TRAIN_DIR)
-
-    logging.info(f"Creating validation dataset with {NUM_VALIDATION_SAMPLES}")
-    dataset_val = TdoaDataset(n_samples=NUM_VALIDATION_SAMPLES, dataset_dir=VALIDATION_DIR)
+    dataset_val = TdoaDataset(DATASET_CONFIG, is_validation=True)
 
     loss_function = Loss()
 
@@ -35,8 +33,8 @@ def test_train(regenerate_datasets=False):
 
 def _setup(regenerate_datasets):
     if regenerate_datasets:
-        shutil.rmtree(TRAIN_DIR, ignore_errors=True)
-        shutil.rmtree(VALIDATION_DIR, ignore_errors=True)
+        shutil.rmtree(DATASET_CONFIG["training_dataset_dir"], ignore_errors=True)
+        shutil.rmtree(DATASET_CONFIG["validation_dataset_dir"], ignore_errors=True)
 
 if __name__ == "__main__":
     test_train(False)

@@ -11,16 +11,21 @@ from datasets.settings import BASE_DATASET_CONFIG
 
 class TdoaDataset(torch.utils.data.Dataset):
     def __init__(self,
-                 dataset_config=BASE_DATASET_CONFIG):
+                 dataset_config=BASE_DATASET_CONFIG,
+                 is_validation=False):
 
         self.sr = dataset_config["base_sampling_rate"]
         self.sample_duration_in_secs = dataset_config["sample_duration_in_secs"]
         self.sample_duration = self.sr*self.sample_duration_in_secs
         self.n_mics = len(dataset_config["mic_coordinates"])
-        dataset_dir = dataset_config["dataset_dir"]
+        
+        if is_validation:
+            dataset_dir = dataset_config["training_dataset_dir"]
+        else:
+            dataset_dir = dataset_config["validation_dataset_dir"]
 
         if not os.path.exists(dataset_dir):
-            generate_dataset(dataset_config)
+            generate_dataset(dataset_config, is_validation)
 
         self.df = pd.read_csv(Path(dataset_dir) / "metadata.csv") 
 

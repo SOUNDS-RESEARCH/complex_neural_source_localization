@@ -7,7 +7,9 @@ from datasets.math_utils import compute_tdoa, compute_tdoa_range, normalize
 from datasets.generate_random_configs import (
     generate_random_microphone_coordinates,
     generate_random_source_coordinates,
-    generate_random_source_signal
+    generate_random_source_signal,
+    generate_random_delay,
+    generate_random_sampling_rate
 )
 
 
@@ -43,24 +45,40 @@ def _simulate(training_sample_config):
 
 def generate_random_training_sample_config(base_config):
     mic_coordinates = base_config["mic_coordinates"]
+    room_dims = base_config["room_dims"]
+
     if mic_coordinates is None:
         mic_coordinates = generate_random_microphone_coordinates(
-                                                base_config["room_dims"])
+                                                room_dims)
 
     source_coordinates = generate_random_source_coordinates(
-                                            base_config["room_dims"],
+                                            room_dims,
                                             mic_coordinates[0][2])
 
     tdoa, normalized_tdoa = _compute_tdoa(source_coordinates, mic_coordinates)
 
-    source_signal, gain = generate_random_source_signal(base_config)
+    mic_delays = [
+        base_config["mic_0_delay"],
+        generate_random_sampling_rate(*base_config["mic_1_delay_range"])
+    ]
+    mic_sampling_rates = [
+        base_config["mic_0_sampling_rate"],
+        generate_random_sampling_rate(*base_config["mic_1_sampling_rate_range"])
+    ]
+    
+    source_signal, gain = generate_random_source_signal(
+                            base_config["base_sampling_rate"],
+                            base_config["sample_duration_in_secs"],
+                            mic_delays)
+
     return {
-        "room_dims": base_config["room_dims"],
+        "room_dims": room_dims,
         "source_x": source_coordinates[0],
         "source_y": source_coordinates[1],
         "source_coordinates": source_coordinates,
         "mic_coordinates": mic_coordinates,
-        "mic_delays": base_config["mic_delays"],
+        "mic_delays": mic_delays,
+        "mic_sampling_rates": mic_sampling_rates,
         "tdoa": tdoa,
         "normalized_tdoa": normalized_tdoa,
         "sr": base_config["base_sampling_rate"],

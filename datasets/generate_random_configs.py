@@ -26,15 +26,20 @@ def generate_random_microphone_coordinates(room_dims,
     ]
 
 
-def generate_random_source_signal(base_config):
-    sampling_rate = base_config["base_sampling_rate"]
-    mic_delays = base_config["mic_delays"]
-    sample_duration_in_secs = base_config["sample_duration_in_secs"]
-
+def generate_random_source_signal(sr, sample_duration_in_secs, mic_delays):
     max_delay = max(mic_delays)
     total_duration = sample_duration_in_secs + max_delay
-    num_samples = sampling_rate*int(total_duration)
+    num_samples = sr*int(total_duration)
     gain = np.random.uniform()
     source_signal = np.random.normal(size=num_samples)*gain
 
     return source_signal, gain
+
+
+def generate_random_sampling_rate(low, high):
+    return random.randint(low, high)
+
+
+def generate_random_delay(low, high):
+    return random.randint(low, high)
+
