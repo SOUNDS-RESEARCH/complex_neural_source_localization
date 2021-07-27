@@ -1,5 +1,8 @@
 
+import pandas as pd
 import shutil
+
+from pathlib import Path
 
 from neural_tdoa.metrics import Loss
 from datasets.dataset import TdoaDataset
@@ -10,8 +13,12 @@ from experiments.settings import BASE_EXPERIMENT_CONFIG
 
 
 def run_experiment(experiment_configs=[BASE_EXPERIMENT_CONFIG]):
+    training_results = []
     for experiment_config in experiment_configs:
-        _train(experiment_config)
+        training_result = _train(experiment_config)
+        training_results.append(training_result)
+    
+    return training_results
 
 
 def _train(experiment_config):
@@ -30,6 +37,12 @@ def _train(experiment_config):
 
     train(model, loss_function, dataset_train, dataset_val,
           log_dir=log_dir, training_config=training_config)
+
+    log_dir = Path(log_dir)
+    train_results = pd.read_csv(log_dir / "train.csv")
+    validation_results = pd.read_csv(log_dir / "valid.csv")
+
+    return train_results, validation_results
 
 
 def _clean_dataset_dirs(dataset_config):
