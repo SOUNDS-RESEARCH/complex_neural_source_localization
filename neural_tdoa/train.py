@@ -2,17 +2,19 @@ from catalyst.runners import SupervisedRunner
 import torch
 import torch.optim as optim
 
-BATCH_SIZE = 32
-NUM_EPOCHS = 8
-LEARNING_RATE = 0.0001
+from neural_tdoa.utils.callbacks import make_callbacks
+from neural_tdoa.settings import BASE_TRAINING_CONFIG, LEARNING_RATE
 
 
 def train(model, loss_function, dataset_train, dataset_val,
-          batch_size=BATCH_SIZE, num_epochs=NUM_EPOCHS,
-          learning_rate=LEARNING_RATE, callbacks=[],
-          logs_dir="logs/"):
+          callbacks=None, log_dir="logs/",
+          training_config=BASE_TRAINING_CONFIG):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    batch_size = training_config["batch_size"]
+    learning_rate = training_config["learning_rate"]
+    num_epochs = training_config["num_epochs"]
 
     loaders = {
         "train": torch.utils.data.DataLoader(dataset_train,
@@ -42,6 +44,9 @@ def train(model, loss_function, dataset_train, dataset_val,
         loss_key="loss"
     )
 
+    if callbacks is None:
+        callbacks = make_callbacks(log_dir)
+
     runner.train(
         model=model,
         criterion=criterion,
@@ -49,6 +54,6 @@ def train(model, loss_function, dataset_train, dataset_val,
         optimizer=optimizer,
         num_epochs=num_epochs,
         verbose=True,
-        logdir=logs_dir,
+        logdir=log_dir,
         callbacks=callbacks
     )

@@ -4,7 +4,6 @@ from datasets.settings import BASE_DATASET_CONFIG
 from datasets.dataset import TdoaDataset
 from neural_tdoa.train import train
 from neural_tdoa.metrics import Loss
-from neural_tdoa.utils.callbacks import make_callbacks
 
 from neural_tdoa.model import TdoaCrnn10
 
@@ -27,8 +26,7 @@ def test_train(regenerate_datasets=False):
 
     loss_function = Loss()
 
-    train(model, loss_function, dataset_train, dataset_val,
-          callbacks=make_callbacks(), batch_size=32)
+    train(model, loss_function, dataset_train, dataset_val)
 
 
 def _setup(regenerate_datasets):
