@@ -1,0 +1,38 @@
+speed_of_sound: 343.0
+sr: 48000
+sample_duration_in_secs: 2
+n_train_samples: 100
+n_validation_samples: 50
+
+# 15sqm room with 3m height
+room_dims: [5, 3, 3]
+
+mic_positions: [
+    [1.01, 1, 1],
+    [1, 1, 1]
+]
+mic_0_sampling_rate: SR
+mic_1_sampling_rate_range: [SR - 10, SR] # From 47900 t0 48000
+
+mic_0_delay: 0
+mic_1_delay_range: [0, 10] # From 0 to 10 milliseconds
+
+n_mics: len(MIC_POSITIONS)
+
+default_training_dataset_dir: "generated_dataset"
+default_validation_dataset_dir: "validation_dataset"
+
+BASE_DATASET_CONFIG = {
+    "base_sampling_rate": SR,
+    "sample_duration_in_secs": SAMPLE_DURATION_IN_SECS,
+    "n_training_samples": N_TRAIN_SAMPLES,
+    "n_validation_samples": N_VALIDATION_SAMPLES,
+    "room_dims": ROOM_DIMS,
+    "mic_coordinates": MIC_POSITIONS,
+    "mic_0_sampling_rate": MIC_0_SAMPLING_RATE,
+    "mic_1_sampling_rate_range": MIC_1_SAMPLING_RATE_RANGE,
+    "mic_0_delay": MIC_0_DELAY,
+    "mic_1_delay_range": MIC_1_DELAY_RANGE,
+    "training_dataset_dir": DEFAULT_TRAINING_DATASET_DIR,
+    "validation_dataset_dir": DEFAULT_VALIDATION_DATASET_DIR
+}

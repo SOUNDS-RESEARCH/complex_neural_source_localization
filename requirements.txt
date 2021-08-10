@@ -10,3 +10,5 @@ matplotlib
 pytest
 complexPyTorch
 catalyst
+pyroomasync
+hydra-core
