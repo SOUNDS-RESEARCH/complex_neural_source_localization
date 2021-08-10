@@ -1,11 +1,4 @@
-# Training config
-batch_size: 4
-num_epochs: 8
-learning_rate: 0.0001
-
-
-BASE_TRAINING_CONFIG = {
-    "batch_size": BATCH_SIZE,
-    "num_epochs": NUM_EPOCHS,
-    "learning_rate": LEARNING_RATE
-}
+training:
+  batch_size: 4
+  num_epochs: 8
+  learning_rate: 0.0001

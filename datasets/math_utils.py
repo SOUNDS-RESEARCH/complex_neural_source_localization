@@ -1,6 +1,6 @@
-from datasets.settings import SPEED_OF_SOUND
 import numpy as np
 
+SPEED_OF_SOUND = 343.0
 
 def compute_distance(p1, p2):
     "Compute the euclidean distance between two points"

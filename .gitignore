@@ -145,3 +145,4 @@ cython_debug/
 generated_dataset/
 validation_dataset/
 tests/temp
+outputs/

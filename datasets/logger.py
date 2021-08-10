@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import soundfile
 import pandas as pd
 
-from datasets.settings import SR
-from neural_tdoa.settings import N_FFT, N_MELS
-
-
 METADATA_FILENAME = "metadata.csv"
+
+# Debugging
+N_FFT = 1024
+N_MELS = 64
 
 
 def save_signals(signals, sr, output_dir, log_melspectrogram=False):
@@ -19,9 +19,9 @@ def save_signals(signals, sr, output_dir, log_melspectrogram=False):
         if log_melspectrogram:
             file_name = output_dir / f"{i}.png"
             S = librosa.feature.melspectrogram(
-                    signal, SR, n_fft=N_FFT, n_mels=N_MELS)
+                    signal, sr, n_fft=N_FFT, n_mels=N_MELS)
             librosa.display.specshow(S, x_axis='time',
-                         y_axis='mel', sr=SR)
+                         y_axis='mel', sr=sr)
 
             plt.savefig(file_name)
 

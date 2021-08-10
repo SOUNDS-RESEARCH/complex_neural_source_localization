@@ -1,42 +1,36 @@
-from datasets.settings import BASE_DATASET_CONFIG
 import shutil
+
+from hydra import compose, initialize
+from hydra.core.global_hydra import GlobalHydra
 
 from datasets.dataset import TdoaDataset
 from neural_tdoa.model import TdoaCrnn10
 
 
 def test_tdoa_crnn10_with_stft():
-    temp_dataset_path = "tests/temp/dataset"
-    shutil.rmtree(temp_dataset_path, ignore_errors=True)
-
-    model = TdoaCrnn10()
-
-    dataset_config = BASE_DATASET_CONFIG
-    dataset_config["n_training_samples"] = 1
-    dataset_config["dataset_dir"] = temp_dataset_path
-    dataset = TdoaDataset(dataset_config)
-    
-    sample = dataset[0]
-    target = sample["targets"]
-
-    model_output = model(sample["signals"].unsqueeze(0))
-
-    assert model_output.shape == (1, 1)
+    _test_tdoa_crnn10("stft")
 
 
 def test_tdoa_crnn10_with_mfcc():
+    _test_tdoa_crnn10("mfcc")
+
+
+def _test_tdoa_crnn10(feature_type):
+    GlobalHydra.instance().clear()
     temp_dataset_path = "tests/temp/dataset"
     shutil.rmtree(temp_dataset_path, ignore_errors=True)
 
-    model = TdoaCrnn10(feature_type="mfcc")
+    initialize(config_path="../config", job_name="test_app")
+    cfg = compose(config_name="config")
+    cfg["dataset"]["training_dataset_dir"] = temp_dataset_path
+    cfg["dataset"]["n_training_samples"] = 1
+    cfg["model"]["feature_type"] = feature_type
 
-    dataset_config = BASE_DATASET_CONFIG
-    dataset_config["n_training_samples"] = 1
-    dataset_config["dataset_dir"] = temp_dataset_path
-    dataset = TdoaDataset(dataset_config)
-
+    model = TdoaCrnn10(cfg["model"], cfg["dataset"])
+    dataset = TdoaDataset(cfg["dataset"])
+    
     sample = dataset[0]
-    target = sample["targets"]
+    _ = sample["targets"]
 
     model_output = model(sample["signals"].unsqueeze(0))
 

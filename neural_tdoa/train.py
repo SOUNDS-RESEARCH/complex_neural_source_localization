@@ -3,12 +3,11 @@ import torch
 import torch.optim as optim
 
 from neural_tdoa.utils.callbacks import make_callbacks
-from neural_tdoa.settings import BASE_TRAINING_CONFIG, LEARNING_RATE
 
 
-def train(model, loss_function, dataset_train, dataset_val,
-          callbacks=None, log_dir="logs/",
-          training_config=BASE_TRAINING_CONFIG):
+def train(training_config,
+          model, loss_function, dataset_train, dataset_val,
+          callbacks=None, log_dir="logs/"):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

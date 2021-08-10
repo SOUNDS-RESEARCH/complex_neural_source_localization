@@ -6,10 +6,8 @@ import os
 from pathlib import Path
 from tqdm import tqdm
 
-from datasets.settings import BASE_DATASET_CONFIG
 
-
-def generate_dataset(dataset_config=BASE_DATASET_CONFIG,
+def generate_dataset(dataset_config,
                      is_validation=False,
                      log_melspectrogram=False):
     

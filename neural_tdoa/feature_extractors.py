@@ -3,21 +3,17 @@ import torch
 from torch.nn import Module
 from torchaudio.transforms import MelSpectrogram
 
-from datasets.settings import SR
-from neural_tdoa.settings import (
-    N_FFT, N_MELS, HOP_LENGTH
-)
-
 
 class MfccArray(Module):
-    def __init__(self, sample_rate=SR,
-                 n_fft=N_FFT, hop_length=HOP_LENGTH, n_mels=N_MELS):
+    def __init__(self, model_config, dataset_config):
 
         super().__init__()
 
         self.mel_spectrogram = MelSpectrogram(
-            sample_rate=sample_rate, n_fft=n_fft,
-            hop_length=hop_length, n_mels=n_mels
+            sample_rate=dataset_config["base_sampling_rate"],
+            n_fft=model_config["n_fft"],
+            hop_length=model_config["hop_length"],
+            n_mels=model_config["n_mels"]
         )
 
     def forward(self, X):
@@ -35,13 +31,12 @@ class MfccArray(Module):
 
 
 class StftArray(Module):
-    def __init__(self,
-                 n_fft=N_FFT, hop_length=HOP_LENGTH):
+    def __init__(self, model_config):
 
         super().__init__()
 
-        self.n_fft = n_fft
-        self.hop_length = hop_length
+        self.n_fft = model_config["n_fft"]
+        self.hop_length = model_config["hop_length"]
 
     def forward(self, X):
         "Expected input has shape (batch_size, n_arrays, time_steps)"
