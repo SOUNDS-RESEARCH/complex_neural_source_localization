@@ -12,28 +12,21 @@ from neural_tdoa.feature_extractors import (
 )
 from neural_tdoa.utils.show import show_params, show_model
 
-from neural_tdoa.settings import N_OUTPUT_CHANNELS, N_CONV_LAYERS
-
-from datasets.settings import N_MICS
-
 
 class TdoaCrnn10(nn.Module):
-    def __init__(
-        self,
-        feature_type="stft",
-        n_input_channels=N_MICS,
-        output_channels=N_OUTPUT_CHANNELS,
-        n_conv_layers=N_CONV_LAYERS
-    ):
+    def __init__(self, model_config, dataset_config):
 
         super().__init__()
 
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
-
-        self._create_feature_extractor_layer(feature_type)
-        self._create_conv_layers(n_input_channels, n_conv_layers, output_channels)
-        self._create_gru_layer(output_channels)
-        self._create_output_layer(output_channels)
+        self.model_config = model_config
+        n_input_channels = len(dataset_config["mic_coordinates"])
+        self._create_feature_extractor_layer(model_config, dataset_config)
+        self._create_conv_layers(n_input_channels,
+                                 model_config["n_conv_layers"],
+                                 model_config["n_output_channels"])
+        self._create_gru_layer(model_config["n_output_channels"])
+        self._create_output_layer(model_config["n_output_channels"])
 
         show_model(self)
         show_params(self)
@@ -43,13 +36,6 @@ class TdoaCrnn10(nn.Module):
             max_filters//(2**(n_layers - i))
             for i in range(1, n_layers + 1)
         ]
-        
-        # n_layer_outputs = [
-        #     max_filters//8,
-        #     max_filters//4,
-        #     max_filters//2,
-        #     max_filters
-        # ]
         
         if self.are_features_complex:
             n_layer_outputs = [n//2 for n in n_layer_outputs]
@@ -66,15 +52,17 @@ class TdoaCrnn10(nn.Module):
             for i in range(self.n_conv_blocks)
         ])
         
-    def _create_feature_extractor_layer(self, feature_type):
+    def _create_feature_extractor_layer(self, model_config, dataset_config):
+        feature_type = model_config["feature_type"]
+
         if feature_type == "stft":
-            self.feature_extractor = StftArray()
+            self.feature_extractor = StftArray(model_config)
             self.are_features_complex = True
         elif feature_type == "stft_magnitude":
-            self.feature_extractor = StftMagnitudeArray()
+            self.feature_extractor = StftMagnitudeArray(model_config)
             self.are_features_complex = False
         elif feature_type == "mfcc":
-            self.feature_extractor = MfccArray()
+            self.feature_extractor = MfccArray(model_config, dataset_config)
             self.are_features_complex = False
 
     def _create_gru_layer(self, n_output_channels):

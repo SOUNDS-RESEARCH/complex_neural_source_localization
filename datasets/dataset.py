@@ -6,12 +6,11 @@ import torchaudio
 from pathlib import Path
 
 from datasets.generate_dataset import generate_dataset
-from datasets.settings import BASE_DATASET_CONFIG
 
 
 class TdoaDataset(torch.utils.data.Dataset):
     def __init__(self,
-                 dataset_config=BASE_DATASET_CONFIG,
+                 dataset_config,
                  is_validation=False):
 
         self.sr = dataset_config["base_sampling_rate"]
@@ -39,8 +38,6 @@ class TdoaDataset(torch.utils.data.Dataset):
             for mic_idx in range(self.n_mics)
         ])
 
-        # Note: Truncating to 2 seconds: losing reverberated "tail" at the end.
-        # Ask Patrick if its a problem
         x = x[:, :self.sample_duration]
 
         y = torch.Tensor([sample_metadata["normalized_tdoa"]])

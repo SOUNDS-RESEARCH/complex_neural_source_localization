@@ -1,0 +1,16 @@
+model:
+  # NN Model settings
+  pool_type: "avg" # "max" | "avg"
+  pool_size: [2, 2]
+  n_output_channels: 512
+  n_conv_layers: 4
+
+  # Feature params
+  n_fft: 1024
+  n_mels: 64
+  window: "hann"
+
+  hop_length_in_seconds: 10e-3
+  hop_length: 480 #int(hop_length_in_seconds * sr)
+
+  feature_type: "stft_magnitude"

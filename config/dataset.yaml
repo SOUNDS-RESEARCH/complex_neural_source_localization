@@ -1,0 +1,20 @@
+defaults:
+  - _self_
+  - dataset: no_delay
+
+dataset:
+  base_sampling_rate: 48000
+  sample_duration_in_secs: 2
+  n_training_samples: 100
+  n_validation_samples: 50
+  room_dims: [5, 3, 3]
+  mic_coordinates: [
+      [1.01, 1, 1],
+      [1, 1, 1]
+  ]
+  mic_0_sampling_rate: 48000
+  mic_1_sampling_rate_range: [47900, 48000]
+  mic_0_delay: 0
+  mic_1_delay_range: [0, 10]
+  training_dataset_dir: "training_dataset"
+  validation_dataset_dir: "validation_dataset"
