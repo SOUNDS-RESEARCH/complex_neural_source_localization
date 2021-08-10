@@ -1,7 +1,7 @@
 from datasets.settings import SR
 
 # Training config
-BATCH_SIZE = 32
+BATCH_SIZE = 4
 NUM_EPOCHS = 8
 LEARNING_RATE = 0.0001
 
