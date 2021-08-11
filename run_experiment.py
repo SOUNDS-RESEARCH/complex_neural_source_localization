@@ -17,7 +17,7 @@ def run_experiment(experiment_config: DictConfig):
     model_config = experiment_config["model"]
     training_config = experiment_config["training"]
 
-    model = TdoaCrnn10(model_config)
+    model = TdoaCrnn10(model_config, dataset_config)
     loss_function = Loss()
     
     dataset_train = TdoaDataset(dataset_config)
