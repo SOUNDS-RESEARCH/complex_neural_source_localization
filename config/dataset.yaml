@@ -9,8 +9,8 @@ dataset:
   n_validation_samples: 50
   room_dims: [5, 3, 3]
   mic_coordinates: [
-      [1.01, 1, 1],
-      [1, 1, 1]
+      [1, 1, 1],
+      [2, 1, 1]
   ]
   mic_0_sampling_rate: 48000
   mic_1_sampling_rate_range: [47900, 48000]

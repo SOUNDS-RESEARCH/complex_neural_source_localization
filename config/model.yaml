@@ -11,6 +11,6 @@ model:
   window: "hann"
 
   hop_length_in_seconds: 10e-3
-  hop_length: 480 #int(hop_length_in_seconds * sr)
+  hop_length: 480 # int(hop_length_in_seconds * sr)
 
   feature_type: "stft_magnitude"
