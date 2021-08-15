@@ -13,10 +13,10 @@ def generate_dataset(dataset_config,
     
     if is_validation:
         n_samples = dataset_config["n_validation_samples"]
-        output_dir = dataset_config["training_dataset_dir"]
+        output_dir = dataset_config["validation_dataset_dir"]
     else:
         n_samples = dataset_config["n_training_samples"]
-        output_dir = dataset_config["validation_dataset_dir"]
+        output_dir = dataset_config["training_dataset_dir"]
 
     output_dir = Path(output_dir)
     output_samples_dir = output_dir / "samples"

@@ -144,5 +144,6 @@ cython_debug/
 
 generated_dataset/
 validation_dataset/
+training_dataset/
 tests/temp
 outputs/

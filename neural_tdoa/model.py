@@ -11,10 +11,15 @@ from neural_tdoa.feature_extractors import (
     MfccArray, StftArray, StftMagnitudeArray
 )
 from neural_tdoa.utils.show import show_params, show_model
+from neural_tdoa.utils.load_config import load_config
 
 
 class TdoaCrnn10(nn.Module):
-    def __init__(self, model_config, dataset_config):
+    def __init__(self, model_config=None, dataset_config=None):
+        if model_config is None:
+            model_config = load_config("model")
+        if dataset_config is None:
+            dataset_config = load_config("dataset")
 
         super().__init__()
 
@@ -28,8 +33,8 @@ class TdoaCrnn10(nn.Module):
         self._create_gru_layer(model_config["n_output_channels"])
         self._create_output_layer(model_config["n_output_channels"])
 
-        show_model(self)
-        show_params(self)
+        # show_model(self)
+        # show_params(self)
 
     def _create_conv_layers(self, n_input_channels, n_layers, max_filters):
         n_layer_outputs = [
