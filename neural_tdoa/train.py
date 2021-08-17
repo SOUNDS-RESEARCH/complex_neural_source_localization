@@ -58,15 +58,17 @@ def train_pl(config):
                                                 batch_size=batch_size,
                                                 shuffle=True,
                                                 pin_memory=True,
-                                                drop_last=False)
+                                                drop_last=False,
+                                                num_workers=2)
     dataset_val = torch.utils.data.DataLoader(dataset_val,
                                               batch_size=batch_size,
                                               shuffle=False,
                                               pin_memory=True,
-                                              drop_last=False)
+                                              drop_last=False,
+                                              num_workers=2)
 
     num_epochs = config["training"]["num_epochs"]
-    trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10)
+    trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10, auto_select_gpus=True)
     trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
 
 
