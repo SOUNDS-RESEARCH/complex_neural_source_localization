@@ -68,7 +68,10 @@ def train_pl(config):
                                               num_workers=2)
 
     num_epochs = config["training"]["num_epochs"]
-    trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10, auto_select_gpus=True)
+    
+    gpus = 1 if torch.cuda.is_available() else 0
+    trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10,
+                         gpus=gpus)
     trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
 
 
