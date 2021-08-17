@@ -90,21 +90,23 @@ def _gcc_phat(x1, x2):
     return indxs, cc
 
 
-def _gcc_phat_new(sig, refsig, fs, max_tau=None, interp=16):
+def _gcc_phat_new(x1, x2, fs, max_tau=None, interp=16):
     '''
-    This function computes the offset between the signal sig and the reference signal refsig
-    using the Generalized Cross Correlation - Phase Transform (GCC-PHAT)method.
+    This function computes the offset between the signal sig and the reference signal x2
+    using the Generalized Cross Correlation - Phase Transform (GCC-PHAT) method.
     '''
     
-    # make sure the length for the FFT is larger or equal than len(sig) + len(refsig)
-    n = sig.shape[0] + refsig.shape[0]
+    # make sure the length for the FFT is larger or equal than len(x1) + len(x2)
+    n = x1.shape[0] + x2.shape[0]
 
     # Generalized Cross Correlation Phase Transform
-    SIG = np.fft.rfft(sig, n=n)
-    REFSIG = np.fft.rfft(refsig, n=n)
-    R = SIG * np.conj(REFSIG)
+    # See http://www.xavieranguera.com/phdthesis/node92.html
 
-    cc = np.fft.irfft(R / np.abs(R), n=(interp * n))
+    X1 = np.fft.rfft(x1, n=n)
+    X2 = np.fft.rfft(x2, n=n)
+    R = X1 * np.conj(X2)
+    Gphat = R / np.abs(R)
+    cc = np.fft.irfft(Gphat, n=(interp * n))
 
     max_shift = int(interp * n / 2)
     if max_tau:
