@@ -8,7 +8,13 @@ from pathlib import Path
 from datasets.dataset import TdoaDataset
 from neural_tdoa.metrics import Loss
 from neural_tdoa.model import TdoaCrnn10
-from neural_tdoa.train import train
+from neural_tdoa.train import train, train_pl
+
+
+@hydra.main(config_path="config", config_name="config")
+def main(experiment_config: DictConfig):
+    train_pl(experiment_config)
+
 
 
 @hydra.main(config_path="config", config_name="config")
@@ -35,4 +41,4 @@ def run_experiment(experiment_config: DictConfig):
 
 
 if __name__ == "__main__":
-    run_experiment()
+    main()

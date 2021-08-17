@@ -1,8 +1,73 @@
-from catalyst.runners import SupervisedRunner
+from datasets.dataset import TdoaDataset
+from neural_tdoa.metrics import Loss, average_rms_error
+from neural_tdoa.model import TdoaCrnn10
+import pytorch_lightning as pl
 import torch
-import torch.optim as optim
+from catalyst.runners import SupervisedRunner
 
 from neural_tdoa.utils.callbacks import make_callbacks
+
+
+class LitTdoaCrnn10(pl.LightningModule):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+
+        self.model = TdoaCrnn10(config["model"], config["dataset"])
+        self.loss = Loss()
+
+    def forward(self, x):
+        return self.model(x)
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        x = self.model(x)
+
+        loss = self.loss(x, y)
+
+        self.log("train_loss", loss)
+        return loss
+    
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        x = self.model(x)
+
+        loss = self.loss(x, y)
+
+        rms = average_rms_error(y, x)
+        self.log("validation_loss", loss)
+        self.log("validation_rms", rms)
+        
+
+    
+    def configure_optimizers(self):
+        lr = self.config["training"]["learning_rate"]
+        optimizer = torch.optim.SGD(self.parameters(), lr=lr)
+        return optimizer
+
+
+def train_pl(config):
+    model = LitTdoaCrnn10(config)
+    
+    dataset_config = config["dataset"]
+    dataset_train = TdoaDataset(dataset_config)
+    dataset_val = TdoaDataset(dataset_config, is_validation=True)
+
+    batch_size = config["training"]["batch_size"]
+    dataset_train = torch.utils.data.DataLoader(dataset_train,
+                                                batch_size=batch_size,
+                                                shuffle=True,
+                                                pin_memory=True,
+                                                drop_last=False)
+    dataset_val = torch.utils.data.DataLoader(dataset_val,
+                                              batch_size=batch_size,
+                                              shuffle=False,
+                                              pin_memory=True,
+                                              drop_last=False)
+
+    num_epochs = config["training"]["num_epochs"]
+    trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10)
+    trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
 
 
 def train(training_config,
@@ -31,7 +96,7 @@ def train(training_config,
     model.to(device)
 
     # Optimizer
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     # Loss
     criterion = loss_function.to(device)

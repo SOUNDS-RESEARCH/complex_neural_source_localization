@@ -42,7 +42,6 @@ class StftArray(Module):
         "Expected input has shape (batch_size, n_arrays, time_steps)"
 
         result = []
-
         n_arrays = X.shape[1]
 
         for i in range(n_arrays):

@@ -46,10 +46,11 @@ class TdoaDataset(torch.utils.data.Dataset):
 
         y = torch.Tensor([sample_metadata["normalized_tdoa"]])
 
-        return {
-            "signals": x,
-            "targets": y
-        }
+        # return {
+        #     "signals": x,
+        #     "targets": y
+        # }
+        return (x, y)
 
     def __len__(self):
         return self.df.shape[0]
