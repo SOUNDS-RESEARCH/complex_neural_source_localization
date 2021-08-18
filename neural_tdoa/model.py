@@ -22,7 +22,7 @@ class TdoaCrnn10(nn.Module):
         if model_config is None:
             model_config = load_config("model")
         if dataset_config is None:
-            dataset_config = load_config("dataset")
+            dataset_config = load_config("training_dataset")
 
         super().__init__()
 

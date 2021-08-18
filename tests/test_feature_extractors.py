@@ -13,7 +13,7 @@ def test_mel_spectrogram_array():
     
     sample_path = "tests/fixtures/fold1_room1_mix001.wav"
     signal = torchaudio.load(sample_path)[0].unsqueeze(0)
-    mel_spec_array = MfccArray(cfg["model"], cfg["dataset"])
+    mel_spec_array = MfccArray(cfg["model"], cfg["training_dataset"])
 
     result = mel_spec_array(signal)
 

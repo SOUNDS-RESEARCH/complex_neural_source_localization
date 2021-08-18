@@ -13,24 +13,24 @@ from neural_tdoa.model import TdoaCrnn10
 
 def test_train(regenerate_datasets=False):
     config = _load_config()
-    _setup(config["dataset"], regenerate_datasets)
+    _setup(config, regenerate_datasets)
 
 
-    model = TdoaCrnn10(config["model"], config["dataset"])
+    model = TdoaCrnn10(config["model"], config["training_dataset"])
     
-    dataset_train = TdoaDataset(config["dataset"])
+    dataset_train = TdoaDataset(config["training_dataset"])
 
-    dataset_val = TdoaDataset(config["dataset"], is_validation=True)
+    dataset_val = TdoaDataset(config["validation_dataset"])
 
     loss_function = Loss()
 
     train(model, loss_function, dataset_train, dataset_val)
 
 
-def _setup(dataset_config, regenerate_datasets):
+def _setup(config, regenerate_datasets):
     if regenerate_datasets:
-        shutil.rmtree(dataset_config["training_dataset_dir"], ignore_errors=True)
-        shutil.rmtree(dataset_config["validation_dataset_dir"], ignore_errors=True)
+        shutil.rmtree(config["training_dataset"]["dataset_dir"], ignore_errors=True)
+        shutil.rmtree(config["validation_dataset"]["dataset_dir"], ignore_errors=True)
 
 
 def _load_config():
@@ -40,10 +40,10 @@ def _load_config():
 
     initialize(config_path="../config", job_name="test_app")
     cfg = compose(config_name="config")
-    cfg["dataset"]["training_dataset_dir"] = "tests/temp/train_dataset_dir"
-    cfg["dataset"]["validation_dataset_dir"] = "tests/temp/validation_dataset_dir"
-    cfg["dataset"]["n_training_samples"] = 350
-    cfg["dataset"]["n_validation_samples"] = 150
+    cfg["training_dataset"]["training_dataset_dir"] = "tests/temp/train_dataset_dir"
+    cfg["training_dataset"]["validation_dataset_dir"] = "tests/temp/validation_dataset_dir"
+    cfg["training_dataset"]["n_training_samples"] = 350
+    cfg["training_dataset"]["n_validation_samples"] = 150
     cfg["model"]["feature_type"] = "stft_magnitude"
 
     return cfg

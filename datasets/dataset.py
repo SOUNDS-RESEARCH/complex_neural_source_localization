@@ -11,24 +11,20 @@ from datasets.generate_dataset import generate_dataset
 
 class TdoaDataset(torch.utils.data.Dataset):
     def __init__(self,
-                 dataset_config=None,
-                 is_validation=False):
+                 dataset_config=None):
         
         if dataset_config is None:
-            dataset_config = load_config("dataset")
+            dataset_config = load_config("training_dataset")
 
         self.sr = dataset_config["base_sampling_rate"]
         self.sample_duration_in_secs = dataset_config["sample_duration_in_secs"]
         self.sample_duration = self.sr*self.sample_duration_in_secs
         self.n_mics = len(dataset_config["mic_coordinates"])
 
-        if is_validation:
-            dataset_dir = dataset_config["validation_dataset_dir"]
-        else:
-            dataset_dir = dataset_config["training_dataset_dir"]
+        dataset_dir = dataset_config["dataset_dir"]
 
         if not os.path.exists(dataset_dir):
-            generate_dataset(dataset_config, is_validation)
+            generate_dataset(dataset_config)
 
         self.df = pd.read_csv(Path(dataset_dir) / "metadata.csv") 
 
@@ -46,10 +42,6 @@ class TdoaDataset(torch.utils.data.Dataset):
 
         y = torch.Tensor([sample_metadata["normalized_tdoa"]])
 
-        # return {
-        #     "signals": x,
-        #     "targets": y
-        # }
         return (x, y)
 
     def __len__(self):
