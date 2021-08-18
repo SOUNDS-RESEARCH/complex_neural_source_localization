@@ -1,5 +1,5 @@
 defaults:
-  - training_dataset
   - model
   - training
+  - training_dataset
   - validation_dataset

@@ -4,6 +4,8 @@ from neural_tdoa.model import TdoaCrnn10
 import pytorch_lightning as pl
 import torch
 
+from pytorch_lightning import loggers as pl_loggers
+
 
 class LitTdoaCrnn10(pl.LightningModule):
     def __init__(self, config):
@@ -32,8 +34,8 @@ class LitTdoaCrnn10(pl.LightningModule):
         loss = self.loss(x, y)
 
         rms = average_rms_error(y, x)
-        self.log("validation_loss", loss)
-        self.log("validation_rms", rms)
+        self.log("validation_loss", loss, prog_bar=True)
+        self.log("validation_rms", rms, prog_bar=True)
         
 
     
@@ -66,6 +68,8 @@ def train_pl(config):
     num_epochs = config["training"]["num_epochs"]
     
     gpus = 1 if torch.cuda.is_available() else 0
+    tb_logger = pl_loggers.TensorBoardLogger("logs/")
+
     trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10,
-                         gpus=gpus)
+                         gpus=gpus, logger=tb_logger)
     trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
