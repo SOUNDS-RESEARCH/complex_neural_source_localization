@@ -23,8 +23,11 @@ class LitTdoaCrnn10(pl.LightningModule):
         x = self.model(x)
 
         loss = self.loss(x, y)
+        rms = average_rms_error(y, x)
 
         self.log("train_loss", loss)
+        self.log("train_rms", rms, prog_bar=True)
+
         return loss
     
     def validation_step(self, batch, batch_idx):
@@ -37,12 +40,14 @@ class LitTdoaCrnn10(pl.LightningModule):
         self.log("validation_loss", loss, prog_bar=True)
         self.log("validation_rms", rms, prog_bar=True)
         
-
-    
     def configure_optimizers(self):
         lr = self.config["training"]["learning_rate"]
-        optimizer = torch.optim.SGD(self.parameters(), lr=lr)
-        return optimizer
+        optimizer = self.config["training"]["optimizer"]
+
+        if optimizer == "sgd":
+            return torch.optim.SGD(self.parameters(), lr=lr)
+        elif optimizer == "adam":
+            return torch.optim.Adam(self.parameters(), lr=lr)
 
 
 def train_pl(config):
