@@ -23,18 +23,20 @@ def generate_training_sample(training_sample_config, log_melspectrogram=False):
                  log_melspectrogram)
 
 
-def _simulate(training_sample_config):
-    base_sr = training_sample_config["sr"]
-    source_signal = training_sample_config["source_signal"]
+def _simulate(sample_config):
+    base_sr = sample_config["sr"]
+    source_signal = sample_config["source_signal"]
     num_input_samples = source_signal.shape[0]
-    mic_delays = training_sample_config["mic_delays"]
+    mic_delays = sample_config["mic_delays"]
+    # Convert delay to Milliseconds
+    mic_delays = [delay/1000 for delay in mic_delays]
 
-    room = ConnectedShoeBox(training_sample_config["room_dims"], fs=base_sr)
+    room = ConnectedShoeBox(sample_config["room_dims"], fs=base_sr)
 
-    room.add_microphone_array(training_sample_config["mic_coordinates"],
+    room.add_microphone_array(sample_config["mic_coordinates"],
                               delay=mic_delays)
 
-    room.add_source(training_sample_config["source_coordinates"], source_signal)
+    room.add_source(sample_config["source_coordinates"], source_signal)
 
     signals = simulate(room)
 
@@ -59,11 +61,11 @@ def generate_random_training_sample_config(base_config):
 
     mic_delays = [
         base_config["mic_0_delay"],
-        generate_random_sampling_rate(*base_config["mic_1_delay_range"])
+        generate_random_delay(*base_config["mic_1_delay_range"])
     ]
     mic_sampling_rates = [
         base_config["mic_0_sampling_rate"],
-        generate_random_sampling_rate(*base_config["mic_1_sampling_rate_range"])
+        generate_random_delay(*base_config["mic_1_sampling_rate_range"])
     ]
     
     source_signal, gain = generate_random_source_signal(

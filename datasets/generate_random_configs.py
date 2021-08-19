@@ -41,5 +41,5 @@ def generate_random_sampling_rate(low, high):
 
 
 def generate_random_delay(low, high):
-    return random.randint(low, high)
+    return random.uniform(low, high)
 
