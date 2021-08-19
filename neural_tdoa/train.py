@@ -1,8 +1,10 @@
+import pytorch_lightning as pl
+import shutil
+import torch
+
 from datasets.dataset import TdoaDataset
 from neural_tdoa.metrics import Loss, average_rms_error
 from neural_tdoa.model import TdoaCrnn10
-import pytorch_lightning as pl
-import torch
 
 from pytorch_lightning import loggers as pl_loggers
 
@@ -78,3 +80,6 @@ def train_pl(config):
     trainer = pl.Trainer(max_epochs=num_epochs, log_every_n_steps=10,
                          gpus=gpus, logger=tb_logger)
     trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
+
+    shutil.rmtree(config["training_dataset"]["dataset_dir"])
+    shutil.rmtree(config["validation_dataset"]["dataset_dir"])
