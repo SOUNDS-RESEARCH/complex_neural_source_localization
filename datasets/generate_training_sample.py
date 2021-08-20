@@ -3,13 +3,12 @@ import os
 from pyroomasync import ConnectedShoeBox, simulate
 
 from datasets.logger import save_signals
-from datasets.math_utils import compute_tdoa, compute_tdoa_range, normalize
+from datasets.math_utils import compute_distance, compute_tdoa, normalize_tdoa
 from datasets.generate_random_configs import (
     generate_random_microphone_coordinates,
     generate_random_source_coordinates,
     generate_random_source_signal,
-    generate_random_delay,
-    generate_random_sampling_rate
+    generate_random_delay
 )
 
 
@@ -90,9 +89,9 @@ def generate_random_training_sample_config(base_config):
 
 
 def _compute_tdoa(source_coordinates, mic_coordinates):
-    min_tdoa, max_tdoa = compute_tdoa_range(mic_coordinates)
+    mic_distance = compute_distance(mic_coordinates[0], mic_coordinates[1])
     tdoa = compute_tdoa(source_coordinates, mic_coordinates)
-    normalized_tdoa = normalize(tdoa, min_tdoa, max_tdoa)
+    normalized_tdoa = normalize_tdoa(tdoa, mic_distance)
 
     return tdoa, normalized_tdoa
 

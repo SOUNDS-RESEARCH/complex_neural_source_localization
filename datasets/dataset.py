@@ -29,7 +29,6 @@ class TdoaDataset(torch.utils.data.Dataset):
         self.df = pd.read_csv(Path(dataset_dir) / "metadata.csv") 
 
     def __getitem__(self, index):
-
         sample_metadata = self.df.loc[index]
         signals_dir = Path(sample_metadata["signals_dir"])
 
@@ -39,7 +38,6 @@ class TdoaDataset(torch.utils.data.Dataset):
         ])
 
         x = x[:, :self.sample_duration]
-
         y = torch.Tensor([sample_metadata["normalized_tdoa"]])
 
         return (x, y)

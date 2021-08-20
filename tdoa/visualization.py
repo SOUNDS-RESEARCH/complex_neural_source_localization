@@ -4,7 +4,7 @@ import seaborn as sns
 
 from tdoa.tdoa import get_top_candidate_points, tdoa_sum_error_grid
 
-from tdoa.math import compute_distance
+from datasets.math_utils import compute_distance
 
 
 def plot_correlations(correlations, output_path=None):

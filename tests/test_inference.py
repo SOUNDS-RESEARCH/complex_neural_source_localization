@@ -15,8 +15,8 @@ def test_inference():
     dataset = TdoaDataset()
 
     sample = dataset[0]
-    target = sample["targets"]
+    target = sample[1]
 
-    model_output = model(sample["signals"].unsqueeze(0))
+    model_output = model(sample[0].unsqueeze(0))
 
     #breakpoint()

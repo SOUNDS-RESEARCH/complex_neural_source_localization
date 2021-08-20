@@ -30,8 +30,8 @@ def _test_tdoa_crnn10(feature_type):
     dataset = TdoaDataset(cfg["training_dataset"])
     
     sample = dataset[0]
-    _ = sample["targets"]
+    _ = sample[1]
 
-    model_output = model(sample["signals"].unsqueeze(0))
+    model_output = model(sample[0].unsqueeze(0))
 
     assert model_output.shape == (1, 1)

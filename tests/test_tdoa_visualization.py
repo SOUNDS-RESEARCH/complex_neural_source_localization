@@ -6,7 +6,7 @@ import pyroomacoustics as pra
 from pyroomasync.settings import SPEED_OF_SOUND
 from pyroomasync.room import ConnectedShoeBox
 from pyroomasync.simulator import simulate
-from tdoa.math import compute_distance
+from datasets.math_utils import compute_distance
 from tdoa.tdoa import compute_tdoas
 from tdoa.visualization import plot_location_candidates, plot_top_candidate_points
 
