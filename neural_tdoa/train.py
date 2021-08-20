@@ -39,7 +39,7 @@ class LitTdoaCrnn10(pl.LightningModule):
 
         loss = self.loss(predictions, Y)
 
-        rms = average_rms_error(predictions, X)
+        rms = average_rms_error(predictions, Y)
         self.log("validation_loss", loss, prog_bar=True)
         self.log("validation_rms", rms, prog_bar=True)
 
