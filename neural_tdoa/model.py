@@ -1,4 +1,3 @@
-import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 
@@ -6,14 +5,11 @@ from complexPyTorch.complexLayers import ComplexConv2d, ComplexBatchNorm2d
 from complexPyTorch.complexFunctions import complex_relu
 from torch.nn.modules.batchnorm import BatchNorm2d
 from torch.nn.modules.conv import Conv2d
-from torch.utils import data
 
 from neural_tdoa.utils.initializers import init_gru, init_linear_layer
 from neural_tdoa.feature_extractors import (
     MfccArray, StftArray, StftMagnitudeArray
 )
-from neural_tdoa.metrics import Loss
-from neural_tdoa.utils.show import show_params, show_model
 from neural_tdoa.utils.load_config import load_config
 
 

@@ -35,7 +35,7 @@ def _simulate(sample_config):
     num_input_samples = source_signal.shape[0]
     mic_delays = sample_config["mic_delays"]
     # Convert delay to Milliseconds
-    mic_delays = [delay/1000 for delay in mic_delays]
+    mic_delays = [delay for delay in mic_delays]
 
     room = ConnectedShoeBox(sample_config["room_dims"], fs=base_sr)
 
@@ -43,7 +43,6 @@ def _simulate(sample_config):
                               delay=mic_delays)
 
     room.add_source(sample_config["source_coordinates"], source_signal)
-
     signals = simulate(room)
 
     signals = _trim_recorded_signals(signals, num_input_samples, mic_delays, base_sr)
@@ -119,7 +118,8 @@ def _trim_recorded_signals(signals, num_output_samples, mic_delays, sr):
 
     # Remove silence in the beginning of signals which might make
     # Detecting the delays "too easy", then truncate to input size
-    #signals = signals[:, max_delay_in_samples:]
+    
+    signals = signals[:, max_delay_in_samples:]
     signals = signals[:, :num_output_samples]
 
     return signals
