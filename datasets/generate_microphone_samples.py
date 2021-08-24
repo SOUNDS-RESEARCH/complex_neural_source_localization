@@ -34,6 +34,7 @@ def _simulate(sample_config):
     source_signal = sample_config["source_signal"]
     num_input_samples = source_signal.shape[0]
     mic_delays = sample_config["mic_delays"]
+    trim_beginning = sample_config["trim_beginning"]
     # Convert delay to Milliseconds
     mic_delays = [delay for delay in mic_delays]
 
@@ -45,7 +46,11 @@ def _simulate(sample_config):
     room.add_source(sample_config["source_coordinates"], source_signal)
     signals = simulate(room)
 
-    signals = _trim_recorded_signals(signals, num_input_samples, mic_delays, base_sr)
+    signals = _trim_recorded_signals(signals,
+                                     num_input_samples,
+                                     mic_delays,
+                                     base_sr,
+                                     trim_beginning)
     
     return signals
 
@@ -53,6 +58,7 @@ def _simulate(sample_config):
 def generate_random_training_sample_config(base_config):
     mic_coordinates = base_config["mic_coordinates"]
     room_dims = base_config["room_dims"]
+    trim_beginning = base_config["trim_beginning"]
 
     if not mic_coordinates:
         mic_coordinates = generate_random_microphone_coordinates(
@@ -97,7 +103,8 @@ def generate_random_training_sample_config(base_config):
         "normalized_tdoa": normalized_tdoa,
         "sr": base_config["base_sampling_rate"],
         "source_signal": source_signal,
-        "gain": gain
+        "gain": gain,
+        "trim_beginning": trim_beginning
     }
 
 
@@ -109,7 +116,7 @@ def _compute_tdoa(source_coordinates, mic_coordinates):
     return tdoa, normalized_tdoa
 
 
-def _trim_recorded_signals(signals, num_output_samples, mic_delays, sr):
+def _trim_recorded_signals(signals, num_output_samples, mic_delays, sr, trim_beginning):
     """Trim beginning and end of signals not to have a silence in the beginning,
     which might make the delay detection too easy 
     """
@@ -118,8 +125,9 @@ def _trim_recorded_signals(signals, num_output_samples, mic_delays, sr):
 
     # Remove silence in the beginning of signals which might make
     # Detecting the delays "too easy", then truncate to input size
+    if trim_beginning:
+        signals = signals[:, max_delay_in_samples:]
     
-    signals = signals[:, max_delay_in_samples:]
     signals = signals[:, :num_output_samples]
 
     return signals

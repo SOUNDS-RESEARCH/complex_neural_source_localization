@@ -27,7 +27,6 @@ def generate_random_microphone_coordinates(room_dims,
 
 
 def generate_random_source_signal(sr, sample_duration_in_secs, mic_delays=[0], random_gain=True):
-    breakpoint()
     max_delay = max(mic_delays)
     total_duration = sample_duration_in_secs + max_delay
     num_samples = sr*int(total_duration)

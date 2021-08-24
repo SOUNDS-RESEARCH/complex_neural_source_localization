@@ -16,3 +16,4 @@ mic_1_delay_range: [0, 10]
 training_dataset_dir: "training_dataset"
 validation_dataset_dir: "validation_dataset"
 anechoic_samples_dir: null
+trim_beginning: true
