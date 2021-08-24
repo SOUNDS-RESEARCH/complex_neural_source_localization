@@ -4,7 +4,3 @@ defaults:
 validation_dataset:
   n_samples: 100
   dataset_dir: "validation_dataset"
-  mic_coordinates: [
-    [1, 2, 1],
-    [1, 0.5, 1]
-  ]
