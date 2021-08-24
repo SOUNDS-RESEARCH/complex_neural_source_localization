@@ -111,12 +111,15 @@ def _compute_tdoa(source_coordinates, mic_coordinates):
 
 
 def _trim_recorded_signals(signals, num_output_samples, mic_delays, sr):
+    """Trim beginning and end of signals not to have a silence in the beginning,
+    which might make the delay detection too easy 
+    """
     max_delay = max(mic_delays)
     max_delay_in_samples = int(max_delay*sr)
 
     # Remove silence in the beginning of signals which might make
     # Detecting the delays "too easy", then truncate to input size
-    signals = signals[:, max_delay_in_samples:]
+    #signals = signals[:, max_delay_in_samples:]
     signals = signals[:, :num_output_samples]
 
     return signals
