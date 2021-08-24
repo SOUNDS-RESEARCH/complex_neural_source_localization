@@ -1,6 +1,6 @@
 from datasets.logger import save_dataset_metadata
-from datasets.generate_training_sample import (
-    generate_random_training_sample_config, generate_training_sample
+from datasets.generate_microphone_samples import (
+    generate_random_training_sample_config, generate_microphone_samples
 )
 import os
 from pathlib import Path
@@ -24,7 +24,7 @@ def generate_dataset(dataset_config,
         training_sample_config["signals_dir"] = output_samples_dir / str(num_sample)
         training_sample_configs.append(training_sample_config)
 
-        generate_training_sample(training_sample_config,
+        generate_microphone_samples(training_sample_config,
                          log_melspectrogram=log_melspectrogram)
 
     save_dataset_metadata(training_sample_configs, output_dir)

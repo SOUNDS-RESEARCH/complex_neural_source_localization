@@ -1,3 +1,8 @@
+"""
+Generate simulated recordings from an environment
+containing two microphones and a source
+"""
+
 import os
 
 from pyroomasync import ConnectedShoeBox, simulate
@@ -12,13 +17,13 @@ from datasets.generate_random_configs import (
 )
 
 
-def generate_training_sample(training_sample_config, log_melspectrogram=False):
-    output_signals = _simulate(training_sample_config)
+def generate_microphone_samples(config, log_melspectrogram=False):
+    output_signals = _simulate(config)
 
-    os.makedirs(training_sample_config["signals_dir"], exist_ok=True)
+    os.makedirs(config["signals_dir"], exist_ok=True)
     save_signals(output_signals,
-                 training_sample_config["sr"],
-                 training_sample_config["signals_dir"],
+                 config["sr"],
+                 config["signals_dir"],
                  log_melspectrogram)
 
 
@@ -48,7 +53,7 @@ def generate_random_training_sample_config(base_config):
     mic_coordinates = base_config["mic_coordinates"]
     room_dims = base_config["room_dims"]
 
-    if mic_coordinates is None:
+    if not mic_coordinates:
         mic_coordinates = generate_random_microphone_coordinates(
                                                 room_dims)
 
