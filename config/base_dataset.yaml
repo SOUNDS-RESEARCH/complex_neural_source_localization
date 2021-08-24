@@ -1,7 +1,7 @@
 n_samples: ???
 dataset_dir: ???
 base_sampling_rate: 16000
-sample_duration_in_secs: 2
+sample_duration_in_secs: 1
 n_training_samples: 100
 n_validation_samples: 50
 room_dims: [5, 3, 3]
@@ -15,3 +15,4 @@ mic_0_delay: 0
 mic_1_delay_range: [0, 10]
 training_dataset_dir: "training_dataset"
 validation_dataset_dir: "validation_dataset"
+anechoic_samples_dir: null

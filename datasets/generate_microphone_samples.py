@@ -3,7 +3,9 @@ Generate simulated recordings from an environment
 containing two microphones and a source
 """
 
+import librosa
 import os
+import random
 
 from pyroomasync import ConnectedShoeBox, simulate
 
@@ -72,10 +74,17 @@ def generate_random_training_sample_config(base_config):
         generate_random_delay(*base_config["mic_1_sampling_rate_range"])
     ]
     
-    source_signal, gain = generate_random_source_signal(
-                            base_config["base_sampling_rate"],
-                            base_config["sample_duration_in_secs"],
-                            mic_delays)
+    if "anechoic_samples" not in base_config:
+        source_signal, gain = generate_random_source_signal(
+                                base_config["base_sampling_rate"],
+                                base_config["sample_duration_in_secs"],
+                                mic_delays)
+    else:
+        random_file_path = random.choice(base_config["anechoic_samples"])
+        source_signal, _ = librosa.load(random_file_path,
+                                        sr=base_config["base_sampling_rate"])
+        gain = 1
+        
 
     return {
         "room_dims": room_dims,

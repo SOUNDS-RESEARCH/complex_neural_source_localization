@@ -1,11 +1,14 @@
-from datasets.logger import save_dataset_metadata
-from datasets.generate_microphone_samples import (
-    generate_random_training_sample_config, generate_microphone_samples
-)
 import os
+
+from omegaconf.omegaconf import open_dict
 from pathlib import Path
 from tqdm import tqdm
 
+from datasets.logger import save_dataset_metadata
+from datasets.generate_microphone_samples import (
+    generate_random_training_sample_config,
+    generate_microphone_samples
+)
 
 def generate_dataset(dataset_config,
                      log_melspectrogram=False):
@@ -16,6 +19,14 @@ def generate_dataset(dataset_config,
     output_dir = Path(output_dir)
     output_samples_dir = output_dir / "samples"
     os.makedirs(output_samples_dir, exist_ok=True)
+
+    if dataset_config["anechoic_samples_dir"]:
+        path = Path(dataset_config["anechoic_samples_dir"])
+        with open_dict(dataset_config):
+            dataset_config["anechoic_samples"] = [
+                str(p) for p in path.rglob("*.wav")
+            ]
+        
 
     training_sample_configs = []
     for num_sample in tqdm(range(n_samples)):
