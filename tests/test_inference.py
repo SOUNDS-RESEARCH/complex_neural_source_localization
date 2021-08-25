@@ -9,7 +9,8 @@ def test_inference():
     
     weights = torch.load("tests/fixtures/weights.pth",
                          map_location=torch.device('cpu'))
-    model.load_state_dict(weights["model_state_dict"])
+    #breakpoint()
+    model.load_state_dict(weights)
     model.eval()
 
     dataset = TdoaDataset()
