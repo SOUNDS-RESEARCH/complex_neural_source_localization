@@ -66,7 +66,7 @@ def _desserialize_lists_within_dict(d):
             try:
                 new_value = ast.literal_eval(value)
                 new_d[key] = torch.Tensor(new_value)
-            except SyntaxError:
+            except (SyntaxError, ValueError):
                 new_d[key] = value
         else:
             new_d[key] = value
