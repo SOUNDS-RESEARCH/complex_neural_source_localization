@@ -89,8 +89,7 @@ class TdoaCrnn10(nn.Module):
                             (batch_size, n_channels, time_steps)
         Returns:
             torch.Tensor: Output predictions of shape (batch_size, n_model_output)
-        """        
-
+        """
         x = self.feature_extractor(x)
         # Feature extractor output: (batch_size, n_channels, time_steps, freq_bins)
         for i in range(self.n_conv_blocks):

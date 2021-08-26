@@ -5,4 +5,3 @@ validation_dataset:
   n_samples: 100
   dataset_dir: "validation_dataset"
   room_dims: [5, 3, 3]
-  mic_coordinates: []

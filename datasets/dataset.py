@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import torch
 import torchaudio
+import ast
 
 from pathlib import Path
 
@@ -12,7 +13,7 @@ from datasets.generate_dataset import generate_dataset
 class TdoaDataset(torch.utils.data.Dataset):
     def __init__(self,
                  dataset_config=None,
-                 include_metadata=False):
+                 include_metadata=True):
 
         if dataset_config is None:
             dataset_config = load_config("training_dataset")
@@ -45,10 +46,28 @@ class TdoaDataset(torch.utils.data.Dataset):
 
         if self.include_metadata:
             metadata_dict = sample_metadata.to_dict()
-            metadata_dict["x"] = x
-            x = metadata_dict
+            metadata_dict = _desserialize_lists_within_dict(metadata_dict)
+            metadata_dict["y"] = y
+            y = metadata_dict
             
         return (x, y)
 
     def __len__(self):
         return self.df.shape[0]
+
+
+def _desserialize_lists_within_dict(d):
+    """Lists were saved in pandas as strings.
+       This small utility function transforms them into lists again.
+    """
+    new_d = {}
+    for key, value in d.items():
+        if type(value) == str:
+            try:
+                new_value = ast.literal_eval(value)
+                new_d[key] = torch.Tensor(new_value)
+            except SyntaxError:
+                new_d[key] = value
+        else:
+            new_d[key] = value
+    return new_d

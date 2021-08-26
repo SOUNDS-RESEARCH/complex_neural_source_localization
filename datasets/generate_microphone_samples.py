@@ -47,13 +47,13 @@ def _simulate(sample_config):
 
     room.add_source(sample_config["source_coordinates"], source_signal)
     signals = simulate(room)
-
+    
     signals = _trim_recorded_signals(signals,
                                      num_input_samples,
                                      mic_delays,
                                      base_sr,
                                      trim_beginning)
-    
+
     return signals
 
 

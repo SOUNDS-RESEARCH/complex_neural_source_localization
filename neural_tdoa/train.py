@@ -23,6 +23,7 @@ class LitTdoaCrnn10(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
+        y = y["y"]
         predictions = self.model(x)
 
         loss = self.loss(predictions, y)
@@ -35,6 +36,9 @@ class LitTdoaCrnn10(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         X, Y = batch
+
+        mic_coordinates = Y["mic_coordinates"]
+        Y = Y["y"]
         predictions = self.model(X)
 
         loss = self.loss(predictions, Y)
@@ -47,12 +51,13 @@ class LitTdoaCrnn10(pl.LightningModule):
         fs = validation_config["base_sampling_rate"]
         
         tdoas_gcc_phat = torch.zeros_like(Y)
+        
         for i, x in enumerate(X):
             tdoas_gcc_phat[i] = _compute_tdoa_with_gcc_phat(
                                 x[0],
                                 x[1],
                                 fs,
-                                validation_config["mic_coordinates"]
+                                mic_coordinates
                                )
            
         rms_gcc = average_rms_error(Y, tdoas_gcc_phat)
