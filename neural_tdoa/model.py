@@ -24,7 +24,7 @@ class TdoaCrnn10(nn.Module):
 
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
         self.model_config = model_config
-        n_input_channels = len(dataset_config["mic_coordinates"])
+        n_input_channels = dataset_config["n_mics"]
         self._create_feature_extractor_layer(model_config, dataset_config)
         self._create_conv_layers(n_input_channels,
                                  model_config["n_conv_layers"],
