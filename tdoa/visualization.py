@@ -20,6 +20,8 @@ def plot_correlations(correlations, output_path=None):
 
 def plot_location_candidates(room, microphone_distances, output_path=None, grid_step=0.1):
     room_dims = room.dims
+    mics = room.microphones.mic_array
+    sources = room.sources.source_array
 
     sns.set_theme()
 
@@ -30,7 +32,11 @@ def plot_location_candidates(room, microphone_distances, output_path=None, grid_
     ax = sns.heatmap(error_grid) #, xticklabels=x_points, yticklabels=y_points)
 
 
-    ax = draw_mics_and_sources(ax, room, x_max=len(x_points), y_max=len(y_points))
+    ax = draw_mics_and_sources(ax, 
+                               room_dims,
+                               mics,
+                               sources,
+                               x_max=len(x_points), y_max=len(y_points))
 
     if output_path is not None:
         plt.savefig(output_path)
@@ -41,7 +47,11 @@ def plot_location_candidates(room, microphone_distances, output_path=None, grid_
 def plot_top_candidate_points(room, tdoas, output_path=None):
     ax = get_2d_room_plot_axis(room, plot_mics_and_sources=False)
     _plot_top_candidates(room, tdoas, ax)
-    ax = draw_mics_and_sources(ax, room)
+    
+    room_dims = room.dims
+    mics = room.microphones.mic_array
+    sources = room.sources.source_array
+    ax = draw_mics_and_sources(ax, room_dims, mics, sources)
 
     if output_path is not None:
         plt.savefig(output_path)
@@ -80,7 +90,10 @@ def get_2d_room_plot_axis(room, plot_mics_and_sources=True,
     plt.ylim(0, room.dims[1])
 
     if plot_mics_and_sources:
-        ax = draw_mics_and_sources(ax, room)
+        room_dims = room.dims
+        mics = room.microphones.mic_array
+        sources = room.sources.source_array
+        ax = draw_mics_and_sources(ax, room_dims, mics, sources)
     
     if plot_distances:
         _plot_source_to_microphone_distances(room, plt.gca())
@@ -88,11 +101,19 @@ def get_2d_room_plot_axis(room, plot_mics_and_sources=True,
     return ax
 
 
-def draw_mics_and_sources(ax, room, x_max=None, y_max=None):
+def plot_mics_and_sources(room_dims, mics, sources):
+    plt.figure()
+    ax = plt.gca()
+    plt.xlim(0, room_dims[0])
+    plt.ylim(0, room_dims[1])
+
+    draw_mics_and_sources(ax, room_dims, mics, sources)
+
+    return ax
+
+
+def draw_mics_and_sources(ax, room_dims, mics, sources, x_max=None, y_max=None):
     "Draw microphones and sources in an existing room"
-    room_dims = room.dims
-    mics = room.microphones.mic_array
-    sources = room.sources.source_array
 
     def normalize(dimension, max_value=None):
         if max_value is None:
@@ -100,10 +121,15 @@ def draw_mics_and_sources(ax, room, x_max=None, y_max=None):
         else:
             return max_value/dimension
     
-    mics_x = [mic.loc[0]*normalize(room_dims[0], x_max) for mic in mics]
-    mics_y = [mic.loc[1]*normalize(room_dims[1], y_max) for mic in mics]
-    sources_x = [source.loc[0]*normalize(room_dims[0], x_max) for source in sources]
-    sources_y = [source.loc[1]*normalize(room_dims[1], y_max) for source in sources]
+    # mics_x = [mic[0]*normalize(room_dims[0], x_max) for mic in mics]
+    # mics_y = [mic[1]*normalize(room_dims[1], y_max) for mic in mics]
+    # sources_x = [source[0]*normalize(room_dims[0], x_max) for source in sources]
+    # sources_y = [source[1]*normalize(room_dims[1], y_max) for source in sources]
+    
+    mics_x = [mic[0] for mic in mics]
+    mics_y = [mic[1] for mic in mics]
+    sources_x = [source[0] for source in sources]
+    sources_y = [source[1] for source in sources]
     
     ax.scatter(mics_x, mics_y, marker="^", label="microphones")
     ax.scatter(sources_x, sources_y, marker="o", label="sources")

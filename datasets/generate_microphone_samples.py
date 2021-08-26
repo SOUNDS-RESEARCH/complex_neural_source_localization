@@ -34,6 +34,7 @@ def _simulate(sample_config):
     source_signal = sample_config["source_signal"]
     num_input_samples = source_signal.shape[0]
     mic_delays = sample_config["mic_delays"]
+    mic_gains = sample_config["mic_gains"]
     trim_beginning = sample_config["trim_beginning"]
     # Convert delay to Milliseconds
     mic_delays = [delay for delay in mic_delays]
@@ -41,7 +42,8 @@ def _simulate(sample_config):
     room = ConnectedShoeBox(sample_config["room_dims"], fs=base_sr)
 
     room.add_microphone_array(sample_config["mic_coordinates"],
-                              delay=mic_delays)
+                              delay=mic_delays,
+                              gain=mic_gains)
 
     room.add_source(sample_config["source_coordinates"], source_signal)
     signals = simulate(room)
@@ -78,17 +80,24 @@ def generate_random_training_sample_config(base_config):
         base_config["mic_0_sampling_rate"],
         generate_random_delay(*base_config["mic_1_sampling_rate_range"])
     ]
+    mic_gains = [
+        base_config["mic_0_gain"],
+        base_config["mic_1_gain"]
+    ]
     
     if "anechoic_samples" not in base_config:
-        source_signal, gain = generate_random_source_signal(
-                                base_config["base_sampling_rate"],
-                                base_config["sample_duration_in_secs"],
-                                mic_delays)
+        # Make random signal's duration bigger to trim silent beginning
+        max_delay = max(mic_delays)
+        total_duration = base_config["sample_duration_in_secs"] + max_delay
+
+        source_signal, source_gain = generate_random_source_signal(
+                                        base_config["base_sampling_rate"],
+                                        total_duration)
     else:
         random_file_path = random.choice(base_config["anechoic_samples"])
         source_signal, _ = librosa.load(random_file_path,
                                         sr=base_config["base_sampling_rate"])
-        gain = 1
+        source_gain = 1
         
 
     return {
@@ -98,12 +107,13 @@ def generate_random_training_sample_config(base_config):
         "source_coordinates": source_coordinates,
         "mic_coordinates": mic_coordinates,
         "mic_delays": mic_delays,
+        "mic_gains": mic_gains,
         "mic_sampling_rates": mic_sampling_rates,
         "tdoa": tdoa,
         "normalized_tdoa": normalized_tdoa,
         "sr": base_config["base_sampling_rate"],
         "source_signal": source_signal,
-        "gain": gain,
+        "source_gain": source_gain,
         "trim_beginning": trim_beginning
     }
 

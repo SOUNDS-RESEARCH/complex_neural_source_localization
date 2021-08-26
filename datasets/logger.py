@@ -1,7 +1,11 @@
 import librosa.display
 import matplotlib.pyplot as plt
+import numpy as np
 import soundfile
 import pandas as pd
+
+from pathlib import Path
+from omegaconf.listconfig import ListConfig
 
 METADATA_FILENAME = "metadata.csv"
 
@@ -27,19 +31,22 @@ def save_signals(signals, sr, output_dir, log_melspectrogram=False):
 
 
 def save_dataset_metadata(training_sample_configs, output_dir):
-    output_keys = [
-        "source_x", "source_y", "tdoa", "normalized_tdoa", "signals_dir"
-    ]
     
-    def filter_keys(training_sample_config):
-        output_dict = {
-            key: value for key, value in training_sample_config.items()
-            if key in output_keys
-        }
+    def serialize_dict(d):
+        serialized_dict = {}
+        for key, value in d.items():
+            if isinstance(value, int) or \
+               isinstance(value, float) or \
+               isinstance(value, str):
+                serialized_dict[key] = value
+            elif isinstance(value, Path) or \
+                 isinstance(value, list) or \
+                 isinstance(value, ListConfig):
+                serialized_dict[key] = str(value)
 
-        return output_dict
-    
-    output_dicts = [filter_keys(exp) for exp in training_sample_configs]
+        return serialized_dict
+
+    output_dicts = [serialize_dict(d) for d in training_sample_configs]
 
     df = pd.DataFrame(output_dicts)
     df.to_csv(output_dir / METADATA_FILENAME)

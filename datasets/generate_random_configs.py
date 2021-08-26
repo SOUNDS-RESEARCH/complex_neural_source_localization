@@ -26,13 +26,16 @@ def generate_random_microphone_coordinates(room_dims,
     ]
 
 
-def generate_random_source_signal(sr, sample_duration_in_secs, mic_delays=[0], random_gain=True):
-    max_delay = max(mic_delays)
-    total_duration = sample_duration_in_secs + max_delay
-    num_samples = sr*int(total_duration)
+def generate_random_source_signal(sr: int, sample_duration_in_secs: float,
+                                  random_gain=True):
+    """Generate a random signal to be emmited by the source.
+    The signal is white gaussian noise distributed.
+    The signal is also multiplied by an uniformly distributed gain to simulate
+    the unknown source gain.
+    """
+    num_samples = int(sr*sample_duration_in_secs)
     gain = np.random.uniform() if random_gain else 1
     source_signal = np.random.normal(size=num_samples)*gain
-
 
     return source_signal, gain
 
