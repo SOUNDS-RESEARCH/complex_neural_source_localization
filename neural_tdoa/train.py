@@ -37,7 +37,7 @@ class LitTdoaCrnn10(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         X, Y = batch
 
-        mic_coordinates = Y["mic_coordinates"]
+        mic_coordinates = Y["mic_coordinates"][0]
         Y = Y["y"]
         predictions = self.model(X)
 

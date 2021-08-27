@@ -12,8 +12,6 @@ def compute_distance(p1, p2, mode="numpy"):
         p2 = np.array(p2)
         return np.linalg.norm(p1 - p2)
     elif mode == "torch":
-        p1 = torch.Tensor(p1)
-        p2 = torch.Tensor(p2)
         return torch.linalg.norm(p1 - p2)
 
 
