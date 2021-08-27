@@ -15,7 +15,8 @@ from datasets.generate_random_configs import (
     generate_random_microphone_coordinates,
     generate_random_source_coordinates,
     generate_random_source_signal,
-    generate_random_delay
+    generate_random_delay,
+    generate_random_gain
 )
 
 
@@ -82,7 +83,7 @@ def generate_random_training_sample_config(base_config):
     ]
     mic_gains = [
         base_config["mic_0_gain"],
-        base_config["mic_1_gain"]
+        generate_random_gain(*base_config["mic_1_gain_range"])
     ]
     
     if "anechoic_samples" not in base_config:

@@ -23,7 +23,7 @@ class LitTdoaCrnn10(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y = y["y"]
+        y = y["target"]
         predictions = self.model(x)
 
         loss = self.loss(predictions, y)
@@ -38,7 +38,7 @@ class LitTdoaCrnn10(pl.LightningModule):
         X, Y = batch
 
         mic_coordinates = Y["mic_coordinates"][0]
-        Y = Y["y"]
+        Y = Y["target"]
         predictions = self.model(X)
 
         loss = self.loss(predictions, Y)

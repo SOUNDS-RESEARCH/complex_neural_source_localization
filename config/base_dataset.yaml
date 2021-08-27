@@ -15,7 +15,7 @@ mic_1_sampling_rate_range: [16000, 16000]
 mic_0_delay: 0
 mic_1_delay_range: [0, 10]
 mic_0_gain: 1
-mic_1_gain: 0.5
+mic_1_gain_range: [0.8, 1]
 training_dataset_dir: "training_dataset"
 validation_dataset_dir: "validation_dataset"
 anechoic_samples_dir: null

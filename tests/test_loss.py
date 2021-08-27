@@ -13,7 +13,7 @@ def test_neural_tdoa_loss():
     dataset = TdoaDataset()
 
     sample = dataset[0]
-    target = sample[1]
+    target = sample[1]["target"]
 
     model_output = model(sample[0].unsqueeze(0))
     

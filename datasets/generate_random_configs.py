@@ -48,3 +48,6 @@ def generate_random_delay(low, high):
     "Generate random delay in milliseconds"
     return random.uniform(low, high)/1000
 
+
+def generate_random_gain(low, high):
+    return random.uniform(low, high)

@@ -47,7 +47,7 @@ class TdoaDataset(torch.utils.data.Dataset):
         if self.include_metadata:
             metadata_dict = sample_metadata.to_dict()
             metadata_dict = _desserialize_lists_within_dict(metadata_dict)
-            metadata_dict["y"] = y
+            metadata_dict["target"] = y
             y = metadata_dict
             
         return (x, y)
