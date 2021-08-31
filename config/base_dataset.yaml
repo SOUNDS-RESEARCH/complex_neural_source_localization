@@ -6,17 +6,18 @@ n_training_samples: 100
 n_validation_samples: 50
 room_dims: [5, 3, 3]
 n_mics: 2
-mic_coordinates: [
-    [1, 1, 1],
-    [2, 1, 1]
-]
+mic_coordinates: null #[
+#     [1, 1, 1],
+#     [2, 1, 1]
+# ]
 mic_0_sampling_rate: 16000
 mic_1_sampling_rate_range: [16000, 16000]
 mic_0_delay: 0
 mic_1_delay_range: [0, 10]
-mic_0_gain: 1
-mic_1_gain_range: [0.8, 1]
+mic_0_gain: 0
+mic_1_gain_range: [1, 1]
 training_dataset_dir: "training_dataset"
 validation_dataset_dir: "validation_dataset"
 anechoic_samples_dir: null
 trim_beginning: true
+random_seed: 0

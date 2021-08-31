@@ -1,4 +1,6 @@
 import os
+import numpy as np
+import random
 
 from omegaconf.omegaconf import open_dict
 from pathlib import Path
@@ -28,6 +30,9 @@ def generate_dataset(dataset_config,
             ]
         
 
+    random.seed(dataset_config["random_seed"])
+    np.random.seed(dataset_config["random_seed"])
+    
     training_sample_configs = []
     for num_sample in tqdm(range(n_samples)):
         training_sample_config = generate_random_training_sample_config(dataset_config)

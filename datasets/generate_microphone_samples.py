@@ -62,10 +62,12 @@ def generate_random_training_sample_config(base_config):
     mic_coordinates = base_config["mic_coordinates"]
     room_dims = base_config["room_dims"]
     trim_beginning = base_config["trim_beginning"]
+    n_mics = base_config["n_mics"]
 
     if not mic_coordinates:
         mic_coordinates = generate_random_microphone_coordinates(
-                                                room_dims)
+                                                room_dims,
+                                                n_mics)
 
     source_coordinates = generate_random_source_coordinates(
                                             room_dims,

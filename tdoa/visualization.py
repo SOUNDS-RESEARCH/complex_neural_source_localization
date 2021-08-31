@@ -108,6 +108,7 @@ def plot_mics_and_sources(room_dims, mics, sources):
     plt.ylim(0, room_dims[1])
 
     draw_mics_and_sources(ax, room_dims, mics, sources)
+    _plot_source_to_microphone_distances(ax, mics, sources)
 
     return ax
 
@@ -120,11 +121,6 @@ def draw_mics_and_sources(ax, room_dims, mics, sources, x_max=None, y_max=None):
             return dimension
         else:
             return max_value/dimension
-    
-    # mics_x = [mic[0]*normalize(room_dims[0], x_max) for mic in mics]
-    # mics_y = [mic[1]*normalize(room_dims[1], y_max) for mic in mics]
-    # sources_x = [source[0]*normalize(room_dims[0], x_max) for source in sources]
-    # sources_y = [source[1]*normalize(room_dims[1], y_max) for source in sources]
     
     mics_x = [mic[0] for mic in mics]
     mics_y = [mic[1] for mic in mics]
@@ -139,16 +135,15 @@ def draw_mics_and_sources(ax, room_dims, mics, sources, x_max=None, y_max=None):
     return ax
 
 
-def _plot_source_to_microphone_distances(room, ax):
-    mics = [
-        mic.loc[0:2] for mic in
-        room.microphones.mic_array
-    ]
-    sources = [
-        source.loc[0:2] for source in
-        room.sources.source_array
-    ]
+def _plot_source_to_microphone_distances(ax, mics, sources):
 
+    distance = compute_distance(mics[0], mics[1])
+    ax.plot(
+        [mics[0][0], mics[1][0]],
+        [mics[0][1], mics[1][1]],
+        "--", color="blue",
+        label="distance={:.2f}m".format(distance)
+    )
     for source in sources:
         for mic in mics:
             distance = compute_distance(source, mic)

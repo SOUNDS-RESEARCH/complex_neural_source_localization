@@ -13,16 +13,15 @@ def generate_random_source_coordinates(room_dims, height=DEFAULT_DEVICE_HEIGHT):
 
 
 def generate_random_microphone_coordinates(room_dims,
+                                           n_mics,
                                            height=DEFAULT_DEVICE_HEIGHT):
-    mic_1_x = random.uniform(0, room_dims[0])
-    mic_2_x = random.uniform(0, room_dims[0])
-
-    mic_1_y = random.uniform(0, room_dims[1])
-    mic_2_y = random.uniform(0, room_dims[1])
-
     return [
-        [mic_1_x, mic_1_y, height],
-        [mic_2_x, mic_2_y, height],
+        [
+            random.uniform(0, room_dims[0]),
+            random.uniform(0, room_dims[1]),
+            height
+        ]
+        for i in range(n_mics)
     ]
 
 

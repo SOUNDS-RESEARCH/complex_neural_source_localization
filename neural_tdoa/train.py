@@ -37,7 +37,7 @@ class LitTdoaCrnn10(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         X, Y = batch
 
-        mic_coordinates = Y["mic_coordinates"][0]
+        mic_coordinates = Y["mic_coordinates"]
         Y = Y["target"]
         predictions = self.model(X)
 
@@ -57,9 +57,9 @@ class LitTdoaCrnn10(pl.LightningModule):
                                 x[0],
                                 x[1],
                                 fs,
-                                mic_coordinates
+                                mic_coordinates[i]
                                )
-           
+
         rms_gcc = average_rms_error(Y, tdoas_gcc_phat)
             
         self.log("validation_rms_gcc", rms_gcc, prog_bar=True)

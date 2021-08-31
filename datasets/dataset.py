@@ -12,8 +12,7 @@ from datasets.generate_dataset import generate_dataset
 
 class TdoaDataset(torch.utils.data.Dataset):
     def __init__(self,
-                 dataset_config=None,
-                 include_metadata=True):
+                 dataset_config=None):
 
         if dataset_config is None:
             dataset_config = load_config("training_dataset")
@@ -22,7 +21,6 @@ class TdoaDataset(torch.utils.data.Dataset):
         self.sample_duration_in_secs = dataset_config["sample_duration_in_secs"]
         self.sample_duration = self.sr*self.sample_duration_in_secs
         self.n_mics = dataset_config["n_mics"]
-        self.include_metadata = include_metadata
         dataset_dir = dataset_config["dataset_dir"]
 
         if not os.path.exists(dataset_dir):
@@ -42,13 +40,10 @@ class TdoaDataset(torch.utils.data.Dataset):
         ])
 
         x = x[:, :self.sample_duration]
-        y = torch.Tensor([sample_metadata["normalized_tdoa"]])
 
-        if self.include_metadata:
-            metadata_dict = sample_metadata.to_dict()
-            metadata_dict = _desserialize_lists_within_dict(metadata_dict)
-            metadata_dict["target"] = y
-            y = metadata_dict
+        y = sample_metadata.to_dict()
+        y = _desserialize_lists_within_dict(y)
+        y["target"] = torch.Tensor([sample_metadata["normalized_tdoa"]])
             
         return (x, y)
 
