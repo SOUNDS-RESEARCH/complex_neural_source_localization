@@ -32,9 +32,6 @@ class TdoaCrnn10(nn.Module):
         self._create_gru_layer(model_config["n_output_channels"])
         self._create_output_layer(model_config["n_output_channels"])
 
-        # show_model(self)
-        # show_params(self)
-
     def _create_conv_layers(self, n_input_channels, n_layers, max_filters):
         n_layer_outputs = [
             max_filters//(2**(n_layers - i))
