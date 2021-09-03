@@ -5,14 +5,12 @@ sample_duration_in_secs: 1
 room_dims: [5, 3, 3]
 n_mics: 2
 mic_coordinates: null
-mic_0_sampling_rate: 16000
-mic_1_sampling_rate_range: [16000, 16000]
-mic_0_delay: 0
-mic_1_delay_range: [0, 10]
-mic_0_gain: 1
-mic_1_gain_range: [1, 1]
+mic_distance: 0.5
+mic_sampling_rate_ranges: [[16000, 16000], [16000, 16000]]
+mic_delay_ranges: [[0, 0], [0, 0]]
+mic_gain_ranges: [[1, 1], [1, 1]]
 training_dataset_dir: "training_dataset"
 validation_dataset_dir: "validation_dataset"
-anechoic_samples_dir: null
+speech_signals_dir: null
 trim_beginning: true
 random_seed: 0

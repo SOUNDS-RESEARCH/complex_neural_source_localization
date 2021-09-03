@@ -29,8 +29,8 @@ class LitTdoaCrnn10(pl.LightningModule):
         loss = self.loss(predictions, y)
         rms = average_rms_error(y, predictions)
 
-        self.log("train_loss", loss)
-        self.log("train_rms", rms, prog_bar=True)
+        self.log("train_loss", loss, on_epoch=True)
+        self.log("train_rms", rms, on_epoch=True, prog_bar=True)
 
         return loss
     
@@ -44,8 +44,8 @@ class LitTdoaCrnn10(pl.LightningModule):
         loss = self.loss(predictions, Y)
 
         rms = average_rms_error(predictions, Y)
-        self.log("validation_loss", loss, prog_bar=True)
-        self.log("validation_rms", rms, prog_bar=True)
+        self.log("validation_loss", loss, on_epoch=True, prog_bar=True)
+        self.log("validation_rms", rms, on_epoch=True, prog_bar=True)
 
         validation_config = self.config["validation_dataset"]
         fs = validation_config["base_sampling_rate"]
@@ -62,7 +62,7 @@ class LitTdoaCrnn10(pl.LightningModule):
 
         rms_gcc = average_rms_error(Y, tdoas_gcc_phat)
             
-        self.log("validation_rms_gcc", rms_gcc, prog_bar=True)
+        self.log("validation_rms_gcc", rms_gcc, on_epoch=True, prog_bar=True)
 
     def configure_optimizers(self):
         lr = self.config["training"]["learning_rate"]
