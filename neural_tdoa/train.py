@@ -74,8 +74,8 @@ class LitTdoaCrnn10(pl.LightningModule):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
         avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         
-        self.log("loss", avg_loss)
-        self.log("rms", avg_rms)
+        self.log("loss", avg_loss, on_epoch=True)
+        self.log("rms", avg_rms, on_epoch=True)
     
 
     def validation_epoch_end(self, outputs):
@@ -83,9 +83,9 @@ class LitTdoaCrnn10(pl.LightningModule):
         avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         avg_rms_gcc = torch.stack([x['rms_gcc'] for x in outputs]).mean()
 
-        self.log("validation_loss", avg_loss)
-        self.log("validation_rms", avg_rms)
-        self.log("validation_rms_gcc", avg_rms_gcc)
+        self.log("validation_loss", avg_loss, on_epoch=True)
+        self.log("validation_rms", avg_rms, on_epoch=True)
+        self.log("validation_rms_gcc", avg_rms_gcc, on_epoch=True)
     
     def configure_optimizers(self):
         lr = self.config["training"]["learning_rate"]
@@ -121,10 +121,10 @@ def train_pl(config):
 
     
     gpus = 1 if torch.cuda.is_available() else 0
-    tb_logger = pl_loggers.TensorBoardLogger("logs/")
+    #tb_logger = pl_loggers.TensorBoardLogger("logs/")
 
     trainer = pl.Trainer(max_epochs=training_config["num_epochs"],
-                         gpus=gpus, logger=tb_logger)
+                         gpus=gpus)
     trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
 
     if training_config["delete_datasets_after_training"]:
