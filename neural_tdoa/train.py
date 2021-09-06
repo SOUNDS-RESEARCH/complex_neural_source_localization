@@ -29,10 +29,12 @@ class LitTdoaCrnn10(pl.LightningModule):
         loss = self.loss(predictions, y)
         rms = average_rms_error(y, predictions)
 
-        self.log("train_loss", loss, on_epoch=True)
-        self.log("train_rms", rms, on_epoch=True, prog_bar=True)
+        output_dict = {
+            "loss": loss,
+            "rms": rms
+        }
 
-        return loss
+        return output_dict
     
     def validation_step(self, batch, batch_idx):
         X, Y = batch
@@ -44,8 +46,6 @@ class LitTdoaCrnn10(pl.LightningModule):
         loss = self.loss(predictions, Y)
 
         rms = average_rms_error(predictions, Y)
-        self.log("validation_loss", loss, on_epoch=True, prog_bar=True)
-        self.log("validation_rms", rms, on_epoch=True, prog_bar=True)
 
         validation_config = self.config["validation_dataset"]
         fs = validation_config["base_sampling_rate"]
@@ -62,8 +62,31 @@ class LitTdoaCrnn10(pl.LightningModule):
 
         rms_gcc = average_rms_error(Y, tdoas_gcc_phat)
             
-        self.log("validation_rms_gcc", rms_gcc, on_epoch=True, prog_bar=True)
+        output_dict = {
+            "loss": loss,
+            "rms": rms,
+            "rms_gcc": rms_gcc
+        }
+        
+        return output_dict
 
+    def training_epoch_end(self, outputs):
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+        avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
+        
+        self.log("loss", avg_loss)
+        self.log("rms", avg_rms)
+    
+
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+        avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
+        avg_rms_gcc = torch.stack([x['rms_gcc'] for x in outputs]).mean()
+
+        self.log("validation_loss", avg_loss)
+        self.log("validation_rms", avg_rms)
+        self.log("validation_rms_gcc", avg_rms_gcc)
+    
     def configure_optimizers(self):
         lr = self.config["training"]["learning_rate"]
         optimizer = self.config["training"]["optimizer"]
@@ -73,6 +96,7 @@ class LitTdoaCrnn10(pl.LightningModule):
         elif optimizer == "adam":
             return torch.optim.Adam(self.parameters(), lr=lr)
 
+    
 
 def train_pl(config):
     model = LitTdoaCrnn10(config)
@@ -100,7 +124,6 @@ def train_pl(config):
     tb_logger = pl_loggers.TensorBoardLogger("logs/")
 
     trainer = pl.Trainer(max_epochs=training_config["num_epochs"],
-                         log_every_n_steps=training_config["log_every_n_steps"],
                          gpus=gpus, logger=tb_logger)
     trainer.fit(model, dataset_train, val_dataloaders=dataset_val)
 

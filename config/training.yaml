@@ -3,5 +3,4 @@ training:
   num_epochs: 12
   learning_rate: 0.001
   optimizer: "adam"
-  log_every_n_steps: 50
   delete_datasets_after_training: True
