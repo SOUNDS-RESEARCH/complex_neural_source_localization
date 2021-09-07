@@ -74,8 +74,8 @@ class LitTdoaCrnn10(pl.LightningModule):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
         avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         
-        self.log("loss", avg_loss, on_epoch=True)
-        self.log("rms", avg_rms, on_epoch=True)
+        self.log("loss", avg_loss, on_step=False)
+        self.log("rms", avg_rms, on_step=False)
     
 
     def validation_epoch_end(self, outputs):
@@ -83,9 +83,9 @@ class LitTdoaCrnn10(pl.LightningModule):
         avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         avg_rms_gcc = torch.stack([x['rms_gcc'] for x in outputs]).mean()
 
-        self.log("validation_loss", avg_loss, on_epoch=True)
-        self.log("validation_rms", avg_rms, on_epoch=True)
-        self.log("validation_rms_gcc", avg_rms_gcc, on_epoch=True)
+        self.log("validation_loss", avg_loss, on_step=False)
+        self.log("validation_rms", avg_rms, on_step=False)
+        self.log("validation_rms_gcc", avg_rms_gcc, on_step=False)
     
     def configure_optimizers(self):
         lr = self.config["training"]["learning_rate"]
