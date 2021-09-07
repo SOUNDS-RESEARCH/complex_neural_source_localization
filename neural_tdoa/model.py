@@ -1,14 +1,12 @@
 import torch
 import torch.nn as nn
 
-from complexPyTorch.complexLayers import ComplexConv2d, ComplexBatchNorm2d
-from complexPyTorch.complexFunctions import complex_relu
 from torch.nn.modules.batchnorm import BatchNorm2d
 from torch.nn.modules.conv import Conv2d
 
 from neural_tdoa.utils.initializers import init_gru, init_linear_layer
 from neural_tdoa.feature_extractors import (
-    MfccArray, StftArray, StftMagnitudeArray
+    MfccArray, RealStftArray, StftMagnitudeArray
 )
 from neural_tdoa.utils.load_config import load_config
 
@@ -28,18 +26,16 @@ class TdoaCrnn10(nn.Module):
         self._create_feature_extractor_layer(model_config, dataset_config)
         self._create_conv_layers(n_input_channels,
                                  model_config["n_conv_layers"],
-                                 model_config["n_output_channels"])
+                                 model_config["n_output_channels"],
+                                 model_config["conv_type"])
         self._create_gru_layer(model_config["n_output_channels"])
         self._create_output_layer(model_config["n_output_channels"])
 
-    def _create_conv_layers(self, n_input_channels, n_layers, max_filters):
+    def _create_conv_layers(self, n_input_channels, n_layers, max_filters, conv_type):
         n_layer_outputs = [
             max_filters//(2**(n_layers - i))
             for i in range(1, n_layers + 1)
         ]
-        
-        if self.are_features_complex:
-            n_layer_outputs = [n//2 for n in n_layer_outputs]
     
         self.n_conv_blocks = len(n_layer_outputs)
         
@@ -48,7 +44,7 @@ class TdoaCrnn10(nn.Module):
             ConvBlock(
                 n_layer_inputs[i],
                 n_layer_inputs[i+1],
-                self.are_features_complex
+                conv_type
             )
             for i in range(self.n_conv_blocks)
         ])
@@ -56,15 +52,12 @@ class TdoaCrnn10(nn.Module):
     def _create_feature_extractor_layer(self, model_config, dataset_config):
         feature_type = model_config["feature_type"]
 
-        if feature_type == "stft":
-            self.feature_extractor = StftArray(model_config)
-            self.are_features_complex = True
-        elif feature_type == "stft_magnitude":
+        if feature_type == "stft_magnitude":
             self.feature_extractor = StftMagnitudeArray(model_config)
-            self.are_features_complex = False
+        elif feature_type == "stft":
+            self.feature_extractor = RealStftArray(model_config)
         elif feature_type == "mfcc":
             self.feature_extractor = MfccArray(model_config, dataset_config)
-            self.are_features_complex = False
 
     def _create_gru_layer(self, n_output_channels):
         self.gru = nn.GRU(
@@ -93,10 +86,6 @@ class TdoaCrnn10(nn.Module):
             x = self.conv_blocks[i](x)
         # Conv layer output: (batch_size, feature_maps, freq_bins, time_steps)
 
-        if self.are_features_complex:
-            x = _convert_complex_tensor_to_real(x)
-        # Output: (batch_size, 2*feature_maps, freq_bins, time_steps)
-
         x = torch.mean(x, dim=2)
         # Aggregated conv output (batch_size, feature_maps, time_steps)
 
@@ -117,34 +106,28 @@ class TdoaCrnn10(nn.Module):
 
 
 class ConvBlock(nn.Module):
-    def __init__(self, input_dim, output_dim, is_complex, kernel_size=3):
+    def __init__(self, input_dim, output_dim, conv_type, kernel_size=3):
         super().__init__()
 
-        conv_module = ComplexConv2d if is_complex else Conv2d
-        self.conv_block = conv_module(input_dim, output_dim, kernel_size) 
+        self.conv_type = conv_type
 
-        bn_module = ComplexBatchNorm2d if is_complex else BatchNorm2d
-        self.bn_block = bn_module(output_dim)
+        if conv_type == "depthwise_separable":
+            depth_conv = Conv2d(in_channels=input_dim,
+                                    out_channels=input_dim,
+                                    kernel_size=kernel_size, groups=input_dim)
+            point_conv = Conv2d(in_channels=input_dim,
+                                    out_channels=output_dim,
+                                    kernel_size=1)
+            self.conv_block = nn.Sequential(depth_conv, point_conv)
+        elif conv_type == "conv2d":
+            self.conv_block = Conv2d(input_dim, output_dim, kernel_size)
 
-        self.activation = complex_relu if is_complex else torch.relu 
+        self.bn_block = BatchNorm2d(output_dim)
 
     def forward(self, x):
         x = self.conv_block(x)
         x = self.bn_block(x)
-        x = self.activation(x)
+        x = torch.relu(x)
 
         return x
 
-
-def _convert_complex_tensor_to_real(complex_tensor):
-    """Convert a complex tensor of shape
-    (batch_size, num_channels, time_steps, freq_bins) 
-    into a real tensor of shame
-    (batch_size, 2*num_channels, time_steps, freq_bins)"""
-
-    real_tensor = complex_tensor.real
-    imag_tensor = complex_tensor.imag
-
-    result_tensor = torch.cat([real_tensor, imag_tensor], dim=1)
-
-    return result_tensor

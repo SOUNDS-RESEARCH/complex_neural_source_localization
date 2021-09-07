@@ -4,6 +4,7 @@ model:
   pool_size: [2, 2]
   n_output_channels: 512
   n_conv_layers: 4
+  conv_type: "depthwise_separable" # depthwise_separable | conv2d
 
   # Feature params
   n_fft: 1024
@@ -13,4 +14,4 @@ model:
   hop_length_in_seconds: 10e-3
   hop_length: 480 # int(hop_length_in_seconds * sr)
 
-  feature_type: "stft_magnitude"
+  feature_type: "stft"

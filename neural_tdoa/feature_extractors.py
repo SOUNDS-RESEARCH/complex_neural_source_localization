@@ -50,9 +50,9 @@ class StftArray(Module):
             result.append(
                 stft_output[:, 1:, :]
             ) # Ignore frequency 0
-
-        return torch.stack(result, dim=1)
-
+        
+        result = torch.stack(result, dim=1)
+        return result
 
 class StftMagnitudeArray(StftArray):
     def forward(self, X):
@@ -64,3 +64,15 @@ class StftPhaseArray(StftArray):
     def forward(self, X):
         stft = super().forward(X)
         return stft.angle()
+
+
+class RealStftArray(StftArray):
+    "Stft where the real and imaginary channels are modeled as separate channels"
+    def forward(self, X):
+
+        stft = super().forward(X)
+
+        # stft.real.shape = (batch_size, num_mics, num_channels, time_steps)
+        result = torch.cat((stft.real, stft.imag), dim=2)   
+        
+        return result
