@@ -136,7 +136,7 @@ class ConvBlock(nn.Module):
         if pool_type == "avg":
             self.pool_block = nn.AvgPool2d(pool_size)
         elif pool_type == "max":
-            self.pool_block = nn.MaxPool2d(pool_type)
+            self.pool_block = nn.MaxPool2d(pool_size)
 
     def forward(self, x):
         x = self.conv_block(x)
