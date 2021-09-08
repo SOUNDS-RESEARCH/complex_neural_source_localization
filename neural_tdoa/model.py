@@ -23,15 +23,19 @@ class TdoaCrnn10(nn.Module):
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
         self.model_config = model_config
         n_input_channels = dataset_config["n_mics"]
+        self.pool_type = model_config["pool_type"]
         self._create_feature_extractor_layer(model_config, dataset_config)
-        self._create_conv_layers(n_input_channels,
-                                 model_config["n_conv_layers"],
-                                 model_config["n_output_channels"],
-                                 model_config["conv_type"])
+        self._create_conv_layers(n_input_channels, model_config)
         self._create_gru_layer(model_config["n_output_channels"])
         self._create_output_layer(model_config["n_output_channels"])
 
-    def _create_conv_layers(self, n_input_channels, n_layers, max_filters, conv_type):
+    def _create_conv_layers(self, n_input_channels, model_config):
+        n_layers = model_config["n_conv_layers"]
+        max_filters = model_config["n_output_channels"]
+        conv_type = model_config["conv_type"]
+        pool_type = model_config["pool_type"]
+        pool_size = model_config["pool_size"]
+        
         n_layer_outputs = [
             max_filters//(2**(n_layers - i))
             for i in range(1, n_layers + 1)
@@ -44,7 +48,9 @@ class TdoaCrnn10(nn.Module):
             ConvBlock(
                 n_layer_inputs[i],
                 n_layer_inputs[i+1],
-                conv_type
+                conv_type,
+                pool_type,
+                list(pool_size)
             )
             for i in range(self.n_conv_blocks)
         ])
@@ -86,48 +92,56 @@ class TdoaCrnn10(nn.Module):
             x = self.conv_blocks[i](x)
         # Conv layer output: (batch_size, feature_maps, freq_bins, time_steps)
 
-        x = torch.mean(x, dim=2)
+        x = self._aggregate_features(x, 2)
         # Aggregated conv output (batch_size, feature_maps, time_steps)
 
         # GRU input: (batch_size, time_steps, feature_maps):"""
         x = x.transpose(1, 2)
         (x, _) = self.gru(x)
         x = self.fc_output(x)
-        # Output: (batch_size, time_steps, n_output)"""
+        # Output: (batch_size, time_steps, 1)"""
 
-        x = torch.mean(x, dim=1)
+        x = self._aggregate_features(x, 1)
         # Output: (batch_size, 1)
 
         return torch.sigmoid(x)
     
-    def _aggregate_features(self, x):
+    def _aggregate_features(self, x, dim):
         if self.pool_type == "avg":
-            return torch.mean(x, dim=2)
-
+            return torch.mean(x, dim=dim)
+        elif self.pool_type == "max":
+            return torch.max(x, dim=dim)
 
 class ConvBlock(nn.Module):
-    def __init__(self, input_dim, output_dim, conv_type, kernel_size=3):
+    def __init__(self, input_dim, output_dim, conv_type, pool_type, pool_size, kernel_size=3):
         super().__init__()
 
         self.conv_type = conv_type
+        self.pool_type = pool_type
+        self.pool_size = pool_size
 
         if conv_type == "depthwise_separable":
             depth_conv = Conv2d(in_channels=input_dim,
-                                    out_channels=input_dim,
-                                    kernel_size=kernel_size, groups=input_dim)
+                                out_channels=input_dim,
+                                kernel_size=kernel_size, groups=input_dim)
             point_conv = Conv2d(in_channels=input_dim,
-                                    out_channels=output_dim,
-                                    kernel_size=1)
+                                out_channels=output_dim,
+                                kernel_size=1)
             self.conv_block = nn.Sequential(depth_conv, point_conv)
         elif conv_type == "conv2d":
             self.conv_block = Conv2d(input_dim, output_dim, kernel_size)
 
         self.bn_block = BatchNorm2d(output_dim)
+        
+        if pool_type == "avg":
+            self.pool_block = nn.AvgPool2d(pool_size)
+        elif pool_type == "max":
+            self.pool_block = nn.MaxPool2d(pool_type)
 
     def forward(self, x):
         x = self.conv_block(x)
         x = self.bn_block(x)
         x = torch.relu(x)
+        x = self.pool_block(x)
 
         return x
-

@@ -1,7 +1,7 @@
 model:
   # NN Model settings
   pool_type: "avg" # "max" | "avg"
-  pool_size: [2, 2]
+  pool_size: [2, 1]
   n_output_channels: 512
   n_conv_layers: 4
   conv_type: "depthwise_separable" # depthwise_separable | conv2d
