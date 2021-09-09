@@ -28,6 +28,7 @@ def main(config: DictConfig):
     if config["training"]["delete_datasets_after_training"]:
         shutil.rmtree(config["training_dataset"]["dataset_dir"])
         shutil.rmtree(config["validation_dataset"]["dataset_dir"])
+        shutil.rmtree(config["test_dataset"]["dataset_dir"])
 
 
 def _create_dataloaders(config):
