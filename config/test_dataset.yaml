@@ -1,0 +1,7 @@
+defaults:
+  - test_dataset: ../base_dataset
+
+test_dataset:
+  n_samples: 500
+  dataset_dir: "test_dataset"
+  random_seed: 2

@@ -1,11 +1,11 @@
 import torch
 
-from neural_tdoa.model import TdoaCrnn10
+from neural_tdoa.model import TdoaCrnn
 from datasets.dataset import TdoaDataset
 
 
 def test_inference():
-    model = TdoaCrnn10()
+    model = TdoaCrnn()
     
     weights = torch.load("tests/fixtures/weights.pth",
                          map_location=torch.device('cpu'))

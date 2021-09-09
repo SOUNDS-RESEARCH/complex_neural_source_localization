@@ -4,7 +4,7 @@ from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
 
 from datasets.dataset import TdoaDataset
-from neural_tdoa.model import TdoaCrnn10
+from neural_tdoa.model import TdoaCrnn
 
 
 def test_tdoa_crnn10_with_stft():
@@ -26,7 +26,7 @@ def _test_tdoa_crnn10(feature_type):
     cfg["training_dataset"]["n_training_samples"] = 1
     cfg["model"]["feature_type"] = feature_type
 
-    model = TdoaCrnn10(cfg["model"], cfg["training_dataset"])
+    model = TdoaCrnn(cfg["model"], cfg["training_dataset"])
     dataset = TdoaDataset(cfg["training_dataset"])
     
     sample = dataset[0]

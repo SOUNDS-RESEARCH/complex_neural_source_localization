@@ -3,3 +3,4 @@ defaults:
   - training
   - training_dataset
   - validation_dataset
+  - test_dataset

@@ -11,7 +11,7 @@ from neural_tdoa.feature_extractors import (
 from neural_tdoa.utils.load_config import load_config
 
 
-class TdoaCrnn10(nn.Module):
+class TdoaCrnn(nn.Module):
     def __init__(self, model_config=None, dataset_config=None):
         if model_config is None:
             model_config = load_config("model")

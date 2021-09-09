@@ -2,5 +2,5 @@ defaults:
   - training_dataset: ../base_dataset
 
 training_dataset:
-  n_samples: 500
+  n_samples: 1500
   dataset_dir: "training_dataset"
