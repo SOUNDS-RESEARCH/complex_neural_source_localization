@@ -115,12 +115,6 @@ def plot_mics_and_sources(room_dims, mics, sources):
 
 def draw_mics_and_sources(ax, room_dims, mics, sources, x_max=None, y_max=None):
     "Draw microphones and sources in an existing room"
-
-    def normalize(dimension, max_value=None):
-        if max_value is None:
-            return dimension
-        else:
-            return max_value/dimension
     
     mics_x = [mic[0] for mic in mics]
     mics_y = [mic[1] for mic in mics]

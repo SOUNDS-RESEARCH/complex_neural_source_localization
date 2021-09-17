@@ -3,6 +3,7 @@ Generate simulated recordings from an environment
 containing two microphones and a source
 """
 
+import pyroomacoustics as pra
 import os
 
 from pyroomasync import ConnectedShoeBox, simulate
@@ -71,7 +72,8 @@ def generate_dataset_sample_config(base_config):
         "sr": sr,
         "source_signal": source_signal,
         "source_gain": source_gain,
-        "trim_beginning": base_config["trim_beginning"]
+        "trim_beginning": base_config["trim_beginning"],
+        "room_absorption": float(base_config["room_absorption"])
     }
 
 
@@ -95,7 +97,9 @@ def _simulate(sample_config):
 
     mic_delays = [delay for delay in mic_delays]
 
-    room = ConnectedShoeBox(sample_config["room_dims"], fs=base_sr)
+    room = ConnectedShoeBox(sample_config["room_dims"],
+                            fs=base_sr,
+                            materials=pra.Material(sample_config["room_absorption"]))
 
     room.add_microphone_array(sample_config["mic_coordinates"],
                               delay=mic_delays,

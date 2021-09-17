@@ -14,3 +14,4 @@ validation_dataset_dir: "validation_dataset"
 speech_signals_dir: null
 trim_beginning: true
 random_seed: 0
+room_absorption: 1 # 1 = no reflection. 0 = full reflection 

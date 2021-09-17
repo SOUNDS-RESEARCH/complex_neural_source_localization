@@ -87,6 +87,7 @@ class TdoaCrnn(nn.Module):
             torch.Tensor: Output predictions of shape (batch_size, n_model_output)
         """
         x = self.feature_extractor(x)
+
         # Feature extractor output: (batch_size, n_channels, time_steps, freq_bins)
         for i in range(self.n_conv_blocks):
             x = self.conv_blocks[i](x)
@@ -121,13 +122,14 @@ class ConvBlock(nn.Module):
         self.pool_size = pool_size
 
         if conv_type == "depthwise_separable":
-            depth_conv = Conv2d(in_channels=input_dim,
+            self.depth_conv = Conv2d(in_channels=input_dim,
                                 out_channels=input_dim,
-                                kernel_size=kernel_size, groups=input_dim)
-            point_conv = Conv2d(in_channels=input_dim,
+                                kernel_size=kernel_size, groups=input_dim,
+                                padding="same")
+            self.point_conv = Conv2d(in_channels=input_dim,
                                 out_channels=output_dim,
-                                kernel_size=1)
-            self.conv_block = nn.Sequential(depth_conv, point_conv)
+                                kernel_size=1,)
+            self.conv_block = nn.Sequential(self.depth_conv, self.point_conv)
         elif conv_type == "conv2d":
             self.conv_block = Conv2d(input_dim, output_dim, kernel_size)
 
@@ -142,6 +144,7 @@ class ConvBlock(nn.Module):
         x = self.conv_block(x)
         x = self.bn_block(x)
         x = torch.relu(x)
+
         x = self.pool_block(x)
 
         return x
