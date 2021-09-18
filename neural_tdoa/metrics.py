@@ -25,9 +25,10 @@ def average_rms_error(y_true, y_pred):
 
 
 def compute_tdoa_with_gcc_phat(x1, x2, fs, mic_positions):
-    mic_distances = compute_distance(mic_positions[0], mic_positions[1], mode="torch")
+    mic_distance = compute_distance(mic_positions[0], mic_positions[1], mode="torch")
     cc, lag_indexes = gcc_phat(x1, x2, fs)
     tdoa = lag_indexes[torch.argmax(torch.abs(cc))]
-    normalized_tdoa = normalize_tdoa(tdoa, mic_distances)
+    normalized_tdoa = normalize_tdoa(tdoa, mic_distance)
 
-    return normalized_tdoa
+    clamped_tdoa = torch.clamp(0, 1, normalized_tdoa)
+    return clamped_tdoa
