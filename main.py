@@ -1,3 +1,4 @@
+from datasets.generate_dataset import generate_dataset, generate_datasets
 import hydra
 import shutil
 import torch
@@ -32,6 +33,12 @@ def main(config: DictConfig):
 
 
 def _create_dataloaders(config):
+    generate_datasets([
+        config["training_dataset"],
+        config["validation_dataset"],
+        config["test_dataset"]
+    ])
+
     dataset_train = TdoaDataset(config["training_dataset"])
     dataset_val = TdoaDataset(config["validation_dataset"])
     dataset_test = TdoaDataset(config["test_dataset"])

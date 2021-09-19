@@ -30,5 +30,5 @@ def compute_tdoa_with_gcc_phat(x1, x2, fs, mic_positions):
     tdoa = lag_indexes[torch.argmax(torch.abs(cc))]
     normalized_tdoa = normalize_tdoa(tdoa, mic_distance)
 
-    clamped_tdoa = torch.clamp(0, 1, normalized_tdoa)
+    clamped_tdoa = torch.clamp(normalized_tdoa, 0, 1)
     return clamped_tdoa

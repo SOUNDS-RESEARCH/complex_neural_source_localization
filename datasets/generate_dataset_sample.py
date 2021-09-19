@@ -56,8 +56,6 @@ def generate_dataset_sample_config(base_config):
         source_signal, source_gain = generate_random_source_signal(
                                                     sr, total_duration)
 
-        
-
     tdoa, normalized_tdoa = _compute_tdoa(source_coordinates, mic_coordinates)
 
     return {
@@ -93,6 +91,7 @@ def _simulate(sample_config):
     num_input_samples = source_signal.shape[0]
     mic_delays = sample_config["mic_delays"]
     mic_gains = sample_config["mic_gains"]
+    mic_sampling_rates = sample_config["mic_sampling_rates"]
     trim_beginning = sample_config["trim_beginning"]
 
     mic_delays = [delay for delay in mic_delays]
@@ -103,6 +102,7 @@ def _simulate(sample_config):
 
     room.add_microphone_array(sample_config["mic_coordinates"],
                               delay=mic_delays,
+                              fs=mic_sampling_rates,
                               gain=mic_gains)
 
     room.add_source(sample_config["source_coordinates"], source_signal)

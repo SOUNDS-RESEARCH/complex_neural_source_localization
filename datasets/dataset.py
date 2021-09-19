@@ -24,6 +24,7 @@ class TdoaDataset(torch.utils.data.Dataset):
         dataset_dir = dataset_config["dataset_dir"]
 
         if not os.path.exists(dataset_dir):
+            print("dataset directory does not exist. Generating new dataset")
             generate_dataset(dataset_config)
 
         self.df = pd.read_csv(Path(dataset_dir) / "metadata.csv") 
