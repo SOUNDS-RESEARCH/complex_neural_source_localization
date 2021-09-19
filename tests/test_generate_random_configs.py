@@ -1,12 +1,12 @@
 import numpy as np
 
-from datasets.generate_random_configs import (
-    generate_random_microphone_pair_coordinates
+from datasets.random import (
+    generate_random_microphone_coordinates
 )
 
 
-def test_generate_random_microphone_pair_coordinates():
-    coords = generate_random_microphone_pair_coordinates([3,3,5], 0.5)
+def test_generate_random_microphone_coordinates():
+    coords = generate_random_microphone_coordinates([3,3,5], 0.5)
 
     coords = np.array(coords)
 

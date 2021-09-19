@@ -1,14 +1,15 @@
 n_samples: ???
 dataset_dir: ???
 base_sampling_rate: 16000
-sample_duration_in_secs: 1
+n_microphone_seconds: 1
 room_dims: [5, 3, 3]
 n_mics: 2
-mic_coordinates: null
+mic_coordinates: null # microphone coordinates will be generated randomly
+source_coordinates: null # source coordinates will be generated randomly, or a vector of three floats may be provided as a fixed position
 mic_distance: 1.0 # 1 m distance between the microphones
-mic_sampling_rate_ranges: [[16000, 16000], [16000, 16000]]
-mic_delay_ranges: [[0, 0], [0, 0]]
-mic_gain_ranges: [[1, 1], [1, 1]]
+mic_sampling_rate_ranges: [16000, 16000] # microphones 1 and 2 will have sampling rates between that interval 
+mic_delay_ranges: [0, 0]
+mic_gain_ranges: [1, 1]
 training_dataset_dir: "training_dataset"
 validation_dataset_dir: "validation_dataset"
 speech_signals_dir: null

@@ -16,10 +16,11 @@ class TdoaDataset(torch.utils.data.Dataset):
 
         if dataset_config is None:
             dataset_config = load_config("training_dataset")
+        self.config = dataset_config
 
         self.sr = dataset_config["base_sampling_rate"]
-        self.sample_duration_in_secs = dataset_config["sample_duration_in_secs"]
-        self.sample_duration = self.sr*self.sample_duration_in_secs
+        self.n_microphone_seconds = dataset_config["n_microphone_seconds"]
+        self.sample_duration = self.sr*self.n_microphone_seconds
         self.n_mics = dataset_config["n_mics"]
         dataset_dir = dataset_config["dataset_dir"]
 
