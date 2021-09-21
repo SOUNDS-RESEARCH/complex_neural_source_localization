@@ -166,6 +166,11 @@ def generate_random_sampling_rate(n, sampling_rate_interval):
 def generate_random_gain(n, gain):
     "Generate random delay in milliseconds"
     if type(gain) == list or type(gain) == ListConfig:
+        if type(gain[0]) == list or type(gain[0]) == ListConfig:
+            return [
+                random.uniform(gain[i][0], gain[i][1])
+                for i in range(n)
+            ]
         return [
             random.uniform(gain[0], gain[1])
             for _ in range(n)
