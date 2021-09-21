@@ -10,7 +10,7 @@ def simulate_microphone_signals(config):
         config (dict): Dictionary containing the following keys:
                         - room_dims
                         - sr
-                        - room_absorption
+                        - anechoic
                         - mic_coordinates
                         - mic_delays
                         - source_coordinates
@@ -20,9 +20,14 @@ def simulate_microphone_signals(config):
         numpy.array: matrix containing one microphone signal per row
     """
 
-    room = ConnectedShoeBox(config["room_dims"],
-                            fs=config["sr"],
-                            materials=pra.Material(config["room_absorption"]))
+    if config["anechoic"]:
+        room = ConnectedShoeBox(config["room_dims"],
+                                fs=config["sr"],
+                                max_order=0)
+    else:
+        room = ConnectedShoeBox(config["room_dims"],
+                                fs=config["sr"])
+
     room.add_microphone_array(config["mic_coordinates"],
                               delay=config["mic_delays"],
                               fs=config["mic_sampling_rates"],
