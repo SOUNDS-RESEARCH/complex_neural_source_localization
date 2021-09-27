@@ -2,11 +2,11 @@ defaults:
   - test_dataset: ../base_dataset
 
 test_dataset:
-  n_samples: 100 # n_samples: 500
+  n_samples: 500
   dataset_dir: "test_dataset"
   random_seed: 2
-  mic_delay_ranges: [0, 10]
-  mic_gain_ranges: [[0.5, 0.5], [1, 1]]
+  #mic_delay_ranges: [0, 10]
+  #mic_gain_ranges: [[0.5, 0.5], [1, 1]]
   # mic_sampling_rate_ranges: [15900, 16000] # microphones 1 and 2 will have sampling rates between that interval 
   #source_coordinates: [1, 1, 1]
   # mic_coordinates: [[1, 0.5, 1], [1, 1.5, 1]]

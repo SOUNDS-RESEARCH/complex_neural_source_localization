@@ -1,4 +1,6 @@
 import os
+import random
+import numpy as np
 
 from omegaconf.omegaconf import open_dict
 from pathlib import Path
@@ -30,8 +32,8 @@ def generate_dataset(dataset_config):
                 str(p) for p in path.rglob("*.wav")
             ]
 
-    # random.seed(dataset_config["random_seed"])
-    # np.random.seed(dataset_config["random_seed"])
+    random.seed(dataset_config["random_seed"])
+    np.random.seed(dataset_config["random_seed"])
     
     training_sample_configs = []
     for num_sample in tqdm(range(n_samples)):

@@ -85,6 +85,8 @@ def plot_mics_and_sources(room_dims, mics, sources):
     draw_mics_and_sources(ax, mics, sources)
     _plot_source_to_microphone_distances(ax, mics, sources)
 
+    plt.xlabel("Width (m)")
+    plt.ylabel("Length (m)")
     return ax
 
 
