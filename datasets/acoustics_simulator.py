@@ -40,5 +40,4 @@ def simulate_microphone_signals(config):
     room.add_source(config["source_coordinates"], config["source_signal"])
     signals = simulate(room)
 
-    
     return signals
