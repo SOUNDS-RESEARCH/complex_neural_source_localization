@@ -48,7 +48,8 @@ def generate_sample_config(base_config):
         "source_signal": source_signal,
         "source_gain": source_gain,
         "trim_beginning": base_config["trim_beginning"],
-        "anechoic": base_config["anechoic"]
+        "anechoic": base_config["anechoic"],
+        "rt60": base_config["rt60"]
     }
 
 

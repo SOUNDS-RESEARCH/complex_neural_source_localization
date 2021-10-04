@@ -16,3 +16,4 @@ speech_signals_dir: null
 trim_beginning: false
 random_seed: 0
 anechoic: False
+rt60: 0.4 # reverberation time in seconds
