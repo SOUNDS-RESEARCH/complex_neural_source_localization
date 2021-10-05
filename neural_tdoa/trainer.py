@@ -30,7 +30,7 @@ class LitTdoaCrnn(pl.LightningModule):
         super().__init__()
         self.config = config
 
-        self.model = TdoaCrnn(config["model"], config["training_dataset"])
+        self.model = TdoaCrnn(config["model"])
         self.loss = Loss()
 
     def forward(self, x):
@@ -42,7 +42,7 @@ class LitTdoaCrnn(pl.LightningModule):
         predictions = self.model(x)
 
         loss = self.loss(predictions, y)
-        rms = average_rms_error(y, predictions)
+        rms = average_rms_error(y, predictions, max_tdoa=self.model.max_tdoa)
 
         output_dict = {
             "loss": loss,
@@ -60,13 +60,12 @@ class LitTdoaCrnn(pl.LightningModule):
 
         loss = self.loss(predictions, Y)
 
-        rms = average_rms_error(predictions, Y)
+        rms = average_rms_error(predictions, Y, max_tdoa=self.model.max_tdoa)
 
         validation_config = self.config["validation_dataset"]
         fs = validation_config["base_sampling_rate"]
         
         tdoas_gcc_phat = torch.zeros_like(Y)
-        
         for i, x in enumerate(X):
             tdoas_gcc_phat[i] = compute_tdoa_with_gcc_phat(
                                     x[0],
@@ -75,7 +74,7 @@ class LitTdoaCrnn(pl.LightningModule):
                                     mic_coordinates[i]
                                 )
 
-        rms_gcc = average_rms_error(Y, tdoas_gcc_phat)
+        rms_gcc = average_rms_error(Y, tdoas_gcc_phat, max_tdoa=self.model.max_tdoa)
             
         output_dict = {
             "loss": loss,

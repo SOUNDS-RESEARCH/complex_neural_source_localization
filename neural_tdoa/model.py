@@ -4,28 +4,30 @@ import torch.nn as nn
 from torch.nn.modules.batchnorm import BatchNorm2d
 from torch.nn.modules.conv import Conv2d
 
+from tdoa.math_utils import denormalize, normalize
+
 from neural_tdoa.utils.initializers import init_gru, init_linear_layer
 from neural_tdoa.feature_extractors import (
-    MfccArray, RealStftArray, StftMagnitudeArray
+    RealStftArray, StftMagnitudeArray
 )
 from neural_tdoa.utils.load_config import load_config
 
 
 class TdoaCrnn(nn.Module):
-    def __init__(self, model_config=None, dataset_config=None):
+    def __init__(self, model_config=None, max_tdoa=1/343):
         if model_config is None:
             model_config = load_config("model")
-        if dataset_config is None:
-            dataset_config = load_config("training_dataset")
 
         super().__init__()
 
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
+        self.n_input_channels = 2 # Two microphones
+        self.max_tdoa = max_tdoa # Used for normalizing/denormalizing the model output
+
         self.model_config = model_config
-        n_input_channels = dataset_config["n_mics"]
         self.pool_type = model_config["pool_type"]
-        self._create_feature_extractor_layer(model_config, dataset_config)
-        self._create_conv_layers(n_input_channels, model_config)
+        self._create_feature_extractor_layer(model_config)
+        self._create_conv_layers(self.n_input_channels, model_config)
         self._create_gru_layer(model_config["n_output_channels"])
         self._create_output_layer(model_config["n_output_channels"])
 
@@ -55,15 +57,13 @@ class TdoaCrnn(nn.Module):
             for i in range(self.n_conv_blocks)
         ])
         
-    def _create_feature_extractor_layer(self, model_config, dataset_config):
+    def _create_feature_extractor_layer(self, model_config):
         feature_type = model_config["feature_type"]
 
         if feature_type == "stft_magnitude":
             self.feature_extractor = StftMagnitudeArray(model_config)
         elif feature_type == "stft":
             self.feature_extractor = RealStftArray(model_config)
-        elif feature_type == "mfcc":
-            self.feature_extractor = MfccArray(model_config, dataset_config)
 
     def _create_gru_layer(self, n_output_channels):
         self.gru = nn.GRU(
@@ -78,11 +78,13 @@ class TdoaCrnn(nn.Module):
                                    bias=True)
         init_linear_layer(self.fc_output)
 
-    def forward(self, x):
+    def forward(self, x, normalized=True):
         """
         Args:
             x (torch.Tensor):  Raw multichannel audio tensor of shape 
                             (batch_size, n_channels, time_steps)
+            normalized (bool): If set to true, return is between [0,1].
+                                Else, return is between [-self.min_tdoa, self.max_tdoa]
         Returns:
             torch.Tensor: Output predictions of shape (batch_size, n_model_output)
         """
@@ -104,9 +106,14 @@ class TdoaCrnn(nn.Module):
 
         x = self._aggregate_features(x, 1)
         # Output: (batch_size, 1)
+ 
+        x = torch.sigmoid(x)
 
-        return torch.sigmoid(x)
-    
+        if not normalized:
+            x = denormalize(x, -self.max_tdoa, self.max_tdoa)
+        
+        return x
+
     def _aggregate_features(self, x, dim):
         if self.pool_type == "avg":
             return torch.mean(x, dim=dim)

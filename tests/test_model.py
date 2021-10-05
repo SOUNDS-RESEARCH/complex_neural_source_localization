@@ -26,7 +26,7 @@ def _test_tdoa_crnn10(feature_type):
     cfg["training_dataset"]["n_training_samples"] = 1
     cfg["model"]["feature_type"] = feature_type
 
-    model = TdoaCrnn(cfg["model"], cfg["training_dataset"])
+    model = TdoaCrnn(cfg["model"])
     dataset = TdoaDataset(cfg["training_dataset"])
     
     sample = dataset[0]

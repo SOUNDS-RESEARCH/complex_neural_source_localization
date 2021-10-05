@@ -1,6 +1,6 @@
 import numpy as np
 
-from datasets.math_utils import compute_distance
+from tdoa.math_utils import compute_distance
 
 
 def compute_error(candidate, mic_1, mic_2, tdoa, norm="l1"):

@@ -1,7 +1,9 @@
 import torch
 from torch.nn import Module, MSELoss
 
-from datasets.math_utils import compute_distance, gcc_phat, normalize_tdoa
+from tdoa.math_utils import (
+    compute_distance, gcc_phat, normalize_tdoa, denormalize
+)
 
 
 class Loss(Module):
@@ -19,7 +21,12 @@ class Loss(Module):
         return self.mse(model_output, targets)
 
 
-def average_rms_error(y_true, y_pred):
+def average_rms_error(y_true, y_pred, max_tdoa=None):
+    if max_tdoa is not None:
+        min_tdoa = -max_tdoa
+        y_true = denormalize(y_true, min_tdoa, max_tdoa)
+        y_pred = denormalize(y_pred, min_tdoa, max_tdoa)
+
     with torch.no_grad():
         return torch.mean(torch.sqrt((y_true - y_pred)**2))
 

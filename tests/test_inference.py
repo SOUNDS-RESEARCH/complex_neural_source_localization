@@ -7,7 +7,7 @@ from datasets.dataset import TdoaDataset
 def test_inference():
     model = TdoaCrnn()
     
-    weights = torch.load("tests/fixtures/weights.pth",
+    weights = torch.load("tests/fixtures/weights.ckpt",
                          map_location=torch.device('cpu'))
     model.load_state_dict(weights)
     model.eval()

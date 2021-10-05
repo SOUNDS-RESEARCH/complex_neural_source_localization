@@ -4,7 +4,7 @@ import random
 
 from omegaconf.listconfig import ListConfig
 
-from datasets.math_utils import compute_distance, compute_tdoa, normalize_tdoa
+from tdoa.math_utils import compute_distance, compute_tdoa, normalize_tdoa
 DEFAULT_DEVICE_HEIGHT = 1
 
 
@@ -131,12 +131,13 @@ def generate_random_microphone_signal_distortions(base_config):
     return mic_delays, mic_sampling_rates, mic_gains
 
 
-def generate_random_speech_signal(signal_duration, sr, speech_file_paths):
+def generate_random_speech_signal(signal_duration, sr, speech_file_paths, offset=0.5):
     total_duration_in_samples = int(signal_duration*sr)
     random_file_path = random.choice(speech_file_paths)
     source_signal, _ = librosa.load(random_file_path, sr=sr)
     # Improvement: Selecting the starting sample randomly instead of using 0
-    source_signal = source_signal[:total_duration_in_samples]
+    start_idx = int(offset*sr)
+    source_signal = source_signal[start_idx:start_idx+total_duration_in_samples]
     # For gaussian noise, a random gain is applied. For speech this isn't done.
     source_gain = 1
 
