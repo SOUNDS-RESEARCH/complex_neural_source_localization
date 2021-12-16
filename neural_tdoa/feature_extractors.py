@@ -54,7 +54,7 @@ class StftArray(Module):
         result = torch.stack(result, dim=1)
         return result
 
-class StftMagnitudeArray(StftArray):
+class MagnitudeStftArray(StftArray):
     def forward(self, X):
         stft = super().forward(X)
         return stft.abs()
@@ -66,7 +66,7 @@ class StftPhaseArray(StftArray):
         return stft.angle()
 
 
-class RealStftArray(StftArray):
+class DecoupledStftArray(StftArray):
     "Stft where the real and imaginary channels are modeled as separate channels"
     def forward(self, X):
 

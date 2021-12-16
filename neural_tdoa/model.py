@@ -8,7 +8,7 @@ from tdoa.math_utils import denormalize, normalize
 
 from neural_tdoa.utils.initializers import init_gru, init_linear_layer
 from neural_tdoa.feature_extractors import (
-    RealStftArray, StftMagnitudeArray
+    DecoupledStftArray, MagnitudeStftArray, StftArray
 )
 from neural_tdoa.utils.load_config import load_config
 
@@ -22,7 +22,7 @@ class TdoaCrnn(nn.Module):
 
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
         self.n_input_channels = 2 # Two microphones
-        self.max_tdoa = max_tdoa # Used for normalizing/denormalizing the model output
+        self.max_tdoa = max_tdoa # Used for normalizing/denormalizing the network's output
 
         self.model_config = model_config
         self.pool_type = model_config["pool_type"]
@@ -61,9 +61,11 @@ class TdoaCrnn(nn.Module):
         feature_type = model_config["feature_type"]
 
         if feature_type == "stft_magnitude":
-            self.feature_extractor = StftMagnitudeArray(model_config)
+            self.feature_extractor = MagnitudeStftArray(model_config)
+        elif feature_type == "decoupled_stft":
+            self.feature_extractor = DecoupledStftArray(model_config)
         elif feature_type == "stft":
-            self.feature_extractor = RealStftArray(model_config)
+            self.feature_extractor = StftArray(model_config)
 
     def _create_gru_layer(self, n_output_channels):
         self.gru = nn.GRU(
@@ -119,6 +121,7 @@ class TdoaCrnn(nn.Module):
             return torch.mean(x, dim=dim)
         elif self.pool_type == "max":
             return torch.max(x, dim=dim)
+
 
 class ConvBlock(nn.Module):
     def __init__(self, input_dim, output_dim, conv_type, pool_type, pool_size, kernel_size=3):

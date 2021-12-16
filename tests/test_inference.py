@@ -1,14 +1,14 @@
 import torch
 
-from neural_tdoa.model import TdoaCrnn
+from neural_tdoa.trainer import TdoaCrnn
 from datasets.dataset import TdoaDataset
 
 
 def test_inference():
     model = TdoaCrnn()
     
-    weights = torch.load("tests/fixtures/weights.ckpt",
-                         map_location=torch.device('cpu'))
+
+    weights = _load_weights()
     model.load_state_dict(weights)
     model.eval()
 
@@ -18,3 +18,12 @@ def test_inference():
     target = sample[1]
 
     model_output = model(sample[0].unsqueeze(0))
+
+
+def _load_weights():
+    weights_with_prefix = torch.load("tests/fixtures/weights.ckpt",
+                                     map_location=torch.device('cpu'))["state_dict"]
+    weights = {
+        key.replace("model.", ""): value for key, value in weights_with_prefix.items()
+    }
+    return weights
