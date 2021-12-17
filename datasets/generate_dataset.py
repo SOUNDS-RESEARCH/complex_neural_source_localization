@@ -23,6 +23,14 @@ def generate_dataset(dataset_config):
 
     output_dir = Path(output_dir)
     output_samples_dir = output_dir / "samples"
+    if os.path.exists(output_samples_dir):
+        message_str = f"Dataset already exists at {output_dir}. "
+        if dataset_config["recreate_if_exists"]:
+            print(message_str + "Recreating...")
+        else:
+            print(message_str + "Skipping...")
+            return
+
     os.makedirs(output_samples_dir, exist_ok=True)
 
     if dataset_config["speech_signals_dir"]:
