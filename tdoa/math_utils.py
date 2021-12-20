@@ -63,3 +63,32 @@ def gcc_phat(x1, x2, fs):
     indxs = indxs/fs
 
     return cc, indxs
+
+
+def get_doa(m1, m2, s, radians=True):
+    """Get the direction of arrival between two microphones and a source.
+       The referential used is the direction of the two sources, that is,
+       the vector m1 - m2.
+
+       For more details, see: 
+       https://math.stackexchange.com/questions/878785/how-to-find-an-angle-in-range0-360-between-2-vectors/879474
+
+    Args:
+        m1 (np.array): 2d coordinates of microphone 1
+        m2 (np.array): 2d coordinates of microphone 2
+        s (np.array): 2d coordinates of the source
+        radians (bool): If True, result is between [-pi, pi). Else, result is between [0, 360)
+    """
+
+    reference_direction = m1 - m2
+    mic_centre = (m1 + m2)/2
+    source_direction = s - mic_centre
+
+    dot = np.dot(reference_direction, source_direction)
+    det = np.linalg.det([reference_direction, source_direction])
+
+    doa = np.arctan2(det, dot)
+    if not radians:
+        doa = np.rad2deg(doa)
+    
+    return doa

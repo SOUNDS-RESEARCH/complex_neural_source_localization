@@ -3,6 +3,6 @@ defaults:
 
 validation_dataset:
   n_samples: 500
-  dataset_dir: "validation_dataset"
+  dataset_dir: "/Users/ezajlerg/datasets/neural_tdoa/validation_dataset"
   random_seed: 1
   
