@@ -22,19 +22,19 @@ class TdoaDataset(torch.utils.data.Dataset):
         self.n_microphone_seconds = dataset_config["n_microphone_seconds"]
         self.sample_duration = self.sr*self.n_microphone_seconds
         self.n_mics = dataset_config["n_mics"]
-        dataset_dir = dataset_config["dataset_dir"]
+        self.dataset_dir = Path(dataset_config["dataset_dir"])
 
-        if not os.path.exists(dataset_dir):
+        if not os.path.exists(self.dataset_dir):
             print("dataset directory does not exist. Generating new dataset")
             generate_dataset(dataset_config)
 
-        self.df = pd.read_csv(Path(dataset_dir) / "metadata.csv") 
+        self.df = pd.read_csv(self.dataset_dir / "metadata.csv") 
 
     def __getitem__(self, index):
         if index >= len(self): raise IndexError
         
         sample_metadata = self.df.loc[index]
-        signals_dir = Path(sample_metadata["signals_dir"])
+        signals_dir = self.dataset_dir / sample_metadata["signals_dir"]
 
         x = torch.vstack([
             torchaudio.load(signals_dir / f"{mic_idx}.wav")[0]

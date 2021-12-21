@@ -17,7 +17,6 @@ def generate_datasets(dataset_configs):
 
 
 def generate_dataset(dataset_config):
-    
     n_samples = dataset_config["n_samples"]
     output_dir = dataset_config["dataset_dir"]
 
@@ -47,23 +46,22 @@ def generate_dataset(dataset_config):
     for num_sample in tqdm(range(n_samples)):
         training_sample_config = generate_sample_config(dataset_config)
         
-        training_sample_config["signals_dir"] = output_samples_dir / str(num_sample)
+        training_sample_config["signals_dir"] = Path("samples") / str(num_sample)
         training_sample_configs.append(training_sample_config)
 
-        generate_dataset_sample(training_sample_config)
+        generate_dataset_sample(training_sample_config, output_dir)
 
     save_dataset_metadata(training_sample_configs, output_dir)
 
 
-def generate_dataset_sample(config, log_melspectrogram=False):
-
+def generate_dataset_sample(config, output_dir, log_melspectrogram=False):
     output_signals = simulate_microphone_signals(config)
     output_signals = _trim_microphone_signals(output_signals, config)
-
-    os.makedirs(config["signals_dir"], exist_ok=True)
+    signals_dir = output_dir / config["signals_dir"]
+    os.makedirs(signals_dir, exist_ok=True)
     save_signals(output_signals,
                  config["sr"],
-                 config["signals_dir"],
+                 signals_dir,
                  log_melspectrogram)
 
 

@@ -1,4 +1,4 @@
-from datasets.generate_dataset import generate_dataset, generate_datasets
+from datasets.generate_dataset import generate_datasets
 import hydra
 import shutil
 import torch
