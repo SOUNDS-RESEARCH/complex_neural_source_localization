@@ -544,27 +544,31 @@ class ComplexLSTM(Module):
         return output, (state_real, state_imag)
 
     def _forward_real(self, x):
-        h_real, h_imag, c_real, c_imag = self._init_state(self._get_batch_size(x))
+        h_real, h_imag, c_real, c_imag = self._init_state(self._get_batch_size(x), x.is_cuda)
         real_real, (h_real, c_real) = self.lstm_re(x.real, (h_real, c_real))
         imag_imag, (h_imag, c_imag) = self.lstm_im(x.imag, (h_imag, c_imag))
         real = real_real - imag_imag
         return real, ((h_real, c_real), (h_imag, c_imag))
 
     def _forward_imaginary(self, x):
-        h_real, h_imag, c_real, c_imag = self._init_state(self._get_batch_size(x))
+        h_real, h_imag, c_real, c_imag = self._init_state(self._get_batch_size(x), x.is_cuda)
         imag_real, (h_real, c_real) = self.lstm_re(x.imag, (h_real, c_real))
         real_imag, (h_imag, c_imag) = self.lstm_im(x.real, (h_imag, c_imag))
         imaginary = imag_real + real_imag
 
         return imaginary, ((h_real, c_real), (h_imag, c_imag))
 
-    def _init_state(self, batch_size):
+    def _init_state(self, batch_size, to_gpu=False):
         dim_0 = 2 if self.bidirectional else 1
         dims = (dim_0, batch_size, self.hidden_size)
-        h_real = torch.zeros(dims)
-        h_imag = torch.zeros(dims)
-        c_real = torch.zeros(dims)
-        c_imag = torch.zeros(dims)
+
+        h_real, h_imag, c_real, c_imag = [
+            torch.zeros(dims) for i in range(4)]
+
+        if to_gpu:
+            h_real, h_imag, c_real, c_imag = [
+                t.cuda() for t in [h_real, h_imag, c_real, c_imag]]
+            
 
         return h_real, h_imag, c_real, c_imag
     
