@@ -65,7 +65,7 @@ def gcc_phat(x1, x2, fs):
     return cc, indxs
 
 
-def get_doa(m1, m2, s, radians=True):
+def compute_doa(m1, m2, s, radians=True):
     """Get the direction of arrival between two microphones and a source.
        The referential used is the direction of the two sources, that is,
        the vector m1 - m2.

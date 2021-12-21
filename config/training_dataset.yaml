@@ -3,4 +3,4 @@ defaults:
 
 training_dataset:
   n_samples: 1500
-  dataset_dir: "/Users/ezajlerg/datasets/neural_tdoa/training_dataset"
+  dataset_dir: training_dataset #"/Users/ezajlerg/datasets/neural_tdoa/training_dataset"

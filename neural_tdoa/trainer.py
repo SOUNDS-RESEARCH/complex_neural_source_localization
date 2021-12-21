@@ -29,6 +29,7 @@ class LitTdoaCrnn(pl.LightningModule):
     def __init__(self, config):
         super().__init__()
         self.config = config
+        self.target_key = self.config["model"]["target"]
 
         self.model = TdoaCrnn(config["model"])
         self.loss = Loss()
@@ -38,7 +39,7 @@ class LitTdoaCrnn(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y = y["target"]
+        y = y[self.target_key]
         predictions = self.model(x)
 
         loss = self.loss(predictions, y)
@@ -55,7 +56,7 @@ class LitTdoaCrnn(pl.LightningModule):
         X, Y = batch
 
         mic_coordinates = Y["mic_coordinates"]
-        Y = Y["target"]
+        Y = Y[self.target_key]
         predictions = self.model(X)
 
         loss = self.loss(predictions, Y)

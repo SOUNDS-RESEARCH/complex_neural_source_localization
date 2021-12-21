@@ -4,7 +4,10 @@ import random
 
 from omegaconf.listconfig import ListConfig
 
-from tdoa.math_utils import compute_distance, compute_tdoa, normalize_tdoa
+from tdoa.math_utils import (
+    compute_distance, compute_tdoa,
+    normalize_tdoa, compute_doa
+)
 DEFAULT_DEVICE_HEIGHT = 1
 
 
@@ -33,6 +36,7 @@ def generate_sample_config(base_config):
         source_signal, source_gain = generate_random_signal(int(sr*total_duration))
 
     tdoa, normalized_tdoa = _compute_tdoa(source_coordinates, mic_coordinates)
+    azimuth_in_radians = _compute_azimuth(source_coordinates, mic_coordinates)
 
     return {
         "room_dims": room_dims,
@@ -44,6 +48,7 @@ def generate_sample_config(base_config):
         "n_microphone_seconds": base_config["n_microphone_seconds"],
         "tdoa": tdoa,
         "normalized_tdoa": normalized_tdoa,
+        "azimuth_in_radians": azimuth_in_radians,
         "sr": sr,
         "source_signal": source_signal,
         "source_gain": source_gain,
@@ -194,3 +199,12 @@ def _compute_tdoa(source_coordinates, mic_coordinates):
     normalized_tdoa = normalize_tdoa(tdoa, mic_distance)
 
     return tdoa, normalized_tdoa
+
+
+def _compute_azimuth(source_coordinates, mic_coordinates):
+    # Only works for azimuth
+    mic_1 = np.array(mic_coordinates[0][:2])
+    mic_2 = np.array(mic_coordinates[1][:2])
+    source_coordinates = np.array(source_coordinates[:2])
+    azimuth = compute_doa(mic_1, mic_2, source_coordinates)
+    return azimuth

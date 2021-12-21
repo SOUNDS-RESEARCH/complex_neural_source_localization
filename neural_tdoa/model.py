@@ -27,6 +27,7 @@ class TdoaCrnn(nn.Module):
         self.n_input_channels = 2 # Two microphones
         self.max_tdoa = max_tdoa # Used for normalizing/denormalizing the network's output
         self.is_complex = True if model_config["feature_type"] == "stft" else False
+        self.target_key = model_config["target"]
 
         self.model_config = model_config
         self.pool_type = model_config["pool_type"]
@@ -127,10 +128,13 @@ class TdoaCrnn(nn.Module):
         x = self._aggregate_features(x, 1)
         # Output: (batch_size, 1)
  
-        x = torch.sigmoid(x)
+        if self.target_key == "normalized_tdoa":
+            x = torch.sigmoid(x)
 
-        if not normalized:
-            x = denormalize(x, -self.max_tdoa, self.max_tdoa)
+            if not normalized:
+                x = denormalize(x, -self.max_tdoa, self.max_tdoa)
+        elif self.target_key == "azimuth_in_radians":
+            x = x.angle()
         
         return x
 

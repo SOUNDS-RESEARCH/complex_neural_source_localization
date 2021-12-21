@@ -45,8 +45,8 @@ class TdoaDataset(torch.utils.data.Dataset):
 
         y = sample_metadata.to_dict()
         y = _desserialize_lists_within_dict(y)
-        y["target"] = torch.Tensor([sample_metadata["normalized_tdoa"]])
-            
+        y["normalized_tdoa"] = torch.Tensor([sample_metadata["normalized_tdoa"]])
+        y["azimuth_in_radians"] = torch.Tensor([sample_metadata["azimuth_in_radians"]])
         return (x, y)
 
     def __len__(self):
