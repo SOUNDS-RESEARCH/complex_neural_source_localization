@@ -134,8 +134,11 @@ class TdoaCrnn(nn.Module):
             if not normalized:
                 x = denormalize(x, -self.max_tdoa, self.max_tdoa)
         elif self.target_key == "azimuth_in_radians":
-            x = x.angle()
-        
+            if self.is_complex:
+                x = x.angle()
+            else:
+                pass # No activation
+                #x = (2*torch.pi)*torch.sigmoid(x) - torch.pi # A sigmoid which goes from -pi to pi 
         return x
 
     def _aggregate_features(self, x, dim):

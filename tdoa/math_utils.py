@@ -84,10 +84,18 @@ def compute_doa(m1, m2, s, radians=True):
     mic_centre = (m1 + m2)/2
     source_direction = s - mic_centre
 
-    dot = np.dot(reference_direction, source_direction)
-    det = np.linalg.det([reference_direction, source_direction])
+    doa = compute_angle_between_vectors(reference_direction, source_direction,
+                                        radians=radians)
+
+    return doa
+
+
+def compute_angle_between_vectors(v1, v2, radians=True):
+    dot = np.dot(v1, v2)
+    det = np.linalg.det([v1, v2])
 
     doa = np.arctan2(det, dot)
+
     if not radians:
         doa = np.rad2deg(doa)
     

@@ -18,6 +18,7 @@ class Loss(Module):
                 "Model output's shape is {}, target's is {}".format(
                     model_output.shape, targets.shape
             ))
+        print(model_output, targets)
         return self.mse(model_output, targets)
 
 
