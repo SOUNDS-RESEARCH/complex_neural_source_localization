@@ -45,8 +45,13 @@ class TdoaDataset(torch.utils.data.Dataset):
 
         y = sample_metadata.to_dict()
         y = _desserialize_lists_within_dict(y)
-        y["normalized_tdoa"] = torch.Tensor([sample_metadata["normalized_tdoa"]])
-        y["azimuth_in_radians"] = torch.Tensor([sample_metadata["azimuth_in_radians"]])
+        y["normalized_tdoa"] = torch.Tensor([y["normalized_tdoa"]])
+        y["azimuth_in_radians"] = torch.Tensor([y["azimuth_in_radians"]])
+
+        y["azimuth_in_cartesian"] = torch.complex( # Transform 2d unit vector into complex number
+            y["azimuth_in_cartesian"][0],
+            y["azimuth_in_cartesian"][1]).unsqueeze(0) 
+
         return (x, y)
 
     def __len__(self):

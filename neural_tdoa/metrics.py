@@ -11,6 +11,7 @@ class Loss(Module):
         super().__init__()
 
         self.mse = MSELoss()
+        self.complex_mse = ComplexMSELoss()
 
     def forward(self, model_output, targets):
         if model_output.shape != targets.shape:
@@ -18,8 +19,28 @@ class Loss(Module):
                 "Model output's shape is {}, target's is {}".format(
                     model_output.shape, targets.shape
             ))
-        print(model_output, targets)
-        return self.mse(model_output, targets)
+        
+        if model_output.dtype == torch.complex64:
+            return self.complex_mse(model_output, targets)
+        else:
+            return self.mse(model_output, targets)
+
+
+class ComplexMSELoss(Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, model_output, targets):
+        if model_output.shape != targets.shape:
+            raise ValueError(
+                "Model output's shape is {}, target's is {}".format(
+                    model_output.shape, targets.shape
+            ))
+        
+        error = model_output - targets
+        mean_squared_error = (error*error.conj()).sum()/error.shape[0]
+        mean_squared_error = mean_squared_error.real # Imaginary part is 0
+        return mean_squared_error
 
 
 def average_rms_error(y_true, y_pred, max_tdoa=None):

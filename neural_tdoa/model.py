@@ -138,7 +138,11 @@ class TdoaCrnn(nn.Module):
                 x = x.angle()
             else:
                 pass # No activation
-                #x = (2*torch.pi)*torch.sigmoid(x) - torch.pi # A sigmoid which goes from -pi to pi 
+                #x = (2*torch.pi)*torch.sigmoid(x) - torch.pi # A sigmoid which goes from -pi to pi
+        elif self.target_key == "azimuth_in_cartesian":
+            # Should I include a sigmoid activation? The output complex value will be unbounded otherwise...
+            # Perhaps normalizing the vector by its magnitude...
+            pass
         return x
 
     def _aggregate_features(self, x, dim):
