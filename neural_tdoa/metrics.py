@@ -31,16 +31,20 @@ class ComplexMSELoss(Module):
         super().__init__()
 
     def forward(self, model_output, targets):
-        if model_output.shape != targets.shape:
-            raise ValueError(
-                "Model output's shape is {}, target's is {}".format(
-                    model_output.shape, targets.shape
-            ))
-        
-        error = model_output - targets
-        mean_squared_error = (error*error.conj()).sum()/error.shape[0]
-        mean_squared_error = mean_squared_error.real # Imaginary part is 0
-        return mean_squared_error
+        return complex_mse_loss(model_output, targets)
+
+
+def complex_mse_loss(model_output, targets):
+    if model_output.shape != targets.shape:
+        raise ValueError(
+            "Model output's shape is {}, target's is {}".format(
+                model_output.shape, targets.shape
+        ))
+    
+    error = model_output - targets
+    mean_squared_error = (error*error.conj()).sum()/error.shape[0]
+    mean_squared_error = mean_squared_error.real # Imaginary part is 0
+    return mean_squared_error
 
 
 def average_rms_error(y_true, y_pred, max_tdoa=None):
@@ -50,7 +54,7 @@ def average_rms_error(y_true, y_pred, max_tdoa=None):
         y_pred = denormalize(y_pred, min_tdoa, max_tdoa)
 
     with torch.no_grad():
-        return torch.mean(torch.sqrt((y_true - y_pred)**2))
+        return torch.sqrt(complex_mse_loss(y_pred, y_true))
 
 
 def compute_tdoa_with_gcc_phat(x1, x2, fs, mic_positions):
