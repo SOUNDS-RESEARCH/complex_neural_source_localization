@@ -1,0 +1,3 @@
+defaults:
+    - ..datasets/dcase_2019_task3_dataset
+selected_dataset: dcase_2019_task3_dataset # TODO: Add synthetic dataset

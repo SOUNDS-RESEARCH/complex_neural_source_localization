@@ -1,4 +1,4 @@
 defaults:
   - model
   - training
-  - dcase_2019_task3_dataset
+  - dataset: dcase_2019_task3_dataset
