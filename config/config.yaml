@@ -1,6 +1,4 @@
 defaults:
   - model
   - training
-  - training_dataset
-  - validation_dataset
-  - test_dataset
+  - dcase_2019_task3_dataset

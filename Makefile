@@ -11,3 +11,6 @@ test:
 
 test-train:
 	@python -m neural_tdoa.test_train
+
+train:
+	@python train.py

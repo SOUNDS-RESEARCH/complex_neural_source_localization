@@ -11,8 +11,7 @@ from datasets.generate_dataset import generate_dataset
 
 
 class TdoaDataset(torch.utils.data.Dataset):
-    def __init__(self,
-                 dataset_config=None):
+    def __init__(self, dataset_config=None):
 
         if dataset_config is None:
             dataset_config = load_config("training_dataset")

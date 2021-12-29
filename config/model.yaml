@@ -7,6 +7,7 @@ model:
   conv_type: "depthwise_separable" # depthwise_separable | conv2d
 
   # Feature params
+  n_input_channels: 4 # Change to 2 for TDOA experiments
   n_fft: 1024
   n_mels: 64
   window: "hann"

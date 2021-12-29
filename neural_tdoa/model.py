@@ -24,7 +24,7 @@ class TdoaCrnn(nn.Module):
         super().__init__()
 
         self.n_model_output = 1 # The regressed normalized TDOA from 0-1
-        self.n_input_channels = 2 # Two microphones
+        self.n_input_channels = model_config["n_input_channels"]
         self.max_tdoa = max_tdoa # Used for normalizing/denormalizing the network's output
         self.is_complex = True if model_config["feature_type"] == "stft" else False
         self.target_key = model_config["target"]
