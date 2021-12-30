@@ -10,9 +10,9 @@ from neural_tdoa.model import TdoaCrnn
 
 def create_trainer(training_config):
     checkpoint_callback = ModelCheckpoint(
-                            monitor="validation_rms",
+                            monitor="validation_loss",
                             save_last=True,
-                            filename='weights-{epoch:02d}-{validation_rms:.2f}',
+                            filename='weights-{epoch:02d}-{validation_loss:.2f}',
                             save_weights_only=True
                           )
 

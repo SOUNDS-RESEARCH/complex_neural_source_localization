@@ -17,6 +17,7 @@ def main(config: DictConfig):
                                         See the config/ directory for the configuration
     """
 
+    breakpoint()
     model = LitTdoaCrnn(config)
     dataset_train, dataset_val, dataset_test = _create_dataloaders(config)
     
