@@ -3,13 +3,11 @@ import numpy as np
 import pandas as pd
 import torch
 
-import pandas as pd
-import torch
-
 from pathlib import Path
+from torch.utils.data import Dataset
 
 
-class DCASE2019Task3Dataset(torch.utils.data.Dataset):
+class DCASE2019Task3Dataset(Dataset):
     def __init__(self, dataset_config, mode="train"):
         self.config = dataset_config
 
@@ -39,15 +37,20 @@ class DCASE2019Task3Dataset(torch.utils.data.Dataset):
 
         azimuth_in_degrees = annotation["azi"]
         azimuth_in_radians = np.deg2rad(azimuth_in_degrees)
-        azimuth_in_cartesian = torch.complex(
+        azimuth_complex_point = torch.complex(
             torch.Tensor([np.cos(azimuth_in_radians)]),
             torch.Tensor([np.sin(azimuth_in_radians)])
         )
+        azimuth_2d_point = torch.Tensor([
+            torch.Tensor([np.cos(azimuth_in_radians)]),
+            torch.Tensor([np.sin(azimuth_in_radians)])
+        ])
 
         return (
             torch.Tensor(signal), # Do you need to unsqueeze this?
             {
-                "azimuth_in_cartesian": azimuth_in_cartesian
+                "azimuth_complex_point": azimuth_complex_point,
+                "azimuth_2d_point": azimuth_2d_point
             }
         )
 

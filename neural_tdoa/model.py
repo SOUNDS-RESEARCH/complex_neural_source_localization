@@ -139,7 +139,7 @@ class TdoaCrnn(nn.Module):
             else:
                 pass # No activation
                 #x = (2*torch.pi)*torch.sigmoid(x) - torch.pi # A sigmoid which goes from -pi to pi
-        elif self.target_key == "azimuth_in_cartesian":
+        elif self.target_key == "azimuth_complex_point":
             # Should I include a sigmoid activation? The output complex value will be unbounded otherwise...
             # Perhaps normalizing the vector by its magnitude...
             pass

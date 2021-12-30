@@ -11,9 +11,11 @@ model:
   n_fft: 1024
   n_mels: 64
   window: "hann"
-
   hop_length_in_seconds: 10e-3
   hop_length: 480 # int(hop_length_in_seconds * sr)
 
   feature_type: stft # decoupled_stft (real and imag as separate channels) | stft (complex) | stft_magnitude
-  target: "azimuth_in_cartesian" # model target: azimuth_in_radians | azimuth_in_cartesian | normalized_tdoa  
+  target: "azimuth_2d_point" # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
+
+  selected_model: "crnn10" # crnn10 (baseline) or complex_crnn10
+

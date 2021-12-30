@@ -36,7 +36,7 @@ def generate_sample_config(base_config):
         source_signal, source_gain = generate_random_signal(int(sr*total_duration))
 
     tdoa, normalized_tdoa = _compute_tdoa(source_coordinates, mic_coordinates)
-    azimuth_in_radians, azimuth_in_cartesian = _compute_azimuth(source_coordinates, mic_coordinates)
+    azimuth_in_radians, azimuth_complex_point = _compute_azimuth(source_coordinates, mic_coordinates)
 
     return {
         "room_dims": room_dims,
@@ -49,7 +49,7 @@ def generate_sample_config(base_config):
         "tdoa": tdoa,
         "normalized_tdoa": normalized_tdoa,
         "azimuth_in_radians": azimuth_in_radians,
-        "azimuth_in_cartesian": azimuth_in_cartesian,
+        "azimuth_complex_point": azimuth_complex_point,
         "sr": sr,
         "source_signal": source_signal,
         "source_gain": source_gain,
@@ -210,5 +210,5 @@ def _compute_azimuth(source_coordinates, mic_coordinates):
     
     azimuth_in_radians = compute_doa(mic_1, mic_2, source_coordinates)
 
-    azimuth_in_cartesian = [np.cos(azimuth_in_radians), np.sin(azimuth_in_radians)]
-    return azimuth_in_radians, azimuth_in_cartesian
+    azimuth_complex_point = [np.cos(azimuth_in_radians), np.sin(azimuth_in_radians)]
+    return azimuth_in_radians, azimuth_complex_point

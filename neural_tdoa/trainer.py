@@ -3,6 +3,7 @@ import torch
 
 from pytorch_lightning.callbacks import ModelCheckpoint
 
+from neural_tdoa.baselines.crnns import Crnn10
 from neural_tdoa.metrics import Loss, average_rms_error #, compute_tdoa_with_gcc_phat
 from neural_tdoa.model import TdoaCrnn
 
@@ -30,8 +31,11 @@ class LitTdoaCrnn(pl.LightningModule):
         super().__init__()
         self.config = config
         self.target_key = self.config["model"]["target"]
-
-        self.model = TdoaCrnn(config["model"])
+        if self.config["model"]["selected_model"] == "crnn10":
+            pass
+            self.model = Crnn10()
+        else:
+            self.model = TdoaCrnn(config["model"])
         self.loss = Loss()
 
     def forward(self, x):
@@ -41,13 +45,12 @@ class LitTdoaCrnn(pl.LightningModule):
         x, y = batch
         y = y[self.target_key]
         predictions = self.model(x)
-
         loss = self.loss(predictions, y)
-        rms = average_rms_error(y, predictions, max_tdoa=self.model.max_tdoa)
+        #rms = average_rms_error(y, predictions, max_tdoa=self.model.max_tdoa)
 
         output_dict = {
             "loss": loss,
-            "rms": rms
+            #"rms": rms
         }
 
         return output_dict
@@ -59,7 +62,7 @@ class LitTdoaCrnn(pl.LightningModule):
 
         loss = self.loss(predictions, Y)
 
-        rms = average_rms_error(predictions, Y, max_tdoa=self.model.max_tdoa)
+        #rms = average_rms_error(predictions, Y, max_tdoa=self.model.max_tdoa)
 
         # mic_coordinates = Y["mic_coordinates"]
         # validation_config = self.config["validation_dataset"]
@@ -78,7 +81,7 @@ class LitTdoaCrnn(pl.LightningModule):
             
         output_dict = {
             "loss": loss,
-            "rms": rms
+            #"rms": rms
         }
         
         return output_dict
@@ -88,27 +91,27 @@ class LitTdoaCrnn(pl.LightningModule):
     
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
+        #avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         
         self.log("loss", avg_loss, on_step=False)
-        self.log("rms", avg_rms, on_step=False)
+        #self.log("rms", avg_rms, on_step=False)
     
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
+        #avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         # avg_rms_gcc = torch.stack([x['rms_gcc'] for x in outputs]).mean()
 
         self.log("validation_loss", avg_loss, on_step=False)
-        self.log("validation_rms", avg_rms, on_step=False)
+        #self.log("validation_rms", avg_rms, on_step=False)
         # self.log("validation_rms_gcc", avg_rms_gcc, on_step=False)
     
     def test_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
+        #avg_rms = torch.stack([x['rms'] for x in outputs]).mean()
         # avg_rms_gcc = torch.stack([x['rms_gcc'] for x in outputs]).mean()
 
         self.log("test_loss", avg_loss, on_step=False)
-        self.log("test_rms", avg_rms, on_step=False)
+        #self.log("test_rms", avg_rms, on_step=False)
         # self.log("test_rms_gcc", avg_rms_gcc, on_step=False)
         
 
