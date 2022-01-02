@@ -1,12 +1,13 @@
 import torch
-from torch.nn import Module, MSELoss
+from torch.nn import Module, MSELoss, CosineSimilarity
 
 from tdoa.math_utils import (
     compute_distance, gcc_phat, normalize_tdoa, denormalize
 )
 
+# Loss functions
 
-class Loss(Module):
+class CartesianLoss(Module):
     def __init__(self):
         super().__init__()
 
@@ -24,6 +25,16 @@ class Loss(Module):
             return self.complex_mse(model_output, targets)
         else:
             return self.mse(model_output, targets)
+
+
+class AngularLoss(Module):
+    def __init__(self):
+        super().__init__()
+        self.cosine_similarity = CosineSimilarity()
+
+    def forward(self, model_output, targets):
+        values = 1 - self.cosine_similarity(model_output, targets)
+        return values.mean()
 
 
 class ComplexMSELoss(Module):
@@ -46,6 +57,8 @@ def complex_mse_loss(model_output, targets):
     mean_squared_error = mean_squared_error.real # Imaginary part is 0
     return mean_squared_error
 
+
+# Metrics
 
 def average_rms_error(y_true, y_pred, max_tdoa=None):
     if max_tdoa is not None:

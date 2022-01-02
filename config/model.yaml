@@ -19,3 +19,4 @@ model:
 
   selected_model: "crnn10" # crnn10 (baseline) or complex_crnn10
 
+  loss: "angular" # cartesian | angular

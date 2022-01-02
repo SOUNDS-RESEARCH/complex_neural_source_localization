@@ -4,7 +4,7 @@ import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 from neural_tdoa.baselines.crnns import Crnn10
-from neural_tdoa.metrics import Loss, average_rms_error #, compute_tdoa_with_gcc_phat
+from neural_tdoa.metrics import CartesianLoss, AngularLoss
 from neural_tdoa.model import TdoaCrnn
 
 
@@ -32,11 +32,15 @@ class LitTdoaCrnn(pl.LightningModule):
         self.config = config
         self.target_key = self.config["model"]["target"]
         if self.config["model"]["selected_model"] == "crnn10":
-            pass
             self.model = Crnn10()
         else:
             self.model = TdoaCrnn(config["model"])
-        self.loss = Loss()
+        
+        if self.config["model"]["loss"] == "cartesian":
+            self.loss = CartesianLoss()
+        elif self.config["model"]["loss"] == "angular":
+            self.loss = AngularLoss()
+        
 
     def forward(self, x):
         return self.model(x)
