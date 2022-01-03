@@ -1,21 +1,27 @@
+import librosa
+import numpy as np
 import torch
 
-from neural_tdoa.metrics import Loss
-from neural_tdoa.model import TdoaCrnn
-from datasets.dataset import TdoaDataset
+from neural_tdoa.loss import Loss
+from neural_tdoa.crnns import Crnn10
 
 
 def test_neural_tdoa_loss():
 
-    loss_fn = Loss()
-    model = TdoaCrnn()
+    loss_fn = Loss("real_angular")
+    model = Crnn10()
 
-    dataset = TdoaDataset()
+    sample_path = "tests/fixtures/0.0_split1_ir0_ov1_3.wav"
 
-    sample = dataset[0]
-    # broken
-    target = sample[1]["target"]
+    sample = librosa.load(sample_path, sr=24000, mono=False, dtype=np.float32)[0]
+    sample = torch.from_numpy(sample).unsqueeze(0)
 
-    model_output = model(sample[0].unsqueeze(0))
+    target = {
+        "azimuth_2d_point": torch.Tensor([[0.0, 1.0]]),
+        "start_time": torch.Tensor([0.3]),
+        "end_time": torch.Tensor([0.6])
+    }
+
+    model_output = model(sample)
     
-    _ = loss_fn(model_output, torch.Tensor([[target]]))
+    _ = loss_fn(model_output, target)

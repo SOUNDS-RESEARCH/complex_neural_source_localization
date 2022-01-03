@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+from math import floor, ceil
 from pathlib import Path
 from torch.utils.data import Dataset
 
@@ -10,19 +11,19 @@ from torch.utils.data import Dataset
 class DCASE2019Task3Dataset(Dataset):
     def __init__(self, dataset_config, mode="train"):
         self.config = dataset_config
-
         self.sr = dataset_config["sr"]
         self.sample_duration_in_seconds = dataset_config["sample_duration_in_seconds"]
         self.sample_duration = self.sr*self.sample_duration_in_seconds
         self.num_mics = dataset_config["num_mics"]
         self.signals_path = Path(dataset_config["signals_path"])
-        
+
         mode_to_annotations = {
             "train": dataset_config["train_annotations_path"],
             "validation": dataset_config["validation_annotations_path"],
             "test": dataset_config["test_annotations_path"]
         }
         self.df = pd.read_csv(mode_to_annotations[mode]) 
+        print(mode, self.df.shape)
 
     def __getitem__(self, index):
         annotation = self.df.iloc[index]
@@ -47,21 +48,17 @@ class DCASE2019Task3Dataset(Dataset):
         ])
 
         return (
-            torch.Tensor(signal), # Do you need to unsqueeze this?
+            torch.Tensor(signal),
             {
                 "azimuth_complex_point": azimuth_complex_point,
-                "azimuth_2d_point": azimuth_2d_point
+                "azimuth_2d_point": azimuth_2d_point,
+                "start_time": torch.Tensor([annotation["start_time"]]),
+                "end_time": torch.Tensor([annotation["end_time"]])
             }
         )
 
     def __len__(self):
         return self.df.shape[0]
-
-
-def angle_to_cartesian(angle):
-    return np.array([
-        np.cos(angle), np.sin(angle)
-    ])
 
 
 if __name__ == "__main__":

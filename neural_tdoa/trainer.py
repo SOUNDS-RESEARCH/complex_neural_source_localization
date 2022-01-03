@@ -3,9 +3,8 @@ import torch
 
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from neural_tdoa.baselines.crnns import Crnn10
-from neural_tdoa.metrics import CartesianLoss, AngularLoss
-from neural_tdoa.model import TdoaCrnn
+from neural_tdoa.crnns import Crnn10
+from neural_tdoa.loss import Loss
 
 
 def create_trainer(training_config):
@@ -33,21 +32,14 @@ class LitTdoaCrnn(pl.LightningModule):
         self.target_key = self.config["model"]["target"]
         if self.config["model"]["selected_model"] == "crnn10":
             self.model = Crnn10()
-        else:
-            self.model = TdoaCrnn(config["model"])
         
-        if self.config["model"]["loss"] == "cartesian":
-            self.loss = CartesianLoss()
-        elif self.config["model"]["loss"] == "angular":
-            self.loss = AngularLoss()
-        
+        self.loss = Loss(self.config["model"]["loss"])
 
     def forward(self, x):
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y = y[self.target_key]
         predictions = self.model(x)
         loss = self.loss(predictions, y)
         #rms = average_rms_error(y, predictions, max_tdoa=self.model.max_tdoa)
@@ -60,11 +52,10 @@ class LitTdoaCrnn(pl.LightningModule):
         return output_dict
     
     def validation_step(self, batch, batch_idx):
-        X, Y = batch
-        Y = Y[self.target_key]
-        predictions = self.model(X)
+        x, y = batch
+        predictions = self.model(x)
 
-        loss = self.loss(predictions, Y)
+        loss = self.loss(predictions, y)
 
         #rms = average_rms_error(predictions, Y, max_tdoa=self.model.max_tdoa)
 

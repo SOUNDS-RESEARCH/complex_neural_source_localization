@@ -2,7 +2,7 @@ import librosa
 import numpy as np
 import torch
 
-from neural_tdoa.baselines.crnns import Crnn10
+from neural_tdoa.crnns import Crnn10
 
 
 def test_crnn10():

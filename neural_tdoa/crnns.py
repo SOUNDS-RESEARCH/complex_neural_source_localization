@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from neural_tdoa.feature_extractors import DecoupledStftArray
 
-from .model_utilities import ConvBlock, init_gru, init_layer, interpolate
+from .utils.model_utilities import ConvBlock, init_gru, init_layer, interpolate
 
 
 class Crnn10(nn.Module):
@@ -42,7 +42,6 @@ class Crnn10(nn.Module):
         '''(batch_size, mic_channels, n_freqs, time_steps)'''
         x = x.transpose(2, 3)
         '''(batch_size, mic_channels, n_freqs)'''
-
         x = self.conv_block1(x, self.pool_type, pool_size=self.pool_size)
         x = self.conv_block2(x, self.pool_type, pool_size=self.pool_size)
         x = self.conv_block3(x, self.pool_type, pool_size=self.pool_size)
@@ -60,12 +59,12 @@ class Crnn10(nn.Module):
 
         (x, _) = self.gru(x)
         
-        x = self.azimuth_fc(x)   
-        '''(batch_size, time_steps, class_num)'''
-        if self.pool_type == 'avg':
-            x = torch.mean(x, dim=1)
-        elif self.pool_type == 'max':
-            (x, _) = torch.max(x, dim=1)
+        x = self.azimuth_fc(x)
+        # '''(batch_size, time_steps, class_num)'''
+        # if self.pool_type == 'avg':
+        #     x = torch.mean(x, dim=1)
+        # elif self.pool_type == 'max':
+        #     (x, _) = torch.max(x, dim=1)
         # TODO: Feed the network the signal
         #x = interpolate(x, self.interp_ratio) 
 

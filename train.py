@@ -26,7 +26,6 @@ def main(config: DictConfig):
 
 
 def _create_dataloaders(config):
-    
     dataset_train = DCASE2019Task3Dataset(config["dataset"], mode="train")
     dataset_val = DCASE2019Task3Dataset(config["dataset"], mode="validation")
     dataset_test = DCASE2019Task3Dataset(config["dataset"], mode="test")
