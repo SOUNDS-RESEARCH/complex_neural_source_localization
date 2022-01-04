@@ -2,11 +2,8 @@ import torch
 
 from math import ceil, floor
 from torch.nn import Module, MSELoss, CosineSimilarity
-from torch.nn.modules import loss
 
-from tdoa.math_utils import (
-    compute_distance, gcc_phat, normalize_tdoa, denormalize
-)
+from tdoa.math_utils import denormalize
 
 # Loss functions
 
@@ -30,7 +27,8 @@ class Loss(Module):
         activity_mask_size = model_output.shape[1]
         activity_masks = _create_activity_masks(
                             targets["start_time"], targets["end_time"],
-                            self.frame_size_in_seconds, activity_mask_size)
+                            self.frame_size_in_seconds, activity_mask_size,
+                            model_output.is_cuda)
 
         targets = targets[self.target_key].unsqueeze(1)
         
@@ -52,7 +50,7 @@ class AngularLoss(Module):
         # for a related implementation used for NLP
         super().__init__()
         self.cosine_similarity = CosineSimilarity(dim=2)
-        # BE CAREFUL WITH THE DIM, AS YOUR TENSOR HAS TIME STEPS NOW.
+        # dim=0 -> batch | dim=1 -> time steps | dim=2 -> azimuth
 
     def forward(self, model_output, targets):
         values = 1 - self.cosine_similarity(model_output, targets)
@@ -92,7 +90,7 @@ def average_rms_error(y_true, y_pred, max_tdoa=None):
         return torch.sqrt(complex_mse_loss(y_pred, y_true))
 
 
-def _create_activity_masks(start, end, max_duration_in_seconds, size):
+def _create_activity_masks(start, end, max_duration_in_seconds, size, cuda=True):
     masks = torch.stack([
         _create_activity_mask(s, e, max_duration_in_seconds, size)
         for s, e in zip(start, end)
@@ -100,6 +98,8 @@ def _create_activity_masks(start, end, max_duration_in_seconds, size):
     masks = masks.unsqueeze(2)
     masks = masks.tile((1, 1, 2)) # In order to multiply by 2d array        
 
+    if cuda:
+        masks = masks.cuda()
     return masks
 
 
