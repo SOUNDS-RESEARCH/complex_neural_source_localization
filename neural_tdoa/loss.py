@@ -8,48 +8,63 @@ from tdoa.math_utils import denormalize
 # Loss functions
 
 class Loss(Module):
-    def __init__(self, loss_type, frame_size_in_seconds=1):
+    def __init__(self, loss_type, model_output_type="scalar", frame_size_in_seconds=1):
+        """Class abstracting the loss function
+
+        Args:
+            loss_type (string): real_cartesian, complex_cartesian, azimuth_complex_point or azimuth_2d_point
+            model_output_type (str, optional): "scalar" or. Defaults to "scalar".
+            frame_size_in_seconds (int, optional): [description]. Defaults to 1.
+
+        """
+
         super().__init__()
 
-        if loss_type == "real_cartesian":
+        if loss_type == "":
             self.loss = MSELoss()
             self.target_key = "azimuth_2d_point"
         elif loss_type == "complex_cartesian":
             self.loss = ComplexMSELoss()
             self.target_key = "azimuth_complex_point"
         elif loss_type == "real_angular":
-            self.loss = AngularLoss()
+            self.loss = AngularLoss(model_output_type)
             self.target_key = "azimuth_2d_point"
         
         self.frame_size_in_seconds = frame_size_in_seconds
+        self.model_output_type = model_output_type
 
     def forward(self, model_output, targets):
         activity_mask_size = model_output.shape[1]
-        activity_masks = _create_activity_masks(
-                            targets["start_time"], targets["end_time"],
-                            self.frame_size_in_seconds, activity_mask_size,
-                            model_output.is_cuda)
+        if self.model_output_type == "frame":
+            activity_masks = _create_activity_masks(
+                                targets["start_time"], targets["end_time"],
+                                self.frame_size_in_seconds, activity_mask_size,
+                                model_output.is_cuda)
 
-        targets = targets[self.target_key].unsqueeze(1)
-        
-        targets = targets*activity_masks
-        masked_model_output = model_output*activity_masks
+            targets = targets[self.target_key].unsqueeze(1)
+            
+            targets = targets*activity_masks
+            model_output = model_output*activity_masks
+        else:
+            targets = targets[self.target_key]
 
-        if masked_model_output.shape != targets.shape:
+        if model_output.shape != targets.shape:
             raise ValueError(
                 "Model output's shape is {}, target's is {}".format(
                     model_output.shape, targets.shape
             ))
         
-        return self.loss(masked_model_output, targets)
+        return self.loss(model_output, targets)
 
 
 class AngularLoss(Module):
-    def __init__(self):
+    def __init__(self, model_output_type="scalar"):
         # See https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html
         # for a related implementation used for NLP
         super().__init__()
-        self.cosine_similarity = CosineSimilarity(dim=2)
+
+        dim = 1 if model_output_type == "scalar" else 2
+        self.cosine_similarity = CosineSimilarity(dim=dim)
         # dim=0 -> batch | dim=1 -> time steps | dim=2 -> azimuth
 
     def forward(self, model_output, targets):

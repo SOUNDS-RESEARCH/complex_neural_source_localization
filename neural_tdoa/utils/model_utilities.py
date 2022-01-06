@@ -9,6 +9,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from neural_tdoa.utils.complexPyTorch.complexLayers import (
+    ComplexConv2d, ComplexBatchNorm2d
+)
+from neural_tdoa.utils.complexPyTorch.complexFunctions import (
+    complex_avg_pool2d, complex_relu
+)
 
 def interpolate(x, ratio):
     '''
@@ -91,7 +97,6 @@ class ConvBlock(nn.Module):
         self.init_weights()
         
     def init_weights(self):
-        
         init_layer(self.conv1)
         init_layer(self.conv2)
         init_layer(self.bn1)
@@ -108,5 +113,37 @@ class ConvBlock(nn.Module):
         elif pool_type == 'frac':
             fractional_maxpool2d = nn.FractionalMaxPool2d(kernel_size=pool_size, output_ratio=1/np.sqrt(2))
             x = fractional_maxpool2d(x)
+
+        return x
+
+
+class ComplexConvBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, 
+                kernel_size=(3,3), stride=(1,1), padding=(1,1)):
+        
+        super().__init__()
+
+        out_channels = out_channels//2
+        
+        self.conv = ComplexConv2d(in_channels=in_channels, 
+                              out_channels=out_channels,
+                              kernel_size=kernel_size, stride=stride,
+                              padding=padding, bias=False)
+                              
+        self.bn = ComplexBatchNorm2d(out_channels)
+
+        #self.init_weights()
+        # TODO: Complex initialization!
+        
+    def init_weights(self):
+        init_layer(self.conv)
+        init_layer(self.bn)
+        
+    def forward(self, x, pool_type='avg', pool_size=(2, 2)):    
+        x = complex_relu(self.bn(self.conv(x)))
+        if pool_type == 'avg':
+            x = complex_avg_pool2d(x, kernel_size=pool_size)
+        else:
+            raise NotImplementedError("Only complex average pooling is supported")
 
         return x
