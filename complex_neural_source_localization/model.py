@@ -53,14 +53,22 @@ class Crnn10(nn.Module):
 
     def _init_conv_blocks(self, conv_config):
         
-        in_channels = self.n_input_channels
-        conv_blocks = []
-        for config in conv_config:
+        conv_blocks = [
+            ConvBlock(self.n_input_channels, conv_config[0]["n_channels"],
+                          block_type=conv_config[0]["type"])
+        ]
+        print(conv_config[0]["n_channels"])
+
+        for config in conv_config[1:]:
+            last_layer = conv_blocks[-1]
+            in_channels = last_layer.out_channels
+            if last_layer.block_type == "complex" and config["type"] != "complex": # complex number will be unpacked into 2x channels
+                in_channels *= 2
+            print(in_channels, config["n_channels"], config["type"])
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
                           block_type=config["type"])
             )
-            in_channels = config["n_channels"]
         
         return nn.ModuleList(conv_blocks)
         

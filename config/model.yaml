@@ -17,10 +17,10 @@ model:
 
   conv_layers:
     - layer_1:
-      type: real_single # complex | real_single | real_double
+      type: complex # complex | real_single | real_double
       n_channels: 64
     - layer_2:
-      type: real_double
+      type: complex
       n_channels: 128
     - layer_3:
       type: real_double

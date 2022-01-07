@@ -114,6 +114,9 @@ class ConvBlock(nn.Module):
         if block_type != "complex": # Complex initialization not yet supported
             self.init_weights()
         
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        
     def init_weights(self):
         init_layer(self.conv1)
         init_layer(self.bn1)
