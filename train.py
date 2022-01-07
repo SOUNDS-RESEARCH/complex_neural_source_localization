@@ -4,7 +4,7 @@ import torch
 from omegaconf import DictConfig
 
 from datasets.dcase_2019_task3_dataset import DCASE2019Task3Dataset
-from neural_tdoa.trainer import LitTdoaCrnn, create_trainer
+from complex_neural_source_localization.trainer import LitTdoaCrnn, create_trainer
 
 
 @hydra.main(config_path="config", config_name="config")

@@ -22,8 +22,7 @@ class DCASE2019Task3Dataset(Dataset):
             "validation": dataset_config["validation_annotations_path"],
             "test": dataset_config["test_annotations_path"]
         }
-        self.df = pd.read_csv(mode_to_annotations[mode]) 
-        print(mode, self.df.shape)
+        self.df = pd.read_csv(mode_to_annotations[mode])
 
     def __getitem__(self, index):
         annotation = self.df.iloc[index]

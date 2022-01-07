@@ -4,7 +4,7 @@ from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
 
 from datasets.dataset import TdoaDataset
-from neural_tdoa.model import TdoaCrnn
+from complex_neural_source_localization.model import TdoaCrnn
 
 
 def test_tdoa_crnn10_with_stft():

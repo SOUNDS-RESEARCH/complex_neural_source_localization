@@ -1,4 +1,4 @@
-from neural_tdoa.utils.load_config import load_config
+from complex_neural_source_localization.utils.load_config import load_config
 import os
 import pandas as pd
 import torch

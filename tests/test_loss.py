@@ -2,8 +2,8 @@ import librosa
 import numpy as np
 import torch
 
-from neural_tdoa.loss import Loss
-from neural_tdoa.crnns import Crnn10
+from complex_neural_source_localization.loss import Loss
+from complex_neural_source_localization.model import Crnn10
 
 
 def test_neural_tdoa_loss():

@@ -1,6 +1,6 @@
 import torch
 
-from neural_tdoa.trainer import TdoaCrnn
+from complex_neural_source_localization.trainer import TdoaCrnn
 from datasets.dataset import TdoaDataset
 
 

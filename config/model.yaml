@@ -1,21 +1,31 @@
 model:
   # NN Model settings
-  pool_type: "avg" # "max" | "avg"
+  pool_type: avg # max | avg
   pool_size: [2, 1]
-  n_output_channels: 512
-  n_conv_layers: 4
-  conv_type: "depthwise_separable" # depthwise_separable | conv2d
-
   # Feature params
-  n_input_channels: 4 # Change to 2 for TDOA experiments
+  n_input_channels: 4
   n_fft: 1024
   n_mels: 64
-  window: "hann"
+  window: hann
   hop_length_in_seconds: 10e-3
   hop_length: 480 # int(hop_length_in_seconds * sr)
   feature_type: stft # decoupled_stft (real and imag as separate channels) | stft (complex) | stft_magnitude
 
-  selected_model: "crnn10" # crnn10 (baseline) or complex_crnn10
-  output_type: "scalar" # scalar | frame
-  target: "azimuth_2d_point" # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
-  loss: "real_angular" # real_angular | real_cartesian | complex_cartesian
+  output_type: scalar # scalar | frame
+  target: azimuth_2d_point # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
+  loss: real_angular # real_angular | real_cartesian | complex_cartesian
+
+  conv_layers:
+    - layer_1:
+      type: real_single # complex | real_single | real_double
+      n_channels: 64
+    - layer_2:
+      type: real_double
+      n_channels: 128
+    - layer_3:
+      type: real_double
+      n_channels: 256
+    - layer_4:
+      type: real_double
+      n_channels: 512
+    

@@ -3,8 +3,8 @@ import torch
 
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from neural_tdoa.crnns import Crnn10
-from neural_tdoa.loss import Loss
+from complex_neural_source_localization.model import Crnn10
+from complex_neural_source_localization.loss import Loss
 
 
 def create_trainer(training_config):
@@ -29,9 +29,9 @@ class LitTdoaCrnn(pl.LightningModule):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.target_key = self.config["model"]["target"]
-        if self.config["model"]["selected_model"] == "crnn10":
-            self.model = Crnn10()
+        self.target_key = config["model"]["target"]
+        
+        self.model = Crnn10(conv_config=config["model"]["conv_layers"])
         
         self.loss = Loss(self.config["model"]["loss"])
 

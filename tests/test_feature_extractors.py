@@ -3,7 +3,7 @@ import torchaudio
 from hydra import compose, initialize
 from hydra.core.global_hydra import GlobalHydra
 
-from neural_tdoa.feature_extractors import (
+from complex_neural_source_localization.feature_extractors import (
     StftArray, MfccArray
 )
 

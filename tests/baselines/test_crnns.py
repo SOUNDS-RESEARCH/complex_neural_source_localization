@@ -2,7 +2,7 @@ import librosa
 import numpy as np
 import torch
 
-from neural_tdoa.crnns import Crnn10
+from complex_neural_source_localization.model import Crnn10
 
 
 def test_crnn10():
