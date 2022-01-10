@@ -2,6 +2,8 @@ import pytorch_lightning as pl
 import torch
 
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
+
 
 from complex_neural_source_localization.model import Crnn10
 from complex_neural_source_localization.loss import Loss
@@ -16,8 +18,10 @@ def create_trainer(training_config):
                           )
 
     gpus = 1 if torch.cuda.is_available() else 0
+
+    progress_bar = ProgressBar()
     trainer = pl.Trainer(max_epochs=training_config["n_epochs"],
-                         callbacks=[checkpoint_callback],
+                         callbacks=[checkpoint_callback, progress_bar],
                          gpus=gpus)
     return trainer
 
@@ -37,7 +41,7 @@ class LitTdoaCrnn(pl.LightningModule):
 
     def forward(self, x):
         return self.model(x)
-
+    
     def training_step(self, batch, batch_idx):
         x, y = batch
         predictions = self.model(x)
@@ -53,10 +57,8 @@ class LitTdoaCrnn(pl.LightningModule):
         x, y = batch
         predictions = self.model(x)
 
-        loss = self.loss(predictions, y)
-
         output_dict = {
-            "loss": loss
+            "loss": self.loss(predictions, y)
         }
         
         return output_dict
@@ -84,3 +86,11 @@ class LitTdoaCrnn(pl.LightningModule):
             return torch.optim.SGD(self.parameters(), lr=lr)
         elif optimizer == "adam":
             return torch.optim.Adam(self.parameters(), lr=lr)
+
+
+class ProgressBar(TQDMProgressBar):
+    def get_metrics(self, trainer, model):
+        # don't show the version number
+        items = super().get_metrics(trainer, model)
+        items.pop("v_num", None)
+        return items

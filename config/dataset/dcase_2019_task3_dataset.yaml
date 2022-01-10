@@ -1,7 +1,10 @@
 sr: 24000
-signals_path: /Users/ezajlerg/datasets/dcase_2019_task_3/mic_dev_splitted
-train_annotations_path: /Users/ezajlerg/datasets/dcase_2019_task_3/train_annotations.csv
-validation_annotations_path: /Users/ezajlerg/datasets/dcase_2019_task_3/validation_annotations.csv
-test_annotations_path: /Users/ezajlerg/datasets/dcase_2019_task_3/validation_annotations.csv
+train_wav_path: /Users/ezajlerg/datasets/dcase_2019_task_3/mic_dev_splitted
+validation_wav_path: /Users/ezajlerg/datasets/dcase_2019_task_3/mic_dev_splitted
+test_wav_path: /Users/ezajlerg/datasets/dcase_2019_task_3/mic_eval_splitted
+train_csv_path: /Users/ezajlerg/datasets/dcase_2019_task_3/train_annotations.csv
+validation_csv_path: /Users/ezajlerg/datasets/dcase_2019_task_3/validation_annotations.csv
+test_csv_path: /Users/ezajlerg/datasets/dcase_2019_task_3/test_annotations.csv
+test_wavs_path: /Users/ezajlerg/datasets/dcase_2019_task_3/mic_eval_splitted
 num_mics: 4
 sample_duration_in_seconds: 1

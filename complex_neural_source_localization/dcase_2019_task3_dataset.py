@@ -14,18 +14,24 @@ class DCASE2019Task3Dataset(Dataset):
         self.sample_duration_in_seconds = dataset_config["sample_duration_in_seconds"]
         self.sample_duration = self.sr*self.sample_duration_in_seconds
         self.num_mics = dataset_config["num_mics"]
-        self.signals_path = Path(dataset_config["signals_path"])
 
-        mode_to_annotations = {
-            "train": dataset_config["train_annotations_path"],
-            "validation": dataset_config["validation_annotations_path"],
-            "test": dataset_config["test_annotations_path"]
-        }
-        self.df = pd.read_csv(mode_to_annotations[mode])
+        if mode == "train":
+            annotations_path = dataset_config["train_csv_path"]
+            self.wav_path = Path(dataset_config["train_wav_path"])
+        elif mode == "validation":
+            annotations_path = dataset_config["validation_csv_path"]
+            self.wav_path = Path(dataset_config["validation_wav_path"])
+        elif mode == "test":
+            annotations_path = dataset_config["test_csv_path"]
+            self.wav_path = Path(dataset_config["test_wav_path"])
+        else:
+            raise ValueError(f"Dataset mode {mode} is invalid")
+
+        self.df = pd.read_csv(annotations_path)
 
     def __getitem__(self, index):
         annotation = self.df.iloc[index]
-        wav_file_path = self.signals_path / (annotation["file_name"] + ".wav")
+        wav_file_path = self.wav_path / (annotation["file_name"] + ".wav")
 
         signal, _ = librosa.load(wav_file_path,
                                  sr=self.sr, mono=False, dtype=np.float32)
