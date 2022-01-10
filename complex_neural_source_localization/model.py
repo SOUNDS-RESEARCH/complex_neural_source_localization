@@ -23,7 +23,8 @@ class Crnn10(nn.Module):
                  pool_type="avg", pool_size=(2,2),
                  complex_to_real_function="concatenate",
                  conv_config=DEFAULT_CONV_CONFIG,
-                 stft_config=DEFAULT_STFT_CONFIG):
+                 stft_config=DEFAULT_STFT_CONFIG,
+                 init_conv_layers=False):
         
         super().__init__()
 
@@ -38,7 +39,7 @@ class Crnn10(nn.Module):
         else:
             self.feature_extractor = DecoupledStftArray(stft_config)
 
-        self.conv_blocks = self._init_conv_blocks(conv_config)
+        self.conv_blocks = self._init_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
         self.gru = nn.GRU(input_size=512, hidden_size=256, 
             num_layers=1, batch_first=True, bidirectional=True)
@@ -51,23 +52,21 @@ class Crnn10(nn.Module):
         init_gru(self.gru)
         init_layer(self.azimuth_fc)
 
-    def _init_conv_blocks(self, conv_config):
+    def _init_conv_blocks(self, conv_config, init_conv_layers):
         
         conv_blocks = [
             ConvBlock(self.n_input_channels, conv_config[0]["n_channels"],
                           block_type=conv_config[0]["type"])
         ]
-        print(conv_config[0]["n_channels"])
 
         for config in conv_config[1:]:
             last_layer = conv_blocks[-1]
             in_channels = last_layer.out_channels
             if last_layer.block_type == "complex" and config["type"] != "complex": # complex number will be unpacked into 2x channels
                 in_channels *= 2
-            print(in_channels, config["n_channels"], config["type"])
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
-                          block_type=config["type"])
+                          block_type=config["type"], init=init_conv_layers)
             )
         
         return nn.ModuleList(conv_blocks)

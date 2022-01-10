@@ -77,7 +77,8 @@ class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, 
                 kernel_size=(3,3), stride=(1,1),
                 padding=(1,1), pool_size=(2, 2),
-                block_type="real_double"):
+                block_type="real_double",
+                init=False):
         
         super().__init__()
         self.block_type = block_type
@@ -111,7 +112,7 @@ class ConvBlock(nn.Module):
                                 
             self.bn2 = nn.BatchNorm2d(out_channels)
 
-        if block_type != "complex": # Complex initialization not yet supported
+        if block_type != "complex" and init: # Complex initialization not yet supported
             self.init_weights()
         
         self.in_channels = in_channels

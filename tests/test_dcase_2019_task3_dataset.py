@@ -1,6 +1,6 @@
 import torch
 
-from datasets.dcase_2019_task3_dataset import create_activity_mask
+from complex_neural_source_localization.dcase_2019_task3_dataset import create_activity_mask
 
 
 def test_create_activity_mask():

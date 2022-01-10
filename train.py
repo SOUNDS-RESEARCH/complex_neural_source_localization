@@ -3,7 +3,7 @@ import torch
 
 from omegaconf import DictConfig
 
-from datasets.dcase_2019_task3_dataset import DCASE2019Task3Dataset
+from complex_neural_source_localization.dcase_2019_task3_dataset import DCASE2019Task3Dataset
 from complex_neural_source_localization.trainer import LitTdoaCrnn, create_trainer
 
 
