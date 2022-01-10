@@ -61,7 +61,7 @@ class LitTdoaCrnn(pl.LightningModule):
         output_dict = {
             "loss": loss
         }
-        self.log("v_loss", loss, prog_bar=True)
+        #self.log("v_loss", loss, prog_bar=True)
 
         return output_dict
 
