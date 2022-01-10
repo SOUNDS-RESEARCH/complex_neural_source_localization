@@ -57,10 +57,12 @@ class LitTdoaCrnn(pl.LightningModule):
         x, y = batch
         predictions = self.model(x)
 
+        loss = self.loss(predictions, y)
         output_dict = {
-            "loss": self.loss(predictions, y)
+            "loss": loss
         }
-        
+        self.log("v_loss", loss, prog_bar=True)
+
         return output_dict
 
     def test_step(self, batch, batch_idx):

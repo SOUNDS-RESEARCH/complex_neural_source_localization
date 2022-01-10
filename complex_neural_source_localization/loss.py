@@ -8,29 +8,27 @@ from tdoa.math_utils import denormalize
 # Loss functions
 
 class Loss(Module):
-    def __init__(self, loss_type, model_output_type="scalar", frame_size_in_seconds=1):
+    def __init__(self, loss_type, model_output_type="scalar"):
         """Class abstracting the loss function
 
         Args:
-            loss_type (string): real_cartesian, complex_cartesian, azimuth_complex_point or azimuth_2d_point
+            loss_type (string): angular | magnitude
             model_output_type (str, optional): "scalar" or. Defaults to "scalar".
-            frame_size_in_seconds (int, optional): [description]. Defaults to 1.
 
         """
 
         super().__init__()
-
-        if loss_type == "":
-            self.loss = MSELoss()
-            self.target_key = "azimuth_2d_point"
-        elif loss_type == "complex_cartesian":
-            self.loss = ComplexMSELoss()
-            self.target_key = "azimuth_complex_point"
-        elif loss_type == "real_angular":
-            self.loss = AngularLoss(model_output_type)
-            self.target_key = "azimuth_2d_point"
         
-        self.frame_size_in_seconds = frame_size_in_seconds
+        self.target_key = "azimuth_2d_point"
+
+        if loss_type == "angular":
+            self.loss = AngularLoss(model_output_type)
+        elif loss_type == "magnitude":
+            self.loss = MagnitudeLoss()
+        elif loss_type == "angular_and_magnitude":
+            self.loss = AngularAndMagnitudeLoss(model_output_type)
+
+        
         self.model_output_type = model_output_type
 
     def forward(self, model_output, targets):
@@ -72,37 +70,48 @@ class AngularLoss(Module):
         return values.mean()
 
 
-class ComplexMSELoss(Module):
+class MagnitudeLoss(Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, model_output, targets):
+        model_output_norm = torch.norm(model_output, dim=1)
+        targets_norm = torch.norm(targets, dim=1)
+        return torch.mean((model_output_norm - targets_norm)**2)
+
+
+class AngularAndMagnitudeLoss(Module):
     def __init__(self):
         super().__init__()
 
+        self.angular_loss = AngularLoss()
+        self.magnitude_loss = MagnitudeLoss()
+
     def forward(self, model_output, targets):
-        return complex_mse_loss(model_output, targets)
+        angular_loss = self.angular_loss(model_output, targets)
+        magnitude_loss = self.magnitude_loss(model_output, targets)
+        return angular_loss + magnitude_loss
 
 
-def complex_mse_loss(model_output, targets):
-    if model_output.shape != targets.shape:
-        raise ValueError(
-            "Model output's shape is {}, target's is {}".format(
-                model_output.shape, targets.shape
-        ))
+# class ComplexMSELoss(Module):
+#     def __init__(self):
+#         super().__init__()
+
+#     def forward(self, model_output, targets):
+#         return complex_mse_loss(model_output, targets)
+
+
+# def complex_mse_loss(model_output, targets):
+#     if model_output.shape != targets.shape:
+#         raise ValueError(
+#             "Model output's shape is {}, target's is {}".format(
+#                 model_output.shape, targets.shape
+#         ))
     
-    error = model_output - targets
-    mean_squared_error = (error*error.conj()).sum()/error.shape[0]
-    mean_squared_error = mean_squared_error.real # Imaginary part is 0
-    return mean_squared_error
+#     error = model_output - targets
+#     mean_squared_error = (error*error.conj()).sum()/error.shape[0]
+#     mean_squared_error = mean_squared_error.real # Imaginary part is 0
+#     return mean_squared_error
 
-
-# Metrics
-
-def average_rms_error(y_true, y_pred, max_tdoa=None):
-    if max_tdoa is not None:
-        min_tdoa = -max_tdoa
-        y_true = denormalize(y_true, min_tdoa, max_tdoa)
-        y_pred = denormalize(y_pred, min_tdoa, max_tdoa)
-
-    with torch.no_grad():
-        return torch.sqrt(complex_mse_loss(y_pred, y_true))
 
 
 def _create_activity_masks(start, end, max_duration_in_seconds, size, cuda=True):

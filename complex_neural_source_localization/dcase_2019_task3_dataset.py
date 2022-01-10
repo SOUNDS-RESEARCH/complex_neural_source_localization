@@ -42,20 +42,17 @@ class DCASE2019Task3Dataset(Dataset):
 
         azimuth_in_degrees = annotation["azi"]
         azimuth_in_radians = np.deg2rad(azimuth_in_degrees)
-        azimuth_complex_point = torch.complex(
-            torch.Tensor([np.cos(azimuth_in_radians)]),
-            torch.Tensor([np.sin(azimuth_in_radians)])
-        )
         azimuth_2d_point = torch.Tensor([
             torch.Tensor([np.cos(azimuth_in_radians)]),
             torch.Tensor([np.sin(azimuth_in_radians)])
         ])
 
+        azimuth = azimuth_2d_point*annotation["duration"]
+        
         return (
             torch.Tensor(signal),
             {
-                "azimuth_complex_point": azimuth_complex_point,
-                "azimuth_2d_point": azimuth_2d_point,
+                "azimuth_2d_point": azimuth,
                 "start_time": torch.Tensor([annotation["start_time"]]),
                 "end_time": torch.Tensor([annotation["end_time"]])
             }

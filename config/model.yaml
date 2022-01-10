@@ -13,7 +13,7 @@ model:
 
   output_type: scalar # scalar | frame
   target: azimuth_2d_point # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
-  loss: real_angular # real_angular | real_cartesian | complex_cartesian
+  loss: magnitude # angular | magnitude | angular_and_magnitude 
 
   conv_layers:
     - layer_1:
