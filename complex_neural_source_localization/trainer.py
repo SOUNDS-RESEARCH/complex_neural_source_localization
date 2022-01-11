@@ -3,7 +3,7 @@ import torch
 
 from pytorch_lightning.callbacks import ModelCheckpoint
 #from pytorch_lightning.callbacks.progress import ProgressBar
-
+from torch.optim.lr_scheduler import MultiStepLR
 
 from complex_neural_source_localization.model import Crnn10
 from complex_neural_source_localization.loss import Loss
@@ -19,7 +19,7 @@ def create_trainer(training_config):
 
     gpus = 1 if torch.cuda.is_available() else 0
 
-    progress_bar = CustomProgressBar()
+    #progress_bar = CustomProgressBar()
     trainer = pl.Trainer(max_epochs=training_config["n_epochs"],
                          callbacks=[checkpoint_callback],
                          gpus=gpus)
@@ -82,12 +82,13 @@ class LitTdoaCrnn(pl.LightningModule):
 
     def configure_optimizers(self):
         lr = self.config["training"]["learning_rate"]
-        optimizer = self.config["training"]["optimizer"]
+        decay_step = self.config["training"]["learning_rate_decay_steps"]
+        decay_value = self.config["training"]["learning_rate_decay_values"]
 
-        if optimizer == "sgd":
-            return torch.optim.SGD(self.parameters(), lr=lr)
-        elif optimizer == "adam":
-            return torch.optim.Adam(self.parameters(), lr=lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+        scheduler = MultiStepLR(optimizer, decay_step, decay_value)
+
+        return [optimizer], [scheduler]
 
 
 # class CustomProgressBar(ProgressBar):
