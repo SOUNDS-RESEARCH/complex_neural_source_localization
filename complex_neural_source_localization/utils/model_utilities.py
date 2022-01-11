@@ -78,7 +78,8 @@ class ConvBlock(nn.Module):
                 kernel_size=(3,3), stride=(1,1),
                 padding=(1,1), pool_size=(2, 2),
                 block_type="real_double",
-                init=False):
+                init=False,
+                dropout_rate=0.1):
         
         super().__init__()
         self.block_type = block_type
@@ -112,6 +113,7 @@ class ConvBlock(nn.Module):
                                 
             self.bn2 = nn.BatchNorm2d(out_channels)
 
+        self.dropout = nn.Dropout(dropout_rate)
         if block_type != "complex" and init: # Complex initialization not yet supported
             self.init_weights()
         
@@ -130,4 +132,5 @@ class ConvBlock(nn.Module):
         if self.block_type == "real_double":
             x = self.activation(self.bn2(self.conv2(x)))
         x = self.pooling(x, kernel_size=self.pool_size)
+        x = self.dropout(x)
         return x

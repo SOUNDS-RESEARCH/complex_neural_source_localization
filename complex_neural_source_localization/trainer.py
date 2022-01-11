@@ -35,7 +35,9 @@ class LitTdoaCrnn(pl.LightningModule):
         self.config = config
         self.target_key = config["model"]["target"]
         
-        self.model = Crnn10(conv_config=config["model"]["conv_layers"])
+        self.model = Crnn10(conv_config=config["model"]["conv_layers"],
+                            last_layer_dropout_rate=config["model"]["last_layer_dropout_rate"],
+                            )
         
         self.loss = Loss(self.config["model"]["loss"])
 

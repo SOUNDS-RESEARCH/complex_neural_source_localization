@@ -24,7 +24,8 @@ class Crnn10(nn.Module):
                  complex_to_real_function="concatenate",
                  conv_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
-                 init_conv_layers=False):
+                 init_conv_layers=False,
+                 last_layer_dropout_rate=0.5):
         
         super().__init__()
 
@@ -44,7 +45,11 @@ class Crnn10(nn.Module):
         self.gru = nn.GRU(input_size=512, hidden_size=256, 
             num_layers=1, batch_first=True, bidirectional=True)
 
-        self.azimuth_fc = nn.Linear(512, 2, bias=True) # 2 cartesian dimensions
+        self.azimuth_fc = nn.Sequential(
+            nn.Linear(512, 2, bias=True), # 2 cartesian dimensions
+            nn.Dropout(last_layer_dropout_rate)
+        )
+        
 
         self._init_weights()
 
@@ -56,7 +61,8 @@ class Crnn10(nn.Module):
         
         conv_blocks = [
             ConvBlock(self.n_input_channels, conv_config[0]["n_channels"],
-                          block_type=conv_config[0]["type"])
+                          block_type=conv_config[0]["type"],
+                          dropout_rate=conv_config[0]["dropout_rate"])
         ]
 
         for config in conv_config[1:]:
@@ -66,7 +72,8 @@ class Crnn10(nn.Module):
                 in_channels *= 2
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
-                          block_type=config["type"], init=init_conv_layers)
+                          block_type=config["type"], init=init_conv_layers,
+                          dropout_rate=config["dropout_rate"])
             )
         
         return nn.ModuleList(conv_blocks)

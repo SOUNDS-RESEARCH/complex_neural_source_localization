@@ -2,6 +2,7 @@ model:
   # NN Model settings
   pool_type: avg # max | avg
   pool_size: [2, 1]
+  last_layer_dropout_rate: 0.5
   # Feature params
   n_input_channels: 4
   n_fft: 1024
@@ -19,13 +20,17 @@ model:
     - layer_1:
       type: real_single # complex | real_single | real_double
       n_channels: 64
+      dropout_rate: 0.2
     - layer_2:
       type: real_single
       n_channels: 128
+      dropout_rate: 0.2
     - layer_3:
       type: real_single
       n_channels: 256
+      dropout_rate: 0.2
     - layer_4:
       type: real_single
       n_channels: 512
+      dropout_rate: 0.2
   init_conv_layers: False
