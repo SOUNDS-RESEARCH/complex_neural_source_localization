@@ -84,6 +84,7 @@ class ConvBlock(nn.Module):
         super().__init__()
         self.block_type = block_type
         self.pool_size=pool_size
+        self.dropout_rate = dropout_rate
 
         if block_type == "complex":
             out_channels = out_channels//2
@@ -131,5 +132,7 @@ class ConvBlock(nn.Module):
         if self.block_type == "real_double":
             x = self.activation(self.bn2(self.conv2(x)))
         x = self.pooling(x, kernel_size=self.pool_size)
-        x = self.dropout(x)
+        
+        if self.dropout_rate > 0:
+            x = self.dropout(x)
         return x

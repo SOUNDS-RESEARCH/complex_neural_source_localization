@@ -45,10 +45,13 @@ class Crnn10(nn.Module):
         self.gru = nn.GRU(input_size=512, hidden_size=256, 
             num_layers=1, batch_first=True, bidirectional=True)
 
-        self.azimuth_fc = nn.Sequential(
-            nn.Linear(512, 2, bias=True), # 2 cartesian dimensions
-            nn.Dropout(last_layer_dropout_rate)
-        )
+        if last_layer_dropout_rate > 0:
+            self.azimuth_fc = nn.Sequential(
+                nn.Linear(512, 2, bias=True), # 2 cartesian dimensions
+                nn.Dropout(last_layer_dropout_rate)
+            )
+        else:
+            self.azimuth_fc = nn.Linear(512, 2, bias=True)
         
 
         self._init_weights()
