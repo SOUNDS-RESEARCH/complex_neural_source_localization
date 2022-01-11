@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
-    ComplexConv2d, ComplexBatchNorm2d
+    ComplexConv2d, ComplexBatchNorm2d, ComplexDropout
 )
 from complex_neural_source_localization.utils.complexPyTorch.complexFunctions import (
     complex_avg_pool2d, complex_relu
@@ -93,7 +93,7 @@ class ConvBlock(nn.Module):
                                 kernel_size=kernel_size, stride=stride,
                                 padding=padding, bias=False)
             self.bn1 = ComplexBatchNorm2d(out_channels)
-
+            self.dropout = ComplexDropout(dropout_rate)
             self.activation = complex_relu
             self.pooling = complex_avg_pool2d
         else:
@@ -102,6 +102,7 @@ class ConvBlock(nn.Module):
                         kernel_size=kernel_size, stride=stride,
                         padding=padding, bias=False)
             self.bn1 = nn.BatchNorm2d(out_channels)
+            self.dropout = nn.Dropout(dropout_rate)
             self.activation = F.relu_
             self.pooling = F.avg_pool2d
 
@@ -112,8 +113,6 @@ class ConvBlock(nn.Module):
                                 padding=padding, bias=False)
                                 
             self.bn2 = nn.BatchNorm2d(out_channels)
-
-        self.dropout = nn.Dropout(dropout_rate)
         if block_type != "complex" and init: # Complex initialization not yet supported
             self.init_weights()
         
