@@ -22,15 +22,15 @@ model:
       n_channels: 64
       dropout_rate: 0.0
     - layer_2:
-      type: complex_double
+      type: real_double
       n_channels: 128
       dropout_rate: 0.0
     - layer_3:
-      type: complex_double
+      type: real_double
       n_channels: 256
       dropout_rate: 0.0
     - layer_4:
-      type: complex_double
+      type: real_double
       n_channels: 512
       dropout_rate: 0.0
   init_conv_layers: False

@@ -35,7 +35,7 @@ class Crnn10(nn.Module):
         self.output_type = output_type
         self.complex_to_real_function = complex_to_real_function
 
-        if  "complex" in conv_config[0]["type"]:
+        if "complex" in conv_config[0]["type"]:
             self.feature_extractor = StftArray(stft_config)
         else:
             self.feature_extractor = DecoupledStftArray(stft_config)
@@ -70,7 +70,7 @@ class Crnn10(nn.Module):
         for config in conv_config[1:]:
             last_layer = conv_blocks[-1]
             in_channels = last_layer.out_channels
-            if last_layer.block_type == "complex" and config["type"] != "complex": # complex number will be unpacked into 2x channels
+            if last_layer.is_real == False and config["type"] != "complex": # complex number will be unpacked into 2x channels
                 in_channels *= 2
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],

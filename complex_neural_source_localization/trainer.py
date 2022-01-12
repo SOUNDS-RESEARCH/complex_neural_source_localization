@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 import torch
 
 from pytorch_lightning.callbacks import ModelCheckpoint
-#from pytorch_lightning.callbacks.progress import ProgressBar
+from pytorch_lightning.callbacks.progress import ProgressBar
 from torch.optim.lr_scheduler import MultiStepLR
 
 from complex_neural_source_localization.model import Crnn10
@@ -19,9 +19,9 @@ def create_trainer(training_config):
 
     gpus = 1 if torch.cuda.is_available() else 0
 
-    #progress_bar = CustomProgressBar()
+    progress_bar = CustomProgressBar()
     trainer = pl.Trainer(max_epochs=training_config["n_epochs"],
-                         callbacks=[checkpoint_callback],
+                         callbacks=[checkpoint_callback, progress_bar],
                          gpus=gpus)
     return trainer
 
@@ -63,7 +63,7 @@ class LitTdoaCrnn(pl.LightningModule):
         output_dict = {
             "loss": loss
         }
-        #self.log("v_loss", loss, prog_bar=True)
+        self.log("v_loss", loss, on_step=True, prog_bar=True)
 
         return output_dict
 
@@ -93,9 +93,9 @@ class LitTdoaCrnn(pl.LightningModule):
         return [optimizer], [scheduler]
 
 
-# class CustomProgressBar(ProgressBar):
-#     def get_metrics(self, trainer, model):
-#         # don't show the version number
-#         items = super().get_metrics(trainer, model)
-#         items.pop("v_num", None)
-#         return items
+class CustomProgressBar(ProgressBar):
+    def get_metrics(self, trainer, model):
+        # don't show the version number
+        items = super().get_metrics(trainer, model)
+        items.pop("v_num", None)
+        return items
