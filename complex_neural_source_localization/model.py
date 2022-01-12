@@ -35,7 +35,7 @@ class Crnn10(nn.Module):
         self.output_type = output_type
         self.complex_to_real_function = complex_to_real_function
 
-        if conv_config[0]["type"] == "complex":
+        if  "complex" in conv_config[0]["type"]:
             self.feature_extractor = StftArray(stft_config)
         else:
             self.feature_extractor = DecoupledStftArray(stft_config)
@@ -53,7 +53,6 @@ class Crnn10(nn.Module):
         else:
             self.azimuth_fc = nn.Linear(512, 2, bias=True)
         
-
         self._init_weights()
 
     def _init_weights(self):
@@ -91,7 +90,7 @@ class Crnn10(nn.Module):
         
 
         for conv_block in self.conv_blocks:
-            if x.is_complex() and conv_block.block_type != "complex":
+            if x.is_complex() and conv_block.is_real:
                 x = _to_real(x, mode=self.complex_to_real_function)
             x = conv_block(x)
         

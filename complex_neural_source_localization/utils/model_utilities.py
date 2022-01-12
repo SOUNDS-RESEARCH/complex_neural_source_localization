@@ -4,7 +4,6 @@
 
 import math
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -86,35 +85,37 @@ class ConvBlock(nn.Module):
         self.pool_size=pool_size
         self.dropout_rate = dropout_rate
 
-        if block_type == "complex":
-            out_channels = out_channels//2
-            
-            self.conv1 = ComplexConv2d(in_channels=in_channels, 
-                                out_channels=out_channels,
-                                kernel_size=kernel_size, stride=stride,
-                                padding=padding, bias=False)
-            self.bn1 = ComplexBatchNorm2d(out_channels)
-            self.dropout = ComplexDropout(dropout_rate)
+        if "complex" in block_type:
+            conv_block = ComplexConv2d
+            bn_block = ComplexBatchNorm2d
+            dropout_block = ComplexDropout
             self.activation = complex_relu
             self.pooling = complex_avg_pool2d
+            self.is_real = False
+            out_channels = out_channels//2
         else:
-            self.conv1 = nn.Conv2d(in_channels=in_channels, 
-                        out_channels=out_channels,
-                        kernel_size=kernel_size, stride=stride,
-                        padding=padding, bias=False)
-            self.bn1 = nn.BatchNorm2d(out_channels)
-            self.dropout = nn.Dropout(dropout_rate)
-            self.activation = F.relu_
+            conv_block = nn.Conv2d
+            bn_block = nn.BatchNorm2d
+            dropout_block = nn.Dropout
+            self.activation = F.relu
             self.pooling = F.avg_pool2d
+            self.is_real = True
 
-        if block_type == "real_double": 
-            self.conv2 = nn.Conv2d(in_channels=out_channels, 
+        self.conv1 = conv_block(in_channels=in_channels, 
+                            out_channels=out_channels,
+                            kernel_size=kernel_size, stride=stride,
+                            padding=padding, bias=False)
+        self.bn1 = bn_block(out_channels)
+        self.dropout = dropout_block(dropout_rate)
+
+        if "double" in block_type: 
+            self.conv2 = conv_block(in_channels=out_channels, 
                                 out_channels=out_channels,
                                 kernel_size=kernel_size, stride=stride,
-                                padding=padding, bias=False)
-                                
-            self.bn2 = nn.BatchNorm2d(out_channels)
-        if block_type != "complex" and init: # Complex initialization not yet supported
+                                padding=padding, bias=False)           
+            self.bn2 = bn_block(out_channels)
+        
+        if "real" in block_type and init: # Complex initialization not yet supported
             self.init_weights()
         
         self.in_channels = in_channels
@@ -129,7 +130,7 @@ class ConvBlock(nn.Module):
         
     def forward(self, x):
         x = self.activation(self.bn1(self.conv1(x)))
-        if self.block_type == "real_double":
+        if "double" in self.block_type:
             x = self.activation(self.bn2(self.conv2(x)))
         x = self.pooling(x, kernel_size=self.pool_size)
         
