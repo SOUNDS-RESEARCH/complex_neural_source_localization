@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+from math import isnan
 from pathlib import Path
 from torch.utils.data import Dataset
 
@@ -54,7 +55,12 @@ class DCASE2019Task3Dataset(Dataset):
 
         # If multi-source
         if self.n_max_sources == 2:
-            azimuth_in_radians_2 = np.deg2rad(annotation["azi_2"])
+            # If there is a second source, use it. Else, copy first source
+            if not isnan(annotation["azi_2"]):
+                azi = annotation["azi_2"]
+            else:
+                azi = annotation["azi"]
+            azimuth_in_radians_2 = np.deg2rad(azi)
             azimuth_2d_point_2 = _angle_to_point(azimuth_in_radians_2)
             y["azimuth_2d_point_2"] = azimuth_2d_point_2
 

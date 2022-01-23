@@ -71,46 +71,47 @@ class PitLoss(Module):
         self.target_keys = ["azimuth_2d_point", "azimuth_2d_point_2"] 
 
         if loss_type == "angular":
-            self.loss = AngularLoss()
-        elif loss_type == "magnitude":
-            self.loss = MagnitudeLoss()
-        elif loss_type == "angular_and_magnitude":
-            self.loss = AngularAndMagnitudeLoss()
+            self.loss = AngularLoss(apply_mean=False)
+        # elif loss_type == "magnitude":
+        #     self.loss = MagnitudeLoss()
+        # elif loss_type == "angular_and_magnitude":
+        #     self.loss = AngularAndMagnitudeLoss()
 
     def forward(self, model_output, targets):
         target_0 = targets[self.target_keys[0]]
         target_1 = targets[self.target_keys[1]]
-        breakpoint()
-        if model_output.shape != target_0.shape:
+        if model_output[:, 0:2].shape != target_0.shape:
             raise ValueError(
                 "Model output's shape is {}, target's is {}".format(
-                    model_output.shape, targets.shape
+                    model_output.shape, target_0.shape
             ))
 
         # Compute loss for every permutation: indexes 0:2 represent the first source prediction,
         # While indexes [2:4] represent the second one
         loss_0 = self.loss(model_output[:, 0:2], target_0) + self.loss(model_output[:, 2:4], target_1)
         loss_1 = self.loss(model_output[:, 2:4], target_0) + self.loss(model_output[:, 0:2], target_1)
+        loss = torch.stack([loss_0, loss_1], dim=1)
+        loss = loss.min(dim=1)[0]
         
-        loss = torch.stack([loss_0, loss_1], dim=2)
-        loss = loss.min(dim=2)
-        
-        return loss
+        return loss.mean()
 
 
 class AngularLoss(Module):
-    def __init__(self, model_output_type="scalar"):
+    def __init__(self, model_output_type="scalar", apply_mean=True):
         # See https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html
         # for a related implementation used for NLP
         super().__init__()
 
         dim = 1 if model_output_type == "scalar" else 2
         self.cosine_similarity = CosineSimilarity(dim=dim)
+        self.apply_mean = apply_mean
         # dim=0 -> batch | dim=1 -> time steps | dim=2 -> azimuth
 
     def forward(self, model_output, targets):
         values = 1 - self.cosine_similarity(model_output, targets)
-        return values.mean()
+        if self.apply_mean:
+            values = values.mean()
+        return values
 
 
 class MagnitudeLoss(Module):
