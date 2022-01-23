@@ -14,6 +14,7 @@ class DCASE2019Task3Dataset(Dataset):
         self.sample_duration_in_seconds = dataset_config["sample_duration_in_seconds"]
         self.sample_duration = self.sr*self.sample_duration_in_seconds
         self.num_mics = dataset_config["num_mics"]
+        self.n_max_sources = dataset_config["n_max_sources"]
 
         if mode == "train":
             annotations_path = dataset_config["train_csv_path"]
@@ -40,26 +41,35 @@ class DCASE2019Task3Dataset(Dataset):
         signal = padded_signal
         # TODO: Remove samples from the dataset which are incomplete
 
-        azimuth_in_degrees = annotation["azi"]
-        azimuth_in_radians = np.deg2rad(azimuth_in_degrees)
-        azimuth_2d_point = torch.Tensor([
-            torch.Tensor([np.cos(azimuth_in_radians)]),
-            torch.Tensor([np.sin(azimuth_in_radians)])
-        ])
+        azimuth_in_radians = np.deg2rad(annotation["azi"])
+        azimuth_2d_point = _angle_to_point(azimuth_in_radians)
 
-        azimuth = azimuth_2d_point*annotation["duration"]
+        #azimuth = azimuth_2d_point*annotation["duration"]
         
-        return (
-            torch.Tensor(signal),
-            {
-                "azimuth_2d_point": azimuth,
-                "start_time": torch.Tensor([annotation["start_time"]]),
-                "end_time": torch.Tensor([annotation["end_time"]])
-            }
-        )
+        y = {
+                "azimuth_2d_point": azimuth_2d_point,
+                # "start_time": torch.Tensor([annotation["start_time"]]),
+                # "end_time": torch.Tensor([annotation["end_time"]])
+        }
+
+        # If multi-source
+        if self.n_max_sources == 2:
+            azimuth_in_radians_2 = np.deg2rad(annotation["azi_2"])
+            azimuth_2d_point_2 = _angle_to_point(azimuth_in_radians_2)
+            y["azimuth_2d_point_2"] = azimuth_2d_point_2
+
+
+        return (torch.Tensor(signal), y)
 
     def __len__(self):
         return self.df.shape[0]
+
+
+def _angle_to_point(angle):
+    return torch.Tensor([
+        torch.Tensor([np.cos(angle)]),
+        torch.Tensor([np.sin(angle)])
+    ])
 
 
 if __name__ == "__main__":

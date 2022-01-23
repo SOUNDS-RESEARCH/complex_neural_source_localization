@@ -1,6 +1,0 @@
-defaults:
-  - training_dataset: ../base_dataset
-
-training_dataset:
-  n_samples: 1500
-  dataset_dir: "/Users/ezajlerg/datasets/neural_tdoa/training_dataset"

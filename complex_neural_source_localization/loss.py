@@ -1,7 +1,7 @@
 import torch
 
 from math import ceil, floor
-from torch.nn import Module, MSELoss, CosineSimilarity
+from torch.nn import Module, CosineSimilarity
 
 from tdoa.math_utils import denormalize
 
@@ -32,19 +32,19 @@ class Loss(Module):
         self.model_output_type = model_output_type
 
     def forward(self, model_output, targets):
-        activity_mask_size = model_output.shape[1]
-        if self.model_output_type == "frame":
-            activity_masks = _create_activity_masks(
-                                targets["start_time"], targets["end_time"],
-                                self.frame_size_in_seconds, activity_mask_size,
-                                model_output.is_cuda)
+        # if self.model_output_type == "frame":
+        #     activity_mask_size = model_output.shape[1]
+        #     activity_masks = _create_activity_masks(
+        #                         targets["start_time"], targets["end_time"],
+        #                         self.frame_size_in_seconds, activity_mask_size,
+        #                         model_output.is_cuda)
 
-            targets = targets[self.target_key].unsqueeze(1)
+        #     targets = targets[self.target_key].unsqueeze(1)
             
-            targets = targets*activity_masks
-            model_output = model_output*activity_masks
-        else:
-            targets = targets[self.target_key]
+        #     targets = targets*activity_masks
+        #     model_output = model_output*activity_masks
+        # else:
+        targets = targets[self.target_key]
 
         if model_output.shape != targets.shape:
             raise ValueError(
@@ -53,6 +53,49 @@ class Loss(Module):
             ))
         
         return self.loss(model_output, targets)
+
+
+
+class PitLoss(Module):
+    def __init__(self, loss_type):
+        """Permutation-Invariant Training loss
+
+        Args:
+            loss_type (string): angular | magnitude
+            model_output_type (str, optional): "scalar" or. Defaults to "scalar".
+
+        """
+
+        super().__init__()
+        
+        self.target_keys = ["azimuth_2d_point", "azimuth_2d_point_2"] 
+
+        if loss_type == "angular":
+            self.loss = AngularLoss()
+        elif loss_type == "magnitude":
+            self.loss = MagnitudeLoss()
+        elif loss_type == "angular_and_magnitude":
+            self.loss = AngularAndMagnitudeLoss()
+
+    def forward(self, model_output, targets):
+        target_0 = targets[self.target_keys[0]]
+        target_1 = targets[self.target_keys[1]]
+        breakpoint()
+        if model_output.shape != target_0.shape:
+            raise ValueError(
+                "Model output's shape is {}, target's is {}".format(
+                    model_output.shape, targets.shape
+            ))
+
+        # Compute loss for every permutation: indexes 0:2 represent the first source prediction,
+        # While indexes [2:4] represent the second one
+        loss_0 = self.loss(model_output[:, 0:2], target_0) + self.loss(model_output[:, 2:4], target_1)
+        loss_1 = self.loss(model_output[:, 2:4], target_0) + self.loss(model_output[:, 0:2], target_1)
+        
+        loss = torch.stack([loss_0, loss_1], dim=2)
+        loss = loss.min(dim=2)
+        
+        return loss
 
 
 class AngularLoss(Module):

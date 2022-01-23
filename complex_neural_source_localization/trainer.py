@@ -6,7 +6,7 @@ from pytorch_lightning.callbacks.progress import ProgressBar
 from torch.optim.lr_scheduler import MultiStepLR
 
 from complex_neural_source_localization.model import Crnn10
-from complex_neural_source_localization.loss import Loss
+from complex_neural_source_localization.loss import Loss, PitLoss
 
 
 def create_trainer(training_config):
@@ -35,11 +35,18 @@ class LitTdoaCrnn(pl.LightningModule):
         self.config = config
         self.target_key = config["model"]["target"]
         
+        n_sources = self.config["dataset"]["n_max_sources"]
+
         self.model = Crnn10(conv_config=config["model"]["conv_layers"],
                             last_layer_dropout_rate=config["model"]["last_layer_dropout_rate"],
+                            n_sources=n_sources
                             )
         
-        self.loss = Loss(self.config["model"]["loss"])
+        if n_sources == 2:
+            self.loss = PitLoss(self.config["model"]["loss"])
+        else:
+            self.loss = Loss(self.config["model"]["loss"])
+
 
     def forward(self, x):
         return self.model(x)
@@ -63,7 +70,6 @@ class LitTdoaCrnn(pl.LightningModule):
         output_dict = {
             "loss": loss
         }
-        self.log("v_loss", loss, on_step=True, prog_bar=True)
 
         return output_dict
 
@@ -72,11 +78,11 @@ class LitTdoaCrnn(pl.LightningModule):
     
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        self.log("loss", avg_loss, on_step=False)
+        self.log("loss", avg_loss, on_epoch=True)
     
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        self.log("validation_loss", avg_loss, on_step=False)
+        self.log("validation_loss", avg_loss, prog_bar=True)
     
     def test_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()

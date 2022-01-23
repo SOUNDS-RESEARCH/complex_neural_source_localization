@@ -19,7 +19,7 @@ DEFAULT_STFT_CONFIG = {"n_fft": 1024, "hop_length":480}
 
 
 class Crnn10(nn.Module):
-    def __init__(self, output_type="scalar", n_input_channels=4,
+    def __init__(self, output_type="scalar", n_input_channels=4, n_sources=2,
                  pool_type="avg", pool_size=(2,2),
                  complex_to_real_function="concatenate",
                  conv_config=DEFAULT_CONV_CONFIG,
@@ -30,6 +30,7 @@ class Crnn10(nn.Module):
         super().__init__()
 
         self.n_input_channels = n_input_channels
+        self.n_sources = n_sources
         self.pool_type = pool_type
         self.pool_size = pool_size
         self.output_type = output_type
@@ -45,13 +46,14 @@ class Crnn10(nn.Module):
         self.gru = nn.GRU(input_size=512, hidden_size=256, 
             num_layers=1, batch_first=True, bidirectional=True)
 
+        n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
         if last_layer_dropout_rate > 0:
             self.azimuth_fc = nn.Sequential(
-                nn.Linear(512, 2, bias=True), # 2 cartesian dimensions
+                nn.Linear(512, n_last_layer, bias=True),
                 nn.Dropout(last_layer_dropout_rate)
             )
         else:
-            self.azimuth_fc = nn.Linear(512, 2, bias=True)
+            self.azimuth_fc = nn.Linear(512, n_last_layer, bias=True)
         
         self._init_weights()
 

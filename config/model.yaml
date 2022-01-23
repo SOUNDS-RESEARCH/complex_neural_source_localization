@@ -3,18 +3,17 @@ model:
   pool_type: avg # max | avg
   pool_size: [2, 1]
   last_layer_dropout_rate: 0.0
+  
   # Feature params
   n_input_channels: 4
   n_fft: 1024
-  n_mels: 64
   window: hann
-  hop_length_in_seconds: 10e-3
   hop_length: 480 # int(hop_length_in_seconds * sr)
   feature_type: stft # decoupled_stft (real and imag as separate channels) | stft (complex) | stft_magnitude
 
   output_type: scalar # scalar | frame
   target: azimuth_2d_point # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
-  loss: magnitude # angular | magnitude | angular_and_magnitude 
+  loss: angular # angular | magnitude | angular_and_magnitude 
 
   conv_layers:
     - layer_1:
