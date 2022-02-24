@@ -2,7 +2,7 @@ import librosa
 import numpy as np
 import torch
 
-from complex_neural_source_localization.model import Crnn10
+from complex_neural_source_localization.model import DOACNet
 
 
 def test_crnn10():
@@ -12,6 +12,6 @@ def test_crnn10():
                              mono=False, dtype=np.float32)[0][np.newaxis]
 
     signal = torch.Tensor(signal)
-    model = Crnn10()
+    model = DOACNet()
 
     result = model(signal)

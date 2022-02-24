@@ -93,7 +93,7 @@ class PitLoss(Module):
         loss = torch.stack([loss_0, loss_1], dim=1)
         loss = loss.min(dim=1)[0]
         
-        return loss.mean()
+        return loss.mean()/2
 
 
 class AngularLoss(Module):

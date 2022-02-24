@@ -9,6 +9,7 @@ Original source code:
 arXiv preprint arXiv: 1905.00268v2 Paper URL: https://arxiv.org/abs/1905.00268
 """
 
+
 def init_linear_layer(layer, nonlinearity='relu'):
     """
     Initialize a layer

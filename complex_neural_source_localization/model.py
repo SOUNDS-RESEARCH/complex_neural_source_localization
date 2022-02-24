@@ -18,7 +18,7 @@ DEFAULT_CONV_CONFIG = [
 DEFAULT_STFT_CONFIG = {"n_fft": 1024, "hop_length":480}
 
 
-class Crnn10(nn.Module):
+class DOACNet(nn.Module):
     def __init__(self, output_type="scalar", n_input_channels=4, n_sources=2,
                  pool_type="avg", pool_size=(2,2),
                  complex_to_real_function="concatenate",

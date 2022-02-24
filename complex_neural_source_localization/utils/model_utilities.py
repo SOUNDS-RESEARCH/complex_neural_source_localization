@@ -15,21 +15,6 @@ from complex_neural_source_localization.utils.complexPyTorch.complexFunctions im
     complex_avg_pool2d, complex_relu
 )
 
-def interpolate(x, ratio):
-    """
-    Interpolate the x to have equal time steps as targets
-    Input:
-        x: (batch_size, time_steps, class_num)
-    Output:
-        out: (batch_size, time_steps*ratio, class_num) 
-    """
-
-    x = x.transpose(1, 2) # Transpose as interpolate works on last axis
-    x = F.interpolate(x, scale_factor=ratio)
-    x = x.transpose(1, 2) # Transpose back
-    
-    return x
-
 
 def init_layer(layer, nonlinearity='leaky_relu'):
     """Initialize a convolutional or linear layer"""
@@ -137,3 +122,24 @@ class ConvBlock(nn.Module):
         if self.dropout_rate > 0:
             x = self.dropout(x)
         return x
+
+
+def merge_list_of_dicts(list_of_dicts):
+    result = {}
+
+    def _add_to_dict(key, value):
+        if len(value.shape) == 0: # 0-dimensional tensor
+            value = value.unsqueeze(0)
+
+        if key not in result:
+            result[key] = value
+        else:
+            result[key] = torch.cat([
+                result[key], value
+            ])
+    
+    for d in list_of_dicts:
+        for key, value in d.items():
+            _add_to_dict(key, value)
+
+    return result

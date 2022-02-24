@@ -45,8 +45,6 @@ class DCASE2019Task3Dataset(Dataset):
         azimuth_in_radians = np.deg2rad(annotation["azi"])
         azimuth_2d_point = _angle_to_point(azimuth_in_radians)
 
-        #azimuth = azimuth_2d_point*annotation["duration"]
-        
         y = {
                 "azimuth_2d_point": azimuth_2d_point,
                 # "start_time": torch.Tensor([annotation["start_time"]]),
@@ -71,6 +69,21 @@ class DCASE2019Task3Dataset(Dataset):
         return self.df.shape[0]
 
 
+def create_dataloaders(config):
+    dataset_train = DCASE2019Task3Dataset(config["dataset"], mode="train")
+    dataset_val = DCASE2019Task3Dataset(config["dataset"], mode="validation")
+    dataset_test = DCASE2019Task3Dataset(config["dataset"], mode="test")
+
+    batch_size = config["training"]["batch_size"]
+    num_workers = config["training"]["num_workers"]
+
+    dataloader_train = _create_torch_dataloader(dataset_train, batch_size, num_workers)
+    dataloader_val = _create_torch_dataloader(dataset_val, batch_size, num_workers)
+    dataloader_test = _create_torch_dataloader(dataset_test, batch_size, num_workers)
+
+    return dataloader_train, dataloader_val, dataloader_test
+
+
 def _angle_to_point(angle):
     return torch.Tensor([
         torch.Tensor([np.cos(angle)]),
@@ -78,9 +91,10 @@ def _angle_to_point(angle):
     ])
 
 
-if __name__ == "__main__":
-
-    dataset = DCASE2019Task3Dataset(
-                "/Users/ezajlerg/datasets/dcase_2019_task_3/annotations.csv",
-                "/Users/ezajlerg/datasets/dcase_2019_task_3/mic_dev_splitted")
-
+def _create_torch_dataloader(torch_dataset, batch_size, num_workers):
+    return torch.utils.data.DataLoader(torch_dataset,
+                                       batch_size=batch_size,
+                                       shuffle=False,
+                                       pin_memory=True,
+                                       drop_last=False,
+                                       num_workers=num_workers)

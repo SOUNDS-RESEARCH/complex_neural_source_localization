@@ -3,13 +3,13 @@ import numpy as np
 import torch
 
 from complex_neural_source_localization.loss import Loss
-from complex_neural_source_localization.model import Crnn10
+from complex_neural_source_localization.model import DOACNet
 
 
 def test_neural_tdoa_loss():
 
     loss_fn = Loss("real_angular")
-    model = Crnn10()
+    model = DOACNet()
 
     sample_path = "tests/fixtures/0.0_split1_ir0_ov1_3.wav"
 

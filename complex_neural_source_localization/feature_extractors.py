@@ -54,6 +54,7 @@ class StftArray(Module):
         result = torch.stack(result, dim=1)
         return result
 
+
 class MagnitudeStftArray(StftArray):
     def forward(self, X):
         stft = super().forward(X)
