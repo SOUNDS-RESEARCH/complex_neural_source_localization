@@ -31,7 +31,7 @@ class Loss(Module):
         
         self.model_output_type = model_output_type
 
-    def forward(self, model_output, targets):
+    def forward(self, model_output, targets, mean_reduce=True):
         # if self.model_output_type == "frame":
         #     activity_mask_size = model_output.shape[1]
         #     activity_masks = _create_activity_masks(
@@ -52,7 +52,7 @@ class Loss(Module):
                     model_output.shape, targets.shape
             ))
         
-        return self.loss(model_output, targets)
+        return self.loss(model_output, targets, mean_reduce=mean_reduce)
 
 
 
@@ -63,6 +63,7 @@ class PitLoss(Module):
         Args:
             loss_type (string): angular | magnitude
             model_output_type (str, optional): "scalar" or. Defaults to "scalar".
+            mean_reduce (bool, optional): Whether to give out the batch mean or not
 
         """
 
@@ -71,13 +72,9 @@ class PitLoss(Module):
         self.target_keys = ["azimuth_2d_point", "azimuth_2d_point_2"] 
 
         if loss_type == "angular":
-            self.loss = AngularLoss(apply_mean=False)
-        # elif loss_type == "magnitude":
-        #     self.loss = MagnitudeLoss()
-        # elif loss_type == "angular_and_magnitude":
-        #     self.loss = AngularAndMagnitudeLoss()
+            self.loss = AngularLoss()
 
-    def forward(self, model_output, targets):
+    def forward(self, model_output, targets, mean_reduce=True):
         target_0 = targets[self.target_keys[0]]
         target_1 = targets[self.target_keys[1]]
         if model_output[:, 0:2].shape != target_0.shape:
@@ -93,23 +90,25 @@ class PitLoss(Module):
         loss = torch.stack([loss_0, loss_1], dim=1)
         loss = loss.min(dim=1)[0]
         
-        return loss.mean()/2
+        if mean_reduce:
+            loss = loss.mean()/2
+        
+        return loss
 
 
 class AngularLoss(Module):
-    def __init__(self, model_output_type="scalar", apply_mean=True):
+    def __init__(self, model_output_type="scalar"):
         # See https://pytorch.org/docs/stable/generated/torch.nn.CosineEmbeddingLoss.html
         # for a related implementation used for NLP
         super().__init__()
 
         dim = 1 if model_output_type == "scalar" else 2
         self.cosine_similarity = CosineSimilarity(dim=dim)
-        self.apply_mean = apply_mean
         # dim=0 -> batch | dim=1 -> time steps | dim=2 -> azimuth
 
-    def forward(self, model_output, targets):
+    def forward(self, model_output, targets, mean_reduce=True):
         values = 1 - self.cosine_similarity(model_output, targets)
-        if self.apply_mean:
+        if mean_reduce:
             values = values.mean()
         return values
 
@@ -156,28 +155,26 @@ class AngularAndMagnitudeLoss(Module):
 #     mean_squared_error = mean_squared_error.real # Imaginary part is 0
 #     return mean_squared_error
 
+# def _create_activity_masks(start, end, max_duration_in_seconds, size, cuda=True):
+#     masks = torch.stack([
+#         _create_activity_mask(s, e, max_duration_in_seconds, size)
+#         for s, e in zip(start, end)
+#     ])
+#     masks = masks.unsqueeze(2)
+#     masks = masks.tile((1, 1, 2)) # In order to multiply by 2d array        
+
+#     if cuda:
+#         masks = masks.cuda()
+#     return masks
 
 
-def _create_activity_masks(start, end, max_duration_in_seconds, size, cuda=True):
-    masks = torch.stack([
-        _create_activity_mask(s, e, max_duration_in_seconds, size)
-        for s, e in zip(start, end)
-    ])
-    masks = masks.unsqueeze(2)
-    masks = masks.tile((1, 1, 2)) # In order to multiply by 2d array        
+# def _create_activity_mask(start, end, max_duration_in_seconds, size):
+#     activity_mask = torch.zeros(size, dtype=torch.bool)
 
-    if cuda:
-        masks = masks.cuda()
-    return masks
+#     time_step_duration_in_seconds = max_duration_in_seconds/size
+#     start_cell = floor(start/time_step_duration_in_seconds)
+#     end_cell = ceil(end/time_step_duration_in_seconds)
 
-
-def _create_activity_mask(start, end, max_duration_in_seconds, size):
-    activity_mask = torch.zeros(size, dtype=torch.bool)
-
-    time_step_duration_in_seconds = max_duration_in_seconds/size
-    start_cell = floor(start/time_step_duration_in_seconds)
-    end_cell = ceil(end/time_step_duration_in_seconds)
-
-    activity_mask[start_cell:end_cell] = True
+#     activity_mask[start_cell:end_cell] = True
     
-    return activity_mask
+#     return activity_mask

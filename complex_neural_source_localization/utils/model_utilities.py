@@ -143,3 +143,28 @@ def merge_list_of_dicts(list_of_dicts):
             _add_to_dict(key, value)
 
     return result
+
+
+def get_all_layers(model: nn.Module, layer_types=None, name_prefix=""):
+
+    layers = {}
+    
+    for name, layer in model.named_children():
+        if name_prefix:
+            name = f"{name_prefix}.{name}"
+        if isinstance(layer, nn.Sequential) or isinstance(layer, nn.ModuleList):
+            layers.update(get_all_layers(layer, layer_types, name))
+        else:
+            layers[name] = layer
+    
+    if layer_types is not None:
+        layers = {
+            layer_id: layer
+            for layer_id, layer in layers.items()
+            if any([
+                isinstance(layer, layer_type)
+                for layer_type in layer_types
+            ])
+        }
+
+    return layers

@@ -12,7 +12,7 @@ from complex_neural_source_localization.utils.base_trainer import (
 class DOACNetTrainer(BaseTrainer):
     def __init__(self, config):
         lightning_module = DOACNetLightniningModule(config)
-        super().init(lightning_module,
+        super().__init__(lightning_module,
                      config["training"]["n_epochs"])
     
     def fit(self, train_dataloaders, val_dataloaders=None):
@@ -29,8 +29,7 @@ class DOACNetLightniningModule(BaseLightningModule):
        used for training a DOACNet
     """
     def __init__(self, config):
-        super().__init__()
-        self.target_key = config["model"]["target"]
+        self.config = config
         
         n_sources = self.config["dataset"]["n_max_sources"]
 

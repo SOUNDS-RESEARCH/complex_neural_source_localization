@@ -9,10 +9,10 @@ from complex_neural_source_localization.feature_extractors import DecoupledStftA
 from .utils.model_utilities import ConvBlock, init_gru, init_layer
 
 DEFAULT_CONV_CONFIG = [
-    {"type": "real_single", "n_channels": 64},
-    {"type": "real_double", "n_channels": 128},
-    {"type": "real_double", "n_channels": 256},
-    {"type": "real_double", "n_channels": 512},
+    {"type": "real_single", "n_channels": 64, "dropout_rate":0},
+    {"type": "real_double", "n_channels": 128, "dropout_rate":0},
+    {"type": "real_double", "n_channels": 256, "dropout_rate":0},
+    {"type": "real_double", "n_channels": 512, "dropout_rate":0},
 ]
 
 DEFAULT_STFT_CONFIG = {"n_fft": 1024, "hop_length":480}
