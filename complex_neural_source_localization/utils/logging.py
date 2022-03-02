@@ -25,12 +25,26 @@ class ConvolutionalFeatureMapLogger:
     def log(self):
         for layer, feature_maps in self.feature_maps.items():
             batch_sample_idx = 0 # Always select first example on batch
-            feature_maps = torch.abs(feature_maps[batch_sample_idx])
+            feature_maps = feature_maps[batch_sample_idx]
+            # Transform grayscale to RGB image
+            # Make R and G channels 0 so we get a nice blue picture
             feature_maps = feature_maps.unsqueeze(1).repeat([1, 3, 1, 1])
-            feature_maps = make_grid(feature_maps)
-            #for i, feature_map in enumerate(feature_maps):
-            self.trainer.logger.experiment.add_image(f"{layer}", feature_maps)
-    
+            feature_maps[:, 0:2, :, :] = 0
+
+            if feature_maps.dtype == torch.complex64:
+                feature_maps_mag = feature_maps.abs()
+                feature_maps_phase = feature_maps.angle()
+                # TODO: Phase unwrapping
+
+                feature_maps_mag = make_grid(feature_maps_mag, normalize=True, padding=5)
+                self.trainer.logger.experiment.add_image(f"{layer}.mag", feature_maps_mag)
+                feature_maps_phase = make_grid(feature_maps_phase, normalize=True, padding=5)
+                self.trainer.logger.experiment.add_image(f"{layer}.phase", feature_maps_phase)
+            else:
+                feature_maps = make_grid(feature_maps, normalize=True, padding=5)
+                
+                self.trainer.logger.experiment.add_image(f"{layer}", feature_maps)
+
     def _create_hook(self, layer_id):
         def fn(_, __, output):
             self.feature_maps[layer_id] = output
