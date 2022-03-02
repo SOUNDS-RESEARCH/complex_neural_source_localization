@@ -133,8 +133,7 @@ class BaseLightningModule(pl.LightningModule):
         self._epoch_end(outputs, epoch_type="validation")
 
     def test_epoch_end(self, outputs):
-        self._epoch_end(outputs, epoch_type="test",
-                        log_plots=True, save_pickle=True)
+        self._epoch_end(outputs, epoch_type="test", save_pickle=True)
     def forward(self, x):
         return self.model(x)
         

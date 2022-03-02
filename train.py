@@ -7,7 +7,7 @@ from complex_neural_source_localization.trainer import DOACNetTrainer
 
 
 @hydra.main(config_path="config", config_name="config")
-def main(config: DictConfig):
+def train(config: DictConfig):
     """Runs the training procedure using Pytorch lightning
     And tests the model with the best validation score against the test dataset. 
 
@@ -25,4 +25,4 @@ def main(config: DictConfig):
 
 
 if __name__ == "__main__":
-    main()
+    train()

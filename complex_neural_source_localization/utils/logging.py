@@ -23,6 +23,7 @@ class ConvolutionalFeatureMapLogger:
         self.trainer = trainer
 
     def log(self):
+        n_epoch = self.trainer.current_epoch
         for layer, feature_maps in self.feature_maps.items():
             batch_sample_idx = 0 # Always select first example on batch
             feature_maps = feature_maps[batch_sample_idx]
@@ -37,13 +38,13 @@ class ConvolutionalFeatureMapLogger:
                 # TODO: Phase unwrapping
 
                 feature_maps_mag = make_grid(feature_maps_mag, normalize=True, padding=5)
-                self.trainer.logger.experiment.add_image(f"{layer}.mag", feature_maps_mag)
+                self.trainer.logger.experiment.add_image(f"{layer}.mag.epoch{n_epoch}", feature_maps_mag,)
                 feature_maps_phase = make_grid(feature_maps_phase, normalize=True, padding=5)
-                self.trainer.logger.experiment.add_image(f"{layer}.phase", feature_maps_phase)
+                self.trainer.logger.experiment.add_image(f"{layer}.phase.epoch{n_epoch}", feature_maps_phase)
             else:
                 feature_maps = make_grid(feature_maps, normalize=True, padding=5)
                 
-                self.trainer.logger.experiment.add_image(f"{layer}", feature_maps)
+                self.trainer.logger.experiment.add_image(f"{layer}.epoch{n_epoch}", feature_maps)
 
     def _create_hook(self, layer_id):
         def fn(_, __, output):

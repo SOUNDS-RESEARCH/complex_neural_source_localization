@@ -36,6 +36,8 @@ class DOACNet(nn.Module):
         self.output_type = output_type
         self.complex_to_real_function = complex_to_real_function
 
+        self.max_filters = conv_config[-1]["n_channels"]
+
         if "complex" in conv_config[0]["type"]:
             self.feature_extractor = StftArray(stft_config)
         else:
@@ -43,7 +45,7 @@ class DOACNet(nn.Module):
 
         self.conv_blocks = self._init_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
-        self.gru = nn.GRU(input_size=512, hidden_size=256, 
+        self.gru = nn.GRU(input_size=self.max_filters, hidden_size=self.max_filters//2, 
             num_layers=1, batch_first=True, bidirectional=True)
 
         n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
