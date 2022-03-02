@@ -27,8 +27,11 @@ class ConvolutionalFeatureMapLogger:
         for layer, feature_maps in self.feature_maps.items():
             batch_sample_idx = 0 # Always select first example on batch
             feature_maps = feature_maps[batch_sample_idx]
+
             # Transform grayscale to RGB image
             # Make R and G channels 0 so we get a nice blue picture
+            # Transpose time and frequency channels to get the format 
+            # B x C x H x W required by torchvision's "make_grid" function
             feature_maps = feature_maps.unsqueeze(1).repeat([1, 3, 1, 1])
             feature_maps[:, 0:2, :, :] = 0
 

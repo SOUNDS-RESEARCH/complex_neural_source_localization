@@ -4,5 +4,5 @@ training:
   learning_rate: 0.0001
   learning_rate_decay_steps: [3, 8]
   learning_rate_decay_values: 0.5
-  num_workers: 1
+  num_workers: 10
   delete_datasets_after_training: False

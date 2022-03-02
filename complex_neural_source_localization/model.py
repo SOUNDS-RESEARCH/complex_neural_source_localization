@@ -1,6 +1,3 @@
-# Credits to Yin Cao et al:
-# https://github.com/yinkalario/Two-Stage-Polyphonic-Sound-Event-Detection-and-Localization/blob/master/models/CRNNs.py
-
 import torch
 import torch.nn as nn
 
@@ -15,7 +12,7 @@ DEFAULT_CONV_CONFIG = [
     {"type": "real_double", "n_channels": 512, "dropout_rate":0},
 ]
 
-DEFAULT_STFT_CONFIG = {"n_fft": 1024, "hop_length":480}
+DEFAULT_STFT_CONFIG = {"n_fft": 1024, "hop_length": 480}
 
 
 class DOACNet(nn.Module):
@@ -29,33 +26,37 @@ class DOACNet(nn.Module):
         
         super().__init__()
 
+        # 1. Store configuration
         self.n_input_channels = n_input_channels
         self.n_sources = n_sources
         self.pool_type = pool_type
         self.pool_size = pool_size
         self.output_type = output_type
         self.complex_to_real_function = complex_to_real_function
-
         self.max_filters = conv_config[-1]["n_channels"]
 
+        # 2. Create feature extractor
         if "complex" in conv_config[0]["type"]:
             self.feature_extractor = StftArray(stft_config)
         else:
             self.feature_extractor = DecoupledStftArray(stft_config)
 
+        # 3. Create convolutional blocks
         self.conv_blocks = self._init_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
+        # 4. Create recurrent block
         self.gru = nn.GRU(input_size=self.max_filters, hidden_size=self.max_filters//2, 
             num_layers=1, batch_first=True, bidirectional=True)
 
+        # 5. Create linear block
         n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
         if last_layer_dropout_rate > 0:
             self.azimuth_fc = nn.Sequential(
-                nn.Linear(512, n_last_layer, bias=True),
+                nn.Linear(self.max_filters, n_last_layer, bias=True),
                 nn.Dropout(last_layer_dropout_rate)
             )
         else:
-            self.azimuth_fc = nn.Linear(512, n_last_layer, bias=True)
+            self.azimuth_fc = nn.Linear(self.max_filters, n_last_layer, bias=True)
         
         self._init_weights()
 
@@ -71,10 +72,10 @@ class DOACNet(nn.Module):
                           dropout_rate=conv_config[0]["dropout_rate"])
         ]
 
-        for config in conv_config[1:]:
+        for i, config in enumerate(conv_config[1:]):
             last_layer = conv_blocks[-1]
             in_channels = last_layer.out_channels
-            if last_layer.is_real == False and config["type"] != "complex": # complex number will be unpacked into 2x channels
+            if last_layer.is_real == False and "complex" not in config["type"]: # complex convolutions are performed using 2 convolutions of half the filters
                 in_channels *= 2
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
@@ -85,14 +86,13 @@ class DOACNet(nn.Module):
         return nn.ModuleList(conv_blocks)
         
     def forward(self, x):
-        """input: (batch_size, mic_channels, temporal_time_steps)"""
+        """input: (batch_size, mic_channels, time_steps)"""
 
         x = self.feature_extractor(x)
-        """(batch_size, mic_channels, n_freqs, time_steps)"""
+        """(batch_size, mic_channels, n_freqs, stft_time_steps)"""
         x = x.transpose(2, 3)
-        """(batch_size, mic_channels, n_freqs)"""
+        """(batch_size, mic_channels, stft_time_steps, n_freqs)"""
         
-
         for conv_block in self.conv_blocks:
             if x.is_complex() and conv_block.is_real:
                 x = _to_real(x, mode=self.complex_to_real_function)
