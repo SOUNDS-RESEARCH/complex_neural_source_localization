@@ -55,7 +55,7 @@ class DOACNet(nn.Module):
     
     def forward(self, x):
         # input: (batch_size, mic_channels, time_steps)
-        
+
         x = self.feature_extractor(x)
         # (batch_size, mic_channels, n_freqs, stft_time_steps)
         x = x.transpose(2, 3)
@@ -162,7 +162,7 @@ class DOACNet(nn.Module):
 
     def _create_hook_fn(self, layer_id):
         def fn(_, __, output):
-            self.feature_maps[layer_id] = output
+            self.feature_maps[layer_id] = output.cpu().detach()
         return fn
 
 
