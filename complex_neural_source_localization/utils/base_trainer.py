@@ -141,7 +141,7 @@ class FeatureMapLoggerCallback(Callback):
                            outputs, batch, batch_idx: int, dataloader_idx: int):
         feature_maps = pl_module.model.feature_maps
 
-        group = self.output_file.create_group(batch_idx)
+        group = self.output_file.create_group(str(batch_idx))
         for feature_name, feature_map in feature_maps.items():
             group.create_dataset(feature_name, data=feature_map.numpy())
 
