@@ -5,12 +5,7 @@ import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
-from complex_neural_source_localization.utils.model_utilities import (
-    merge_list_of_dicts 
-)
-from complex_neural_source_localization.utils.model_visualization import (
-    ConvolutionalFeatureMapLogger 
-)
+from complex_neural_source_localization.utils.model_utilities import merge_list_of_dicts
 
 
 class BaseTrainer(pl.Trainer):
@@ -57,13 +52,10 @@ class BaseLightningModule(pl.LightningModule):
         self.loss = loss
 
         self.log_convolutional_feature_maps = log_convolutional_feature_maps
-        if log_convolutional_feature_maps:
-            self.convolutional_feature_map_logger = ConvolutionalFeatureMapLogger(
-                                                        model, self)
         self.log_step = log_step
 
     def _step(self, batch, batch_idx, log_model_output=False,
-              log_labels=False, log_conv_feature_maps=False):
+              log_labels=False, log_feature_maps=False):
 
         x, y = batch
 
@@ -82,11 +74,9 @@ class BaseLightningModule(pl.LightningModule):
         if log_labels:
             output_dict.update(y)
 
-        # # 4. Log feature maps of convolutional layers
-        # if log_conv_feature_maps and batch_idx%self.log_step == 0:
-        #     image = self.convolutional_feature_map_logger.log()
-            
-        #     self.convolutional_feature_map_logger.log()
+        # 4. Log feature maps of convolutional layers
+        if log_feature_maps:
+            output_dict["feature_maps"] = self.model.feature_maps
 
         output_dict["loss"] = output_dict["loss_vector"].mean()
         output_dict["loss_vector"] = output_dict["loss_vector"].detach()
@@ -99,12 +89,12 @@ class BaseLightningModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         return self._step(batch, batch_idx,
                           log_model_output=True, log_labels=True,
-                          log_conv_feature_maps=False)
+                          log_feature_maps=False)
     
     def test_step(self, batch, batch_idx):
         return self._step(batch, batch_idx,
                           log_model_output=True, log_labels=True,
-                          log_conv_feature_maps=self.log_convolutional_feature_maps)
+                          log_feature_maps=self.log_convolutional_feature_maps)
     
     def _epoch_end(self, outputs, epoch_type="train", save_pickle=False):
         # 1. Compute epoch metrics
@@ -134,6 +124,7 @@ class BaseLightningModule(pl.LightningModule):
 
     def test_epoch_end(self, outputs):
         self._epoch_end(outputs, epoch_type="test", save_pickle=True)
+
     def forward(self, x):
         return self.model(x)
         
