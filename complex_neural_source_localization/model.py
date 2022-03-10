@@ -24,7 +24,7 @@ class DOACNet(nn.Module):
                  stft_config=DEFAULT_STFT_CONFIG,
                  init_conv_layers=False,
                  last_layer_dropout_rate=0.5,
-                 store_feature_maps=True):
+                 store_feature_maps=False):
         
         super().__init__()
 
@@ -52,7 +52,7 @@ class DOACNet(nn.Module):
         self._init_weights()
         
         if store_feature_maps:
-            self._create_hooks()
+            self.track_feature_maps()
     
     def forward(self, x):
         # input: (batch_size, mic_channels, time_steps)
@@ -143,7 +143,7 @@ class DOACNet(nn.Module):
         init_gru(self.rnn)
         init_layer(self.azimuth_fc)
     
-    def _create_hooks(self):
+    def track_feature_maps(self):
         "Make all the intermediate layers accessible through the 'feature_maps' dictionary"
 
         self.feature_maps = {}
@@ -165,7 +165,7 @@ class DOACNet(nn.Module):
         def fn(_, __, output):
             if type(output) == tuple:
                 output = output[0]
-            self.feature_maps[layer_id] = output.cpu().detach()
+            self.feature_maps[layer_id] = output #.cpu().detach()
         return fn
 
 

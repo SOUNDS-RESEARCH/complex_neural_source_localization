@@ -1,9 +1,12 @@
+import h5py
 import pickle
 import pytorch_lightning as pl
 import torch
 
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.callbacks.progress import TQDMProgressBar
+from pytorch_lightning.callbacks import (
+    Callback, ModelCheckpoint, TQDMProgressBar
+)
+# from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 from complex_neural_source_localization.utils.model_utilities import merge_list_of_dicts
 
@@ -13,15 +16,9 @@ class BaseTrainer(pl.Trainer):
 
         gpus = 1 if torch.cuda.is_available() else 0
 
-        class CustomProgressBar(TQDMProgressBar):
-            def get_metrics(self, trainer, model):
-                # don't show the version number
-                items = super().get_metrics(trainer, model)
-                items.pop("v_num", None)
-                return items
-
         progress_bar = CustomProgressBar()
 
+        feature_map_callback = FeatureMapLoggerCallback()
         checkpoint_callback = ModelCheckpoint(
                         monitor="validation_loss",
                         save_last=True,
@@ -29,9 +26,13 @@ class BaseTrainer(pl.Trainer):
                         save_weights_only=True
                         )
 
-        super().__init__(max_epochs=n_epochs,
-                         callbacks=[checkpoint_callback, progress_bar],
-                         gpus=gpus)
+        super().__init__(
+            max_epochs=n_epochs,
+            callbacks=[
+                checkpoint_callback, progress_bar, feature_map_callback
+            ],
+            gpus=gpus
+        )
         
         self._lightning_module = lightning_module
 
@@ -55,7 +56,7 @@ class BaseLightningModule(pl.LightningModule):
         self.log_step = log_step
 
     def _step(self, batch, batch_idx, log_model_output=False,
-              log_labels=False, log_feature_maps=False):
+              log_labels=False):
 
         x, y = batch
 
@@ -67,16 +68,13 @@ class BaseLightningModule(pl.LightningModule):
             "loss_vector": loss
         }
 
+        # TODO: Add these to a callback
         # 2. Log model output
         if log_model_output:
             output_dict["model_output"] = output
         # 3. Log ground truth labels
         if log_labels:
             output_dict.update(y)
-
-        # 4. Log feature maps of convolutional layers
-        if log_feature_maps:
-            output_dict.update(self.model.feature_maps)
 
         output_dict["loss"] = output_dict["loss_vector"].mean()
         output_dict["loss_vector"] = output_dict["loss_vector"].detach()
@@ -88,13 +86,11 @@ class BaseLightningModule(pl.LightningModule):
   
     def validation_step(self, batch, batch_idx):
         return self._step(batch, batch_idx,
-                          log_model_output=True, log_labels=True,
-                          log_feature_maps=False)
+                          log_model_output=True, log_labels=True)
     
     def test_step(self, batch, batch_idx):
         return self._step(batch, batch_idx,
-                          log_model_output=True, log_labels=True,
-                          log_feature_maps=self.log_convolutional_feature_maps)
+                          log_model_output=True, log_labels=True)
     
     def _epoch_end(self, outputs, epoch_type="train", save_pickle=False):
         # 1. Compute epoch metrics
@@ -133,3 +129,31 @@ class BaseLightningModule(pl.LightningModule):
 
     def test(self, dataset_test):
         super().test(self.model, dataset_test, ckpt_path="best")
+
+
+class FeatureMapLoggerCallback(Callback):
+    def on_test_start(self, trainer: BaseTrainer, pl_module: BaseLightningModule):
+        pl_module.model.track_feature_maps()
+
+        self.output_file = h5py.File("test_feature_maps.hdf5", "a")
+
+    def on_test_batch_end(self, trainer: BaseTrainer, pl_module: BaseLightningModule,
+                           outputs, batch, batch_idx: int):
+        feature_maps = pl_module.model.feature_maps
+
+        group = self.output_file.create_group(batch_idx)
+        for feature_name, feature_map in feature_maps.items():
+            group.create_dataset(feature_name, data=feature_map.numpy())
+
+        self.output_file 
+
+    def on_test_end(self, trainer, pl_module):
+        self.output_file.close()
+
+
+class CustomProgressBar(TQDMProgressBar):
+    def get_metrics(self, trainer, model):
+        # don't show the version number
+        items = super().get_metrics(trainer, model)
+        items.pop("v_num", None)
+        return items
