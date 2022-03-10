@@ -138,7 +138,7 @@ class FeatureMapLoggerCallback(Callback):
         self.output_file = h5py.File("test_feature_maps.hdf5", "a")
 
     def on_test_batch_end(self, trainer: BaseTrainer, pl_module: BaseLightningModule,
-                           outputs, batch, batch_idx: int):
+                           outputs, batch, batch_idx: int, dataloader_idx: int):
         feature_maps = pl_module.model.feature_maps
 
         group = self.output_file.create_group(batch_idx)
