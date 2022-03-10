@@ -55,7 +55,7 @@ class DOACNet(nn.Module):
     
     def forward(self, x):
         # input: (batch_size, mic_channels, time_steps)
-
+        
         x = self.feature_extractor(x)
         # (batch_size, mic_channels, n_freqs, stft_time_steps)
         x = x.transpose(2, 3)

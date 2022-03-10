@@ -76,7 +76,7 @@ class BaseLightningModule(pl.LightningModule):
 
         # 4. Log feature maps of convolutional layers
         if log_feature_maps:
-            output_dict["feature_maps"] = self.model.feature_maps
+            output_dict.update(self.model.feature_maps)
 
         output_dict["loss"] = output_dict["loss_vector"].mean()
         output_dict["loss_vector"] = output_dict["loss_vector"].detach()
