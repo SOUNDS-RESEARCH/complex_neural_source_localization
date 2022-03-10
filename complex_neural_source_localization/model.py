@@ -1,3 +1,4 @@
+from typing import Tuple
 import torch
 import torch.nn as nn
 
@@ -162,6 +163,8 @@ class DOACNet(nn.Module):
 
     def _create_hook_fn(self, layer_id):
         def fn(_, __, output):
+            if type(output) == tuple:
+                output = output[0]
             self.feature_maps[layer_id] = output.cpu().detach()
         return fn
 
