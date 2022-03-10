@@ -10,9 +10,8 @@ class MfccArray(Module):
         super().__init__()
 
         self.mel_spectrogram = MelSpectrogram(
-            sample_rate=dataset_config["base_sampling_rate"],
+            sample_rate=dataset_config["sr"],
             n_fft=model_config["n_fft"],
-            hop_length=model_config["hop_length"],
             n_mels=model_config["n_mels"]
         )
 
@@ -36,7 +35,6 @@ class StftArray(Module):
         super().__init__()
 
         self.n_fft = model_config["n_fft"]
-        self.hop_length = model_config["hop_length"]
 
     def forward(self, X):
         "Expected input has shape (batch_size, n_arrays, time_steps)"
@@ -46,9 +44,9 @@ class StftArray(Module):
 
         for i in range(n_arrays):
             x = X[:, i, :]
-            stft_output = torch.stft(x, self.n_fft, self.hop_length, return_complex=True)
+            stft_output = torch.stft(x, self.n_fft, onesided=True, return_complex=True)
             result.append(
-                stft_output[:, 1:, :]
+                stft_output#[:, 1:, :]
             ) # Ignore frequency 0
         
         result = torch.stack(result, dim=1)

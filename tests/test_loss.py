@@ -8,8 +8,8 @@ from complex_neural_source_localization.model import DOACNet
 
 def test_neural_tdoa_loss():
 
-    loss_fn = Loss("real_angular")
-    model = DOACNet()
+    loss_fn = Loss()
+    model = DOACNet(n_sources=1)
 
     sample_path = "tests/fixtures/0.0_split1_ir0_ov1_3.wav"
 
@@ -18,8 +18,6 @@ def test_neural_tdoa_loss():
 
     target = {
         "azimuth_2d_point": torch.Tensor([[0.0, 1.0]]),
-        "start_time": torch.Tensor([0.3]),
-        "end_time": torch.Tensor([0.6])
     }
 
     model_output = model(sample)

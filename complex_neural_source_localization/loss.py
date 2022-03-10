@@ -1,14 +1,12 @@
 import torch
 
-from math import ceil, floor
 from torch.nn import Module, CosineSimilarity
 
-from tdoa.math_utils import denormalize
 
 # Loss functions
 
 class Loss(Module):
-    def __init__(self, loss_type, model_output_type="scalar"):
+    def __init__(self, loss_type="angular", model_output_type="scalar"):
         """Class abstracting the loss function
 
         Args:

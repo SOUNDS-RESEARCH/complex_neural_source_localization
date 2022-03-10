@@ -1,14 +1,13 @@
 model:
   # NN Model settings
   pool_type: avg # max | avg
-  pool_size: [2, 1]
+  pool_size: [1, 1]
   last_layer_dropout_rate: 0.0
   
   # Feature params
   n_input_channels: 4
   n_fft: 1024
   window: hann
-  hop_length: 480 # int(hop_length_in_seconds * sr)
   feature_type: stft # decoupled_stft (real and imag as separate channels) | stft (complex) | stft_magnitude
 
   output_type: scalar # scalar | frame

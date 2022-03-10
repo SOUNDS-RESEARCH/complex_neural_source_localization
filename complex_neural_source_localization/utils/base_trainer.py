@@ -8,7 +8,7 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 from complex_neural_source_localization.utils.model_utilities import (
     merge_list_of_dicts 
 )
-from complex_neural_source_localization.utils.logging import (
+from complex_neural_source_localization.utils.model_visualization import (
     ConvolutionalFeatureMapLogger 
 )
 
@@ -24,6 +24,7 @@ class BaseTrainer(pl.Trainer):
                 items = super().get_metrics(trainer, model)
                 items.pop("v_num", None)
                 return items
+
         progress_bar = CustomProgressBar()
 
         checkpoint_callback = ModelCheckpoint(
@@ -59,7 +60,6 @@ class BaseLightningModule(pl.LightningModule):
         if log_convolutional_feature_maps:
             self.convolutional_feature_map_logger = ConvolutionalFeatureMapLogger(
                                                         model, self)
-
         self.log_step = log_step
 
     def _step(self, batch, batch_idx, log_model_output=False,
@@ -82,11 +82,11 @@ class BaseLightningModule(pl.LightningModule):
         if log_labels:
             output_dict.update(y)
 
-        # 4. Log feature maps of convolutional layers
-        if log_conv_feature_maps and batch_idx%self.log_step == 0:
-            image = self.convolutional_feature_map_logger.log()
+        # # 4. Log feature maps of convolutional layers
+        # if log_conv_feature_maps and batch_idx%self.log_step == 0:
+        #     image = self.convolutional_feature_map_logger.log()
             
-            self.convolutional_feature_map_logger.log()
+        #     self.convolutional_feature_map_logger.log()
 
         output_dict["loss"] = output_dict["loss_vector"].mean()
         output_dict["loss_vector"] = output_dict["loss_vector"].detach()
@@ -99,7 +99,7 @@ class BaseLightningModule(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         return self._step(batch, batch_idx,
                           log_model_output=True, log_labels=True,
-                          log_conv_feature_maps=self.log_convolutional_feature_maps)
+                          log_conv_feature_maps=False)
     
     def test_step(self, batch, batch_idx):
         return self._step(batch, batch_idx,

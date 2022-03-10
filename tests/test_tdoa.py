@@ -22,5 +22,5 @@ def test_compute_tdoas():
     room.add_microphone_array(mic_locations)
 
     simulation_results = simulate(room)
-    tdoas = compute_tdoas(simulation_results, room.fs)
+    tdoas = compute_tdoas(simulation_results, room.base_fs)
     # Currently no assertions, just seeing if it goes through

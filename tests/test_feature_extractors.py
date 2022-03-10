@@ -8,17 +8,17 @@ from complex_neural_source_localization.feature_extractors import (
 )
 
 
-def test_mel_spectrogram_array():
-    cfg = _load_config()
+# def test_mel_spectrogram_array():
+#     cfg = _load_config()
     
-    sample_path = "tests/fixtures/fold1_room1_mix001.wav"
-    signal = torchaudio.load(sample_path)[0].unsqueeze(0)
-    mel_spec_array = MfccArray(cfg["model"], cfg["training_dataset"])
+#     sample_path = "tests/fixtures/fold1_room1_mix001.wav"
+#     signal = torchaudio.load(sample_path)[0].unsqueeze(0)
+#     mel_spec_array = MfccArray(cfg["model"], cfg["dataset"])
 
-    result = mel_spec_array(signal)
+#     result = mel_spec_array(signal)
 
-    assert result.shape == (1, 4, 64, 3001)
-    """Batch size, n_array, n_mels, time_steps"""
+#     assert result.shape == (1, 4, 64, 3001)
+#     """Batch size, n_array, n_mels, time_steps"""
 
 
 def test_spectrogram_array():

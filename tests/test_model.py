@@ -1,10 +1,5 @@
-import shutil
-
-from hydra import compose, initialize
-from hydra.core.global_hydra import GlobalHydra
-
-from datasets.dataset import TdoaDataset
-from complex_neural_source_localization.model import TdoaCrnn
+from complex_neural_source_localization.dataset import load_multichannel_wav
+from complex_neural_source_localization.model import DOACNet
 
 
 def test_tdoa_crnn10_with_stft():
@@ -16,22 +11,12 @@ def test_tdoa_crnn10_with_mfcc():
 
 
 def _test_tdoa_crnn10(feature_type):
-    GlobalHydra.instance().clear()
-    temp_dataset_path = "tests/temp/dataset"
-    shutil.rmtree(temp_dataset_path, ignore_errors=True)
 
-    initialize(config_path="../config", job_name="test_app")
-    cfg = compose(config_name="config")
-    cfg["training_dataset"]["training_dataset_dir"] = temp_dataset_path
-    cfg["training_dataset"]["n_training_samples"] = 1
-    cfg["model"]["feature_type"] = feature_type
-
-    model = TdoaCrnn(cfg["model"])
-    dataset = TdoaDataset(cfg["training_dataset"])
+    model = DOACNet(n_sources=1)
     
-    sample = dataset[0]
-    _ = sample[1]
+    sample = load_multichannel_wav("tests/fixtures/0.0_split1_ir0_ov1_3.wav", 16000, 1)
 
-    model_output = model(sample[0].unsqueeze(0))
+    model_output = model(sample.unsqueeze(0))
 
-    assert model_output.shape == (1, 1)
+    breakpoint()
+    assert model_output.shape == (1, 2)

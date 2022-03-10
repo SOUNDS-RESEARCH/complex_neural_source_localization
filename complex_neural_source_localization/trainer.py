@@ -36,7 +36,9 @@ class DOACNetLightniningModule(BaseLightningModule):
         model = DOACNet(
             conv_config=config["model"]["conv_layers"],
             last_layer_dropout_rate=config["model"]["last_layer_dropout_rate"],
-            n_sources=n_sources
+            n_sources=n_sources,
+            pool_size=config["model"]["pool_size"],
+            pool_type=config["model"]["pool_type"]
         )
 
         if n_sources == 2:

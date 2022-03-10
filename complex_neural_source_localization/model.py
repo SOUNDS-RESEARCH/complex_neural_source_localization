@@ -6,13 +6,13 @@ from complex_neural_source_localization.feature_extractors import DecoupledStftA
 from .utils.model_utilities import ConvBlock, init_gru, init_layer
 
 DEFAULT_CONV_CONFIG = [
-    {"type": "real_single", "n_channels": 64, "dropout_rate":0},
-    {"type": "real_double", "n_channels": 128, "dropout_rate":0},
-    {"type": "real_double", "n_channels": 256, "dropout_rate":0},
-    {"type": "real_double", "n_channels": 512, "dropout_rate":0},
+    {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
+    {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
+    {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
+    {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
 ]
 
-DEFAULT_STFT_CONFIG = {"n_fft": 1024, "hop_length": 480}
+DEFAULT_STFT_CONFIG = {"n_fft": 1024}
 
 
 class DOACNet(nn.Module):
@@ -22,7 +22,8 @@ class DOACNet(nn.Module):
                  conv_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
                  init_conv_layers=False,
-                 last_layer_dropout_rate=0.5):
+                 last_layer_dropout_rate=0.5,
+                 store_feature_maps=True):
         
         super().__init__()
 
@@ -36,46 +37,80 @@ class DOACNet(nn.Module):
         self.max_filters = conv_config[-1]["n_channels"]
 
         # 2. Create feature extractor
-        if "complex" in conv_config[0]["type"]:
-            self.feature_extractor = StftArray(stft_config)
-        else:
-            self.feature_extractor = DecoupledStftArray(stft_config)
+        self.feature_extractor = self._create_feature_extractor(stft_config, conv_config[0]["type"])
 
         # 3. Create convolutional blocks
-        self.conv_blocks = self._init_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
+        self.conv_blocks = self._create_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
         # 4. Create recurrent block
-        self.gru = nn.GRU(input_size=self.max_filters, hidden_size=self.max_filters//2, 
-            num_layers=1, batch_first=True, bidirectional=True)
+        self.rnn = self._create_rnn_block(self.max_filters)
 
         # 5. Create linear block
-        n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
-        if last_layer_dropout_rate > 0:
-            self.azimuth_fc = nn.Sequential(
-                nn.Linear(self.max_filters, n_last_layer, bias=True),
-                nn.Dropout(last_layer_dropout_rate)
-            )
-        else:
-            self.azimuth_fc = nn.Linear(self.max_filters, n_last_layer, bias=True)
-        
+        self.azimuth_fc = self._create_linear_block(n_sources, last_layer_dropout_rate)
+
         self._init_weights()
+        
+        if store_feature_maps:
+            self._create_hooks()
+    
+    def forward(self, x):
+        # input: (batch_size, mic_channels, time_steps)
 
-    def _init_weights(self):
-        init_gru(self.gru)
-        init_layer(self.azimuth_fc)
+        x = self.feature_extractor(x)
+        # (batch_size, mic_channels, n_freqs, stft_time_steps)
+        x = x.transpose(2, 3)
+        # (batch_size, mic_channels, stft_time_steps, n_freqs)
+        
+        for conv_block in self.conv_blocks:
+            if x.is_complex() and conv_block.is_real:
+                x = _to_real(x, mode=self.complex_to_real_function)
+            x = conv_block(x)
+        
+        if x.is_complex():
+            x = _to_real(x, mode=self.complex_to_real_function)
+        # (batch_size, feature_maps, time_steps, n_freqs)
 
-    def _init_conv_blocks(self, conv_config, init_conv_layers):
+        # Average across all frequencies
+        x = torch.mean(x, dim=3)
+        # (batch_size, feature_maps, time_steps)
+
+        x = x.transpose(1,2)
+        # (batch_size, time_steps, feature_maps):
+
+        (x, _) = self.rnn(x)
+        # (batch_size, time_steps, feature_maps):
+
+        x = self.azimuth_fc(x)
+        # (batch_size, time_steps, class_num)
+
+        # Average across all time steps
+        if self.output_type == "scalar":
+            if self.pool_type == "avg":
+                x = torch.mean(x, dim=1)
+            elif self.pool_type == "max":
+                (x, _) = torch.max(x, dim=1)
+
+        return x
+
+    def _create_feature_extractor(self, stft_config, first_conv_layer_type):
+        if "complex" in first_conv_layer_type:
+            return StftArray(stft_config)
+        else:
+            return DecoupledStftArray(stft_config)
+
+    def _create_conv_blocks(self, conv_config, init_conv_layers):
         
         conv_blocks = [
             ConvBlock(self.n_input_channels, conv_config[0]["n_channels"],
-                          block_type=conv_config[0]["type"],
-                          dropout_rate=conv_config[0]["dropout_rate"])
+                      block_type=conv_config[0]["type"],
+                      dropout_rate=conv_config[0]["dropout_rate"])
         ]
 
         for i, config in enumerate(conv_config[1:]):
             last_layer = conv_blocks[-1]
             in_channels = last_layer.out_channels
-            if last_layer.is_real == False and "complex" not in config["type"]: # complex convolutions are performed using 2 convolutions of half the filters
+            if last_layer.is_real == False and "complex" not in config["type"]:
+                # complex convolutions are performed using 2 convolutions of half the filters
                 in_channels *= 2
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
@@ -85,41 +120,50 @@ class DOACNet(nn.Module):
         
         return nn.ModuleList(conv_blocks)
         
-    def forward(self, x):
-        """input: (batch_size, mic_channels, time_steps)"""
+    def _create_rnn_block(self, input_size):
+            return nn.GRU(input_size=input_size,
+                          hidden_size=input_size//2, 
+                          num_layers=1,
+                          batch_first=True,
+                          bidirectional=True)
 
-        x = self.feature_extractor(x)
-        """(batch_size, mic_channels, n_freqs, stft_time_steps)"""
-        x = x.transpose(2, 3)
-        """(batch_size, mic_channels, stft_time_steps, n_freqs)"""
+    def _create_linear_block(self, n_sources, last_layer_dropout_rate):   
+        n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
+
+        if last_layer_dropout_rate > 0:
+            return nn.Sequential(
+                nn.Linear(self.max_filters, n_last_layer, bias=True),
+                nn.Dropout(last_layer_dropout_rate)
+            )
+        else:
+            return nn.Linear(self.max_filters, n_last_layer, bias=True)
+    
+    def _init_weights(self):
+        init_gru(self.rnn)
+        init_layer(self.azimuth_fc)
+    
+    def _create_hooks(self):
+        "Make all the intermediate layers accessible through the 'feature_maps' dictionary"
+
+        self.feature_maps = {}
+
+        hook_fn = self._create_hook_fn("stft")
+        self.feature_extractor.register_forward_hook(hook_fn)
         
-        for conv_block in self.conv_blocks:
-            if x.is_complex() and conv_block.is_real:
-                x = _to_real(x, mode=self.complex_to_real_function)
-            x = conv_block(x)
+        for i, conv_layer in enumerate(self.conv_blocks):
+            hook_fn = self._create_hook_fn(f"conv_{i}")
+            conv_layer.register_forward_hook(hook_fn)
         
-        if x.is_complex():
-            x = _to_real(x, mode=self.complex_to_real_function)
-        """(batch_size, feature_maps, time_steps, n_freqs)"""
+        hook_fn = self._create_hook_fn("rnn")
+        self.rnn.register_forward_hook(hook_fn)
 
-        x = torch.mean(x, dim=3)
-        """(batch_size, feature_maps, time_steps)"""
+        hook_fn = self._create_hook_fn("azimuth_fc")
+        self.azimuth_fc.register_forward_hook(hook_fn)
 
-        x = x.transpose(1,2)
-        """ (batch_size, time_steps, feature_maps):"""
-
-        (x, _) = self.gru(x)
-        
-        x = self.azimuth_fc(x)
-
-        if self.output_type == "scalar":
-        # """(batch_size, time_steps, class_num)"""
-            if self.pool_type == "avg":
-                x = torch.mean(x, dim=1)
-            elif self.pool_type == "max":
-                (x, _) = torch.max(x, dim=1)
-
-        return x
+    def _create_hook_fn(self, layer_id):
+        def fn(_, __, output):
+            self.feature_maps[layer_id] = output
+        return fn
 
 
 def _to_real(x, mode="concatenate"):

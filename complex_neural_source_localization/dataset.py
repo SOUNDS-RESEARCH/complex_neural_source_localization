@@ -13,7 +13,6 @@ class DCASE2019Task3Dataset(Dataset):
         self.config = dataset_config
         self.sr = dataset_config["sr"]
         self.sample_duration_in_seconds = dataset_config["sample_duration_in_seconds"]
-        self.sample_duration = self.sr*self.sample_duration_in_seconds
         self.num_mics = dataset_config["num_mics"]
         self.n_max_sources = dataset_config["n_max_sources"]
 
@@ -35,11 +34,8 @@ class DCASE2019Task3Dataset(Dataset):
         annotation = self.df.iloc[index]
         wav_file_path = self.wav_path / (annotation["file_name"] + ".wav")
 
-        signal, _ = librosa.load(wav_file_path,
-                                 sr=self.sr, mono=False, dtype=np.float32)
-        padded_signal = np.zeros((self.num_mics, self.sample_duration))
-        padded_signal[:, :signal.shape[1]] = signal
-        signal = padded_signal
+        signal = load_multichannel_wav(wav_file_path, self.sr, self.sample_duration_in_seconds)
+
         # TODO: Remove samples from the dataset which are incomplete
 
         azimuth_in_radians = np.deg2rad(annotation["azi"])
@@ -63,10 +59,19 @@ class DCASE2019Task3Dataset(Dataset):
             y["azimuth_2d_point_2"] = azimuth_2d_point_2
 
 
-        return (torch.Tensor(signal), y)
+        return (signal, y)
 
     def __len__(self):
         return self.df.shape[0]
+
+
+def load_multichannel_wav(wav_file_path, sr, duration_in_secs):
+    signal, _ = librosa.load(wav_file_path, sr=sr,
+                             mono=False, dtype=np.float32)
+    duration_in_samples = int(duration_in_secs*sr)
+    padded_signal = np.zeros((signal.shape[0], duration_in_samples))
+    padded_signal[:, :signal.shape[1]] = signal
+    return torch.Tensor(padded_signal)
 
 
 def create_dataloaders(config):
