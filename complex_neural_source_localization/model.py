@@ -165,7 +165,7 @@ class DOACNet(nn.Module):
         def fn(_, __, output):
             if type(output) == tuple:
                 output = output[0]
-            self.feature_maps[layer_id] = output #.cpu().detach()
+            self.feature_maps[layer_id] = output.detach().cpu() #.cpu().detach()
         return fn
 
 
