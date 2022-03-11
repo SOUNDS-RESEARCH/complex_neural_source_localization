@@ -40,6 +40,10 @@ def complex_normalize(input):
 def complex_relu(input):
     return relu(input.real).type(torch.complex64)+1j*relu(input.imag).type(torch.complex64)
 
+def complex_amp_phase_relu(input):
+    "https://link.springer.com/book/10.1007/978-3-642-27632-3"
+    return relu(input.abs()) * torch.exp(1.j * input.angle())
+
 def complex_sigmoid(input):
     return sigmoid(input.real).type(torch.complex64)+1j*sigmoid(input.imag).type(torch.complex64)
 

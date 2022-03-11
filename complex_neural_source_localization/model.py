@@ -24,7 +24,8 @@ class DOACNet(nn.Module):
                  stft_config=DEFAULT_STFT_CONFIG,
                  init_conv_layers=False,
                  last_layer_dropout_rate=0.5,
-                 store_feature_maps=False):
+                 store_feature_maps=False,
+                 activation="relu"):
         
         super().__init__()
 
@@ -35,6 +36,7 @@ class DOACNet(nn.Module):
         self.pool_size = pool_size
         self.output_type = output_type
         self.complex_to_real_function = complex_to_real_function
+        self.activation = activation
         self.max_filters = conv_config[-1]["n_channels"]
 
         # 2. Create feature extractor
@@ -117,7 +119,8 @@ class DOACNet(nn.Module):
                 ConvBlock(in_channels, config["n_channels"],
                           block_type=config["type"], init=init_conv_layers,
                           dropout_rate=config["dropout_rate"],
-                          pool_size=self.pool_size)
+                          pool_size=self.pool_size,
+                          activation=self.activation)
             )
         
         return nn.ModuleList(conv_blocks)
