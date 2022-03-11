@@ -9,7 +9,7 @@ model:
   n_input_channels: 4
   n_fft: 1024
   window: hann
-  feature_type: stft # decoupled_stft (real and imag as separate channels) | stft (complex) | stft_magnitude
+  feature_type: cross_spectra # stft | cross_spectra
 
   output_type: scalar # scalar | frame
   target: azimuth_2d_point # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
@@ -18,18 +18,18 @@ model:
   conv_layers:
     - layer_1:
       type: complex_single # complex | real | complex_double | real_double
-      n_channels: 32
-      dropout_rate: 0.0
-    - layer_2:
-      type: complex_single
       n_channels: 64
       dropout_rate: 0.0
-    - layer_3:
-      type: complex_single
+    - layer_2:
+      type: real_single
       n_channels: 128
       dropout_rate: 0.0
-    - layer_4:
-      type: complex_single
+    - layer_3:
+      type: real_single
       n_channels: 256
+      dropout_rate: 0.0
+    - layer_4:
+      type: real_single
+      n_channels: 512
       dropout_rate: 0.0
   init_conv_layers: False

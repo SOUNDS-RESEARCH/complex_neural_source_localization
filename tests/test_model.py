@@ -18,5 +18,4 @@ def _test_tdoa_crnn10(feature_type):
 
     model_output = model(sample.unsqueeze(0))
 
-    breakpoint()
     assert model_output.shape == (1, 2)

@@ -1,9 +1,9 @@
-from typing import Tuple
 import torch
 import torch.nn as nn
 
-from complex_neural_source_localization.feature_extractors import DecoupledStftArray, StftArray
-
+from complex_neural_source_localization.feature_extractors import (
+    CrossSpectra, DecoupledStftArray, StftArray
+)
 from .utils.model_utilities import ConvBlock, init_gru, init_layer
 
 DEFAULT_CONV_CONFIG = [
@@ -19,6 +19,7 @@ DEFAULT_STFT_CONFIG = {"n_fft": 1024}
 class DOACNet(nn.Module):
     def __init__(self, output_type="scalar", n_input_channels=4, n_sources=2,
                  pool_type="avg", pool_size=(1,2),
+                 feature_type="stft",
                  complex_to_real_function="concatenate",
                  conv_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
@@ -40,7 +41,7 @@ class DOACNet(nn.Module):
         self.max_filters = conv_config[-1]["n_channels"]
 
         # 2. Create feature extractor
-        self.feature_extractor = self._create_feature_extractor(stft_config, conv_config[0]["type"])
+        self.feature_extractor = self._create_feature_extractor(feature_type, stft_config, conv_config[0]["type"])
 
         # 3. Create convolutional blocks
         self.conv_blocks = self._create_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
@@ -95,11 +96,14 @@ class DOACNet(nn.Module):
 
         return x
 
-    def _create_feature_extractor(self, stft_config, first_conv_layer_type):
-        if "complex" in first_conv_layer_type:
-            return StftArray(stft_config)
-        else:
-            return DecoupledStftArray(stft_config)
+    def _create_feature_extractor(self, feature_type, stft_config, first_conv_layer_type):
+        if feature_type == "cross_spectra":
+            return CrossSpectra(stft_config)
+        elif feature_type == "stft":  
+            if "complex" in first_conv_layer_type:
+                return StftArray(stft_config)
+            else:
+                return DecoupledStftArray(stft_config)
 
     def _create_conv_blocks(self, conv_config, init_conv_layers):
         
