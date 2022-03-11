@@ -136,7 +136,7 @@ def plot_model_output(feature_maps, metadata=None, unwrap=True,
         for feature_name, feature_map in feature_maps.items()
         if "conv" in feature_name
     }
-    rnn_output = feature_maps["rnn"][0].transpose(1, 2)
+    rnn_output = feature_maps["rnn"].transpose(1, 2)
 
     for i in range(batch_size):
         sample_idx = batch_size + batch_start_idx

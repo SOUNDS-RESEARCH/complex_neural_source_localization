@@ -43,7 +43,6 @@ class BaseLightningModule(pl.LightningModule):
     """
 
     def __init__(self, model, loss,
-                 log_convolutional_feature_maps=True,
                  log_step=50):
         super().__init__()
 
@@ -52,7 +51,6 @@ class BaseLightningModule(pl.LightningModule):
         self.model = model
         self.loss = loss
 
-        self.log_convolutional_feature_maps = log_convolutional_feature_maps
         self.log_step = log_step
 
     def _step(self, batch, batch_idx, log_model_output=False,

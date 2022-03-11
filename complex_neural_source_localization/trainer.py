@@ -1,3 +1,4 @@
+from omegaconf import OmegaConf
 import torch
 
 from torch.optim.lr_scheduler import MultiStepLR
@@ -29,6 +30,7 @@ class DOACNetLightniningModule(BaseLightningModule):
        used for training a DOACNet
     """
     def __init__(self, config):
+        config = OmegaConf.to_container(config)
         self.config = config
         
         n_sources = self.config["dataset"]["n_max_sources"]

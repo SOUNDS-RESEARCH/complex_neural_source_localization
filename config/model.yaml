@@ -1,7 +1,7 @@
 model:
   # NN Model settings
   pool_type: avg # max | avg
-  pool_size: [1, 1]
+  pool_size: [1, 1] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
   last_layer_dropout_rate: 0.0
   
   # Feature params
@@ -16,19 +16,19 @@ model:
 
   conv_layers:
     - layer_1:
-      type: complex_double # complex | real | complex_double | real_double
-      n_channels: 64
+      type: complex_single # complex | real | complex_double | real_double
+      n_channels: 32
       dropout_rate: 0.0
     - layer_2:
-      type: complex_double
+      type: complex_single
       n_channels: 64
       dropout_rate: 0.0
     - layer_3:
-      type: complex_double
-      n_channels: 64
+      type: complex_single
+      n_channels: 128
       dropout_rate: 0.0
     - layer_4:
-      type: complex_double
-      n_channels: 64
+      type: complex_single
+      n_channels: 256
       dropout_rate: 0.0
   init_conv_layers: False

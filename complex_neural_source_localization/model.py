@@ -18,7 +18,7 @@ DEFAULT_STFT_CONFIG = {"n_fft": 1024}
 
 class DOACNet(nn.Module):
     def __init__(self, output_type="scalar", n_input_channels=4, n_sources=2,
-                 pool_type="avg", pool_size=(2,2),
+                 pool_type="avg", pool_size=(1,2),
                  complex_to_real_function="concatenate",
                  conv_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
@@ -116,7 +116,8 @@ class DOACNet(nn.Module):
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
                           block_type=config["type"], init=init_conv_layers,
-                          dropout_rate=config["dropout_rate"])
+                          dropout_rate=config["dropout_rate"],
+                          pool_size=self.pool_size)
             )
         
         return nn.ModuleList(conv_blocks)
