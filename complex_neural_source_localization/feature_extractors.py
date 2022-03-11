@@ -99,7 +99,6 @@ class CrossSpectra(Module):
             sample_cross_spectra = []
             for channel_1 in range(n_channels):
                 for channel_2 in range(channel_1, n_channels):
-                    print(stfts[sample_idx][channel_1].shape)
                     cross_spectrum = stfts[sample_idx][channel_1]*stfts[sample_idx][channel_2].conj()
                     sample_cross_spectra.append(cross_spectrum)
             cross_spectra.append(

@@ -40,7 +40,8 @@ class DOACNetLightniningModule(BaseLightningModule):
             last_layer_dropout_rate=config["model"]["last_layer_dropout_rate"],
             n_sources=n_sources,
             pool_size=config["model"]["pool_size"],
-            pool_type=config["model"]["pool_type"]
+            pool_type=config["model"]["pool_type"],
+            feature_type=config["model"]["feature_type"]
         )
 
         if n_sources == 2:

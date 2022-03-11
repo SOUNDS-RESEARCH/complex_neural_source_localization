@@ -31,7 +31,10 @@ class DOACNet(nn.Module):
         super().__init__()
 
         # 1. Store configuration
-        self.n_input_channels = n_input_channels
+        if feature_type == "stft":
+            self.n_input_channels = n_input_channels
+        elif feature_type == "cross_spectra":
+            self.n_input_channels = sum(range(n_input_channels + 1))
         self.n_sources = n_sources
         self.pool_type = pool_type
         self.pool_size = pool_size
