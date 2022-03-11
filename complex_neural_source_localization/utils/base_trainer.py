@@ -18,7 +18,7 @@ class BaseTrainer(pl.Trainer):
 
         progress_bar = CustomProgressBar()
 
-        feature_map_callback = FeatureMapLoggerCallback()
+        #feature_map_callback = FeatureMapLoggerCallback()
         checkpoint_callback = ModelCheckpoint(
                         monitor="validation_loss",
                         save_last=True,
@@ -29,7 +29,7 @@ class BaseTrainer(pl.Trainer):
         super().__init__(
             max_epochs=n_epochs,
             callbacks=[
-                checkpoint_callback, progress_bar, feature_map_callback
+                checkpoint_callback, progress_bar, # feature_map_callback
             ],
             gpus=gpus
         )
