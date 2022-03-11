@@ -123,7 +123,6 @@ class ConvBlock(nn.Module):
         x = self.activation(self.bn1(self.conv1(x)))
         if "double" in self.block_type:
             x = self.activation(self.bn2(self.conv2(x)))
-        print(self.pool_size)
         x = self.pooling(x, kernel_size=self.pool_size)
         
         if self.dropout_rate > 0:
