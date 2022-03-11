@@ -1,7 +1,7 @@
 model:
   # NN Model settings
   pool_type: avg # max | avg
-  pool_size: [1, 1] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
+  pool_size: [1, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
   last_layer_dropout_rate: 0.0
   activation: amp_phase_relu # tanh | relu | amp_phase_relu
   
