@@ -3,7 +3,7 @@ model:
   pool_type: avg # max | avg
   pool_size: [1, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
   last_layer_dropout_rate: 0.0
-  activation: amp_phase_relu # tanh | relu | amp_phase_relu
+  activation: amp_tanh # tanh | relu | amp_tanh
   
   # Feature params
   n_input_channels: 4
