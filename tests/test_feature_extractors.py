@@ -22,7 +22,7 @@ def test_spectrogram_array():
 
     result = spec_array(signal)
 
-    #plot_multichannel_spectrogram(result[0], output_path="tests/temp/multichannel_stft.png")
+    plot_multichannel_spectrogram(result[0], output_path="tests/temp/multichannel_stft.png")
 
     assert result.shape == (1, 4, 512, 5626)
     """Batch size, n_array, n_fft//2 + 1, time_steps"""
@@ -37,7 +37,7 @@ def test_cross_spectrum_array():
 
     result = cross_spec_array(signal.unsqueeze(0))
 
-    plot_multichannel_spectrogram(result[0], output_path="tests/temp/cross_spectra.png", unwrap=True, db=True)
+    plot_multichannel_spectrogram(result[0], output_path="tests/temp/cross_spectra.png", mode="row", unwrap=True, db=True)
 
     assert result.shape == (1, 10, 512, 5626)
     """Batch size, n_array, n_fft//2 + 1, time_steps"""

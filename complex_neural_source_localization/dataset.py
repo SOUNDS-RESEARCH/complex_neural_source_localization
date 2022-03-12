@@ -43,6 +43,7 @@ class DCASE2019Task3Dataset(Dataset):
 
         y = {
                 "azimuth_2d_point": azimuth_2d_point,
+                "azimuth_in_radians": torch.Tensor([azimuth_in_radians])
                 # "start_time": torch.Tensor([annotation["start_time"]]),
                 # "end_time": torch.Tensor([annotation["end_time"]])
         }

@@ -42,7 +42,7 @@ def complex_relu(input):
 
 def complex_amp_tanh(input):
     "https://link.springer.com/book/10.1007/978-3-642-27632-3"
-    return tanh(input.abs()) * torch.exp(1.j * input.angle())
+    return relu(input.abs()) * torch.exp(1.j * input.angle())
 
 def complex_sigmoid(input):
     return sigmoid(input.real).type(torch.complex64)+1j*sigmoid(input.imag).type(torch.complex64)

@@ -15,17 +15,20 @@ from complex_neural_source_localization.utils.model_utilities import (
 
 
 def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="column",
-                                  axs=None, figsize=(10, 5), output_path=None, close=True, db=True):
+                                  axs=None, figsize=(10, 5), output_path=None, close=True, db=True,
+                                  colorbar=True):
     
     num_channels, num_freq_bins, num_time_steps = multichannel_spectrogram.shape
     
     if axs is None:
         if mode == "column":
             n_rows, n_cols = (2, num_channels)
+            share_y = "col"
         elif mode == "row":
             n_rows, n_cols = (num_channels, 2)
+            share_y = "row"
 
-        fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=figsize)
+        fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=figsize, sharey=share_y)
 
     # If torch.Tensor, move to cpu and convert to numpy
     if isinstance(multichannel_spectrogram, torch.Tensor):
@@ -34,13 +37,29 @@ def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="c
     # Plot spectrograms for all channels
     for n_channel in range(num_channels):
         if mode == "row":
-            channel_axs = (axs[n_channel][0], axs[n_channel][1])
+            channel_axs = [axs[n_channel, 0], axs[n_channel, 1]]
         elif mode == "column":
-            channel_axs = (axs[0][n_channel], axs[1][n_channel])
+            channel_axs = [axs[0, n_channel], axs[1, n_channel]]
+
         else:
             raise ValueError("Allowed modes are 'row' and 'column'")
 
-        plot_spectrogram(multichannel_spectrogram[n_channel], axs=channel_axs, unwrap=unwrap, db=db)
+        (mag_mesh, phase_mesh), _ = plot_spectrogram(multichannel_spectrogram[n_channel],
+                                                axs=channel_axs, unwrap=unwrap,
+                                                db=db, colorbar=False)
+
+    if colorbar:
+        if mode == "column":
+            location = "right"
+            mag_axs, phase_axs = axs[0, :], axs[1, :]
+        elif mode == "row":
+            location = "bottom"
+            mag_axs, phase_axs = axs[:, 0], axs[:, 1]
+        
+        plt.colorbar(mag_mesh, ax=mag_axs, format="%+2.f",
+                        location=location)
+        plt.colorbar(phase_mesh, ax=phase_axs,
+                        location=location)
 
     if output_path is not None:
         plt.savefig(output_path)
@@ -51,7 +70,8 @@ def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="c
 
 
 def plot_spectrogram(spectrogram, unwrap=True, db=True,
-                     mode="column", figsize=(10, 5), axs=None, output_path=None, close=True):
+                     mode="column", figsize=(10, 5), axs=None, output_path=None, close=True,
+                     colorbar=True):
     if axs is None:
         if mode == "column":
             n_rows, n_cols = (2, 1)
@@ -72,15 +92,25 @@ def plot_spectrogram(spectrogram, unwrap=True, db=True,
     if unwrap:
         spectrogram_phase = np.unwrap(spectrogram_phase, axis=0)
     
-    librosa.display.specshow(spectrogram_mag, ax=axs[0])
-    librosa.display.specshow(spectrogram_phase, ax=axs[1])
+    # img_mag = librosa.display.specshow(spectrogram_mag, ax=axs[0])
+    # img_phase = librosa.display.specshow(spectrogram_phase, ax=axs[1])
+
+    mag_mesh = axs[0].pcolormesh(spectrogram_mag, cmap="RdBu_r")
+    phase_mesh = axs[1].pcolormesh(spectrogram_phase, cmap="viridis")
+
+    axs[0].axis("off")
+    axs[1].axis('off')
+
+    if colorbar:
+        plt.colorbar(mag_mesh, ax=axs[0], format="%+2.f dB")
+        plt.colorbar(phase_mesh, ax=axs[1], format="%+4.f rad")
 
     if output_path is not None:
         plt.savefig(output_path)
         if close:
             plt.close()
     
-    return axs
+    return (mag_mesh, phase_mesh), axs
 
 
 def plot_model_output(feature_maps, metadata=None, unwrap=True,
