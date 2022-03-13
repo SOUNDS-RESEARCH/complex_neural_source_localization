@@ -20,13 +20,13 @@ class DOACNet(nn.Module):
     def __init__(self, output_type="scalar", n_input_channels=4, n_sources=2,
                  pool_type="avg", pool_size=(1,2),
                  feature_type="stft",
-                 complex_to_real_function="concatenate",
                  conv_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
                  init_conv_layers=False,
                  last_layer_dropout_rate=0.5,
                  store_feature_maps=False,
-                 activation="relu"):
+                 activation="relu",
+                 complex_to_real_mode="amp_phase"):
         
         super().__init__()
 
@@ -39,7 +39,7 @@ class DOACNet(nn.Module):
         self.pool_type = pool_type
         self.pool_size = pool_size
         self.output_type = output_type
-        self.complex_to_real_function = complex_to_real_function
+        self.complex_to_real_mode = complex_to_real_mode
         self.activation = activation
         self.max_filters = conv_config[-1]["n_channels"]
 
@@ -70,11 +70,11 @@ class DOACNet(nn.Module):
         
         for conv_block in self.conv_blocks:
             if x.is_complex() and conv_block.is_real:
-                x = _to_real(x, mode=self.complex_to_real_function)
+                x = complex_to_real(x, mode=self.complex_to_real_mode)
             x = conv_block(x)
         
         if x.is_complex():
-            x = _to_real(x, mode=self.complex_to_real_function)
+            x = complex_to_real(x, mode=self.complex_to_real_mode)
         # (batch_size, feature_maps, time_steps, n_freqs)
 
         # Average across all frequencies
@@ -181,15 +181,17 @@ class DOACNet(nn.Module):
         return fn
 
 
-def _to_real(x, mode="concatenate"):
+def complex_to_real(x, mode="real_imag"):
     real_part = x.real
     imag_part = x.imag
     
-    if mode == "concatenate":
+    if mode == "real_imag":
         x = torch.cat([real_part, imag_part], axis=1)
     elif mode == "magnitude":
         x = x.abs()
     elif mode == "phase":
         x = x.angle()
+    elif mode == "amp_phase":
+        x = torch.cat([x.abs(), x.angle()], axis=1)
 
     return x
