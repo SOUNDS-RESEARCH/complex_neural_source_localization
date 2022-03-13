@@ -50,7 +50,7 @@ class DOACNet(nn.Module):
         self.conv_blocks = self._create_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
         # 4. Create recurrent block
-        self.rnn = self._create_rnn_block(self.max_filters)
+        #self.rnn = self._create_rnn_block(self.max_filters)
 
         # 5. Create linear block
         self.azimuth_fc = self._create_linear_block(n_sources, last_layer_dropout_rate)
@@ -84,7 +84,7 @@ class DOACNet(nn.Module):
         x = x.transpose(1,2)
         # (batch_size, time_steps, feature_maps):
 
-        (x, _) = self.rnn(x)
+        #(x, _) = self.rnn(x)
         # (batch_size, time_steps, feature_maps):
 
         x = self.azimuth_fc(x)
@@ -152,7 +152,7 @@ class DOACNet(nn.Module):
             return nn.Linear(self.max_filters, n_last_layer, bias=True)
     
     def _init_weights(self):
-        init_gru(self.rnn)
+        #init_gru(self.rnn)
         init_layer(self.azimuth_fc)
     
     def track_feature_maps(self):
