@@ -8,6 +8,7 @@
 from torch.nn.functional import relu, max_pool2d, avg_pool2d, dropout, dropout2d, interpolate, sigmoid, tanh
 import torch
 
+
 def complex_matmul(A, B):
     '''
         Performs the matrix product between two complex matricess
@@ -18,6 +19,7 @@ def complex_matmul(A, B):
     
     return outp_real.type(torch.complex64) + 1j * outp_imag.type(torch.complex64)
 
+
 def complex_avg_pool2d(input, *args, **kwargs):
     '''
     Perform complex average pooling.
@@ -26,6 +28,7 @@ def complex_avg_pool2d(input, *args, **kwargs):
     absolute_value_imag =  avg_pool2d(input.imag, *args, **kwargs)    
     
     return absolute_value_real.type(torch.complex64)+1j*absolute_value_imag.type(torch.complex64)
+
 
 def complex_normalize(input):
     '''
@@ -37,31 +40,39 @@ def complex_normalize(input):
     
     return real_norm.type(torch.complex64) + 1j*imag_norm.type(torch.complex64)
 
+
 def complex_relu(input):
     return relu(input.real).type(torch.complex64)+1j*relu(input.imag).type(torch.complex64)
+
 
 def complex_amp_tanh(input):
     "https://link.springer.com/book/10.1007/978-3-642-27632-3"
     return relu(input.abs()) * torch.exp(1.j * input.angle())
 
+
 def complex_sigmoid(input):
     return sigmoid(input.real).type(torch.complex64)+1j*sigmoid(input.imag).type(torch.complex64)
+
 
 def complex_tanh(input):
     return tanh(input.real).type(torch.complex64)+1j*tanh(input.imag).type(torch.complex64)
 
+
 def complex_opposite(input):
     return -(input.real).type(torch.complex64)+1j*(-(input.imag).type(torch.complex64))
+
 
 def complex_stack(input, dim):
     input_real = [x.real for x in input]
     input_imag = [x.imag for x in input]
     return torch.stack(input_real, dim).type(torch.complex64)+1j*torch.stack(input_imag, dim).type(torch.complex64)
 
+
 def _retrieve_elements_from_indices(tensor, indices):
     flattened_tensor = tensor.flatten(start_dim=-2)
     output = flattened_tensor.gather(dim=-1, index=indices.flatten(start_dim=-2)).view_as(indices)
     return output
+
 
 def complex_upsample(input, size=None, scale_factor=None, mode='nearest',
                              align_corners=None, recompute_scale_factor=None):
@@ -74,6 +85,7 @@ def complex_upsample(input, size=None, scale_factor=None, mode='nearest',
                                     align_corners=align_corners, recompute_scale_factor=recompute_scale_factor)
     
     return outp_real.type(torch.complex64) + 1j * outp_imag.type(torch.complex64)
+
 
 def complex_upsample2(input, size=None, scale_factor=None, mode='nearest',
                              align_corners=None, recompute_scale_factor=None):
@@ -114,6 +126,7 @@ def complex_max_pool2d(input,kernel_size, stride=None, padding=0,
     return absolute_value \
            * (torch.cos(angle).type(torch.complex64)+1j*torch.sin(angle).type(torch.complex64))
 
+
 def complex_dropout(input, p=0.5, training=True):
     # need to have the same dropout mask for real and imaginary part, 
     # this not a clean solution!
@@ -131,5 +144,3 @@ def complex_dropout2d(input, p=0.5, training=True):
     mask = dropout2d(mask, p, training)*1/(1-p)
     mask.type(input.dtype)
     return mask*input
-
-
