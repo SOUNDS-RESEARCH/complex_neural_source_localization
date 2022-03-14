@@ -3,10 +3,7 @@ import torch.functional as F
 
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
     ComplexAmpTanh, ComplexConv2d, ComplexBatchNorm2d, ComplexDropout,
-    ComplexReLU, ComplexTanh, ComplexPReLU
-)
-from complex_neural_source_localization.utils.complexPyTorch.complexFunctions import (
-    complex_avg_pool2d, complex_relu, complex_amp_tanh, complex_tanh
+    ComplexReLU, ComplexTanh, ComplexPReLU, ComplexAvgPool2d
 )
 
 
@@ -37,7 +34,7 @@ class ConvBlock(nn.Module):
             elif activation == "prelu":
                 self.activation = ComplexPReLU()
 
-            self.pooling = complex_avg_pool2d
+            self.pooling = ComplexAvgPool2d(pool_size)
             self.is_real = False
             out_channels = out_channels//2
         else:
@@ -61,25 +58,15 @@ class ConvBlock(nn.Module):
                                 kernel_size=kernel_size, stride=stride,
                                 padding=padding, bias=False)           
             self.bn2 = bn_block(out_channels)
-        
-        if "real" in block_type and init: # Complex initialization not yet supported
-            self.init_weights()
-        
+
         self.in_channels = in_channels
         self.out_channels = out_channels
-        
-    def init_weights(self):
-        init_layer(self.conv1)
-        init_layer(self.bn1)
-        if self.block_type == "real_double":
-            init_layer(self.conv2)
-            init_layer(self.bn2)
         
     def forward(self, x):
         x = self.activation(self.bn1(self.conv1(x)))
         if "double" in self.block_type:
             x = self.activation(self.bn2(self.conv2(x)))
-        x = self.pooling(x, kernel_size=self.pool_size)
+        x = self.pooling(x)
         
         if self.dropout_rate > 0:
             x = self.dropout(x)

@@ -115,7 +115,8 @@ class DOACNet(nn.Module):
             ConvBlock(self.n_input_channels, conv_config[0]["n_channels"],
                       block_type=conv_config[0]["type"],
                       dropout_rate=conv_config[0]["dropout_rate"],
-                      pool_size=self.pool_size),
+                      pool_size=self.pool_size,
+                      activation=self.activation),
         ]
 
         for i, config in enumerate(conv_config[1:]):

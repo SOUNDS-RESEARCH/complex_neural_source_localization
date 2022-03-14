@@ -10,8 +10,9 @@ from torchvision.utils import make_grid
 from tqdm import tqdm
 
 from complex_neural_source_localization.utils.model_utilities import (
-    get_all_layers, ConvBlock
+    get_all_layers
 )
+from complex_neural_source_localization.utils.conv_block import ConvBlock
 
 
 def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="column",
