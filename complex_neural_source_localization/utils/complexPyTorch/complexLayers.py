@@ -471,28 +471,6 @@ class ComplexGRUCell(Module):
         return h_new
 
 
-# class ComplexGRU(Module):
-#     def __init__(self, input_length, hidden_length):
-#         super().__init__()
-
-#         self.gru_cell = ComplexGRUCell(input_length=input_length, hidden_length=hidden_length)
-#         self.is_cuda_available = torch.cuda.is_available()
-
-#     def forward(self, x):
-#         batch_size, num_time_steps, input_length = x.shape
-
-#         hidden_values = torch.zeros_like(x, dtype=torch.complex64)
-#         last_hidden = torch.zeros((batch_size, input_length), dtype=torch.complex64)
-#         if self.is_cuda_available:
-#             hidden_values, last_hidden = hidden_values.cuda(), last_hidden.cuda()
-
-#         for n in range(num_time_steps):
-#             hidden_values[:, n, :] = self.gru_cell(x[:, n, :], last_hidden)
-#             last_hidden = hidden_values[:, n, :]
-
-#         return hidden_values, hidden_values[:, -1, :]
-
-
 class ComplexBNGRUCell(Module):
     """
     A BN-GRU cell for complex-valued inputs
@@ -562,15 +540,33 @@ class ComplexBNGRUCell(Module):
         return h_new
 
 
+class MagPhaseGRU(Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, bias=True,
+                 batch_first=False, dropout=0, bidirectional=False):
+        super().__init__()
+
+        self.gru_mag = GRU(input_size=input_size, hidden_size=hidden_size,
+                            num_layers=num_layers, bias=bias,
+                            batch_first=batch_first, dropout=dropout,
+                            bidirectional=bidirectional)
+        self.gru_phase = GRU(input_size=input_size, hidden_size=hidden_size,
+                            num_layers=num_layers, bias=bias,
+                            batch_first=batch_first, dropout=dropout,
+                            bidirectional=bidirectional)
+
+    def forward(self, x):
+        mag_out = self.gru_mag(x.abs())[0]
+        phase_out = self.gru_phase(x.angle())[0]
+        output = mag_out * torch.exp(1.j * phase_out)
+
+        return output, None
+
+
 class ComplexGRU(Module):
     def __init__(self, input_size, hidden_size, num_layers=1, bias=True,
                  batch_first=False, dropout=0, bidirectional=False):
         super().__init__()
-        self.num_layer = num_layers
-        self.hidden_size = hidden_size
-        self.batch_dim = 0 if batch_first else 1
-        self.bidirectional = bidirectional
-        
+
         self.gru_re = GRU(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, bias=bias,
                             batch_first=batch_first, dropout=dropout,
@@ -599,36 +595,19 @@ class ComplexGRU(Module):
 
         return torch.complex(real_out, imag_out), None
 
-
     def _forward_real(self, x):
-        h = self._init_state(self._get_batch_size(x), x.is_cuda)
-        real_real, h_real = self.gru_re(x.real, h.real)
-        imag_imag, h_imag = self.gru_im(x.imag, h.imag)
+        real_real, h_real = self.gru_re(x.real)
+        imag_imag, h_imag = self.gru_im(x.imag)
         real = real_real - imag_imag
 
         return real, torch.complex(h_real, h_imag)
 
     def _forward_imaginary(self, x):
-        h = self._init_state(self._get_batch_size(x), x.is_cuda)
-        imag_real, h_real = self.gru_re(x.imag, h.real)
-        real_imag, h_imag = self.gru_im(x.real, h.imag)
+        imag_real, h_real = self.gru_re(x.imag)
+        real_imag, h_imag = self.gru_im(x.real)
         imaginary = imag_real + real_imag
 
         return imaginary, torch.complex(h_real, h_imag)
-
-    def _init_state(self, batch_size, to_gpu=False):
-        dim_0 = 2 if self.bidirectional else 1
-        dims = (dim_0, batch_size, self.hidden_size)
-
-        h = torch.zeros(dims, dtype=torch.complex64)
-
-        if to_gpu:
-            h = h.cuda()
-            
-        return h
-    
-    def _get_batch_size(self, x):
-        return x.size(self.batch_dim)
 
 
 class ComplexLSTM(Module):

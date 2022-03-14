@@ -7,7 +7,7 @@ from complex_neural_source_localization.feature_extractors import (
 from complex_neural_source_localization.utils.conv_block import ConvBlock
 
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
-    ComplexGRU, ComplexLinear
+    ComplexGRU, MagPhaseGRU, ComplexLinear
 )
 
 DEFAULT_CONV_CONFIG = [
@@ -29,7 +29,8 @@ class DOACNet(nn.Module):
                  init_conv_layers=False,
                  last_layer_dropout_rate=0.5,
                  activation="relu",
-                 complex_to_real_mode="amp_phase"):
+                 complex_to_real_mode="amp_phase",
+                 rnn_type="mag_phase"):
         
         super().__init__()
 
@@ -53,7 +54,7 @@ class DOACNet(nn.Module):
         self.conv_blocks = self._create_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
         # 4. Create recurrent block
-        self.rnn = self._create_rnn_block(self.max_filters)
+        self.rnn = self._create_rnn_block(self.max_filters, rnn_type)
 
         # 5. Create linear block
         self.azimuth_fc = self._create_linear_block(n_sources, last_layer_dropout_rate)
@@ -135,9 +136,15 @@ class DOACNet(nn.Module):
         
         return nn.ModuleList(conv_blocks)
         
-    def _create_rnn_block(self, input_size):
-        return ComplexGRU(input_size=input_size//2,
-                          hidden_size=input_size//2) # TODO: Add bidirectional 
+    def _create_rnn_block(self, input_size, rnn_type):
+        if rnn_type == "complex":
+            return ComplexGRU(input_size=input_size//2,
+                            hidden_size=input_size//4,
+                            batch_first=True, bidirectional=True)
+        elif rnn_type == "mag_phase":
+            return MagPhaseGRU(input_size=input_size//2,
+                               hidden_size=input_size//4,
+                               batch_first=True, bidirectional=True)
 
         # return nn.GRU(input_size=input_size,
         #                 hidden_size=input_size//2, 
