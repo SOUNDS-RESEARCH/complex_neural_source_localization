@@ -1,5 +1,5 @@
 training:
-  batch_size: 32
+  batch_size: 2
   n_epochs: 50
   learning_rate: 0.0001
   learning_rate_decay_steps: [3, 8]

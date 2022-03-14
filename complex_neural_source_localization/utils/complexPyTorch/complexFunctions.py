@@ -5,8 +5,10 @@
 @author: spopoff
 """
 
-from torch.nn.functional import relu, max_pool2d, avg_pool2d, dropout, dropout2d, interpolate, sigmoid, tanh
 import torch
+
+from torch.nn.functional import max_pool2d, avg_pool2d, dropout, dropout2d, interpolate
+from torch import tanh, relu, sigmoid
 
 
 def complex_matmul(A, B):

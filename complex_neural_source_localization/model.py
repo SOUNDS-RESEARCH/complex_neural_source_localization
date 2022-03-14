@@ -4,7 +4,12 @@ import torch.nn as nn
 from complex_neural_source_localization.feature_extractors import (
     CrossSpectra, DecoupledStftArray, StftArray
 )
-from .utils.model_utilities import ConvBlock, init_gru, init_layer
+from complex_neural_source_localization.utils.model_utilities import (
+    ConvBlock, init_gru, init_layer
+)
+from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
+    ComplexGRU, ComplexLinear
+)
 
 DEFAULT_CONV_CONFIG = [
     {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
@@ -24,7 +29,6 @@ class DOACNet(nn.Module):
                  stft_config=DEFAULT_STFT_CONFIG,
                  init_conv_layers=False,
                  last_layer_dropout_rate=0.5,
-                 store_feature_maps=False,
                  activation="relu",
                  complex_to_real_mode="amp_phase"):
         
@@ -55,10 +59,7 @@ class DOACNet(nn.Module):
         # 5. Create linear block
         self.azimuth_fc = self._create_linear_block(n_sources, last_layer_dropout_rate)
 
-        self._init_weights()
-        
-        if store_feature_maps:
-            self.track_feature_maps()
+        #self._init_weights()
     
     def forward(self, x):
         # input: (batch_size, mic_channels, time_steps)
@@ -73,8 +74,8 @@ class DOACNet(nn.Module):
                 x = complex_to_real(x, mode=self.complex_to_real_mode)
             x = conv_block(x)
         
-        if x.is_complex():
-            x = complex_to_real(x, mode=self.complex_to_real_mode)
+        # if x.is_complex():
+        #     x = complex_to_real(x, mode=self.complex_to_real_mode)
         # (batch_size, feature_maps, time_steps, n_freqs)
 
         # Average across all frequencies
@@ -96,6 +97,9 @@ class DOACNet(nn.Module):
                 x = torch.mean(x, dim=1)
             elif self.pool_type == "max":
                 (x, _) = torch.max(x, dim=1)
+
+        if x.is_complex():
+            x = complex_to_real(x, mode="real_imag")
 
         return x
 
@@ -134,22 +138,28 @@ class DOACNet(nn.Module):
         return nn.ModuleList(conv_blocks)
         
     def _create_rnn_block(self, input_size):
-            return nn.GRU(input_size=input_size,
-                          hidden_size=input_size//2, 
-                          num_layers=1,
-                          batch_first=True,
-                          bidirectional=True)
+        return ComplexGRU(input_size=input_size//2,
+                          hidden_size=input_size//2) # TODO: Add bidirectional 
+
+        # return nn.GRU(input_size=input_size,
+        #                 hidden_size=input_size//2, 
+        #                 num_layers=1,
+        #                 batch_first=True,
+        #                 bidirectional=True)
 
     def _create_linear_block(self, n_sources, last_layer_dropout_rate):   
-        n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
+        # n_last_layer = 2*n_sources  # 2 cartesian dimensions for each source
 
-        if last_layer_dropout_rate > 0:
-            return nn.Sequential(
-                nn.Linear(self.max_filters, n_last_layer, bias=True),
-                nn.Dropout(last_layer_dropout_rate)
-            )
-        else:
-            return nn.Linear(self.max_filters, n_last_layer, bias=True)
+        # if last_layer_dropout_rate > 0:
+        #     return nn.Sequential(
+        #         nn.Linear(self.max_filters, n_last_layer, bias=True),
+        #         nn.Dropout(last_layer_dropout_rate)
+        #     )
+        # else:
+        #     return nn.Linear(self.max_filters, n_last_layer, bias=True)
+
+        return ComplexLinear(self.max_filters//2, n_sources)
+
     
     def _init_weights(self):
         init_gru(self.rnn)
