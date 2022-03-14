@@ -4,9 +4,8 @@ import torch.nn as nn
 from complex_neural_source_localization.feature_extractors import (
     CrossSpectra, DecoupledStftArray, StftArray
 )
-from complex_neural_source_localization.utils.model_utilities import (
-    ConvBlock, init_gru, init_layer
-)
+from complex_neural_source_localization.utils.conv_block import ConvBlock
+
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
     ComplexGRU, ComplexLinear
 )
@@ -58,8 +57,6 @@ class DOACNet(nn.Module):
 
         # 5. Create linear block
         self.azimuth_fc = self._create_linear_block(n_sources, last_layer_dropout_rate)
-
-        #self._init_weights()
     
     def forward(self, x):
         # input: (batch_size, mic_channels, time_steps)
@@ -159,11 +156,6 @@ class DOACNet(nn.Module):
         #     return nn.Linear(self.max_filters, n_last_layer, bias=True)
 
         return ComplexLinear(self.max_filters//2, n_sources)
-
-    
-    def _init_weights(self):
-        init_gru(self.rnn)
-        init_layer(self.azimuth_fc)
     
     def track_feature_maps(self):
         "Make all the intermediate layers accessible through the 'feature_maps' dictionary"

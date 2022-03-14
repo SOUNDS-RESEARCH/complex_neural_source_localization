@@ -10,15 +10,18 @@ Based on https://openreview.net/forum?id=H1T2hmZAb
 """
 
 from bdb import Breakpoint
+from turtle import forward
 from more_itertools import last
 import torch
 from torch.nn import (
     Module, Parameter, init,
     Conv2d, ConvTranspose2d, Linear, LSTM, GRU,
-    BatchNorm1d, BatchNorm2d
+    BatchNorm1d, BatchNorm2d,
+    PReLU
 )
 
 from .complexFunctions import (
+    complex_amp_tanh,
     complex_relu,
     complex_tanh,
     complex_sigmoid,
@@ -111,6 +114,22 @@ class ComplexTanh(Module):
     def forward(self, input):
         return complex_tanh(input)
 
+
+class ComplexAmpTanh(Module):
+    def forward(self, input):
+        return complex_amp_tanh(input)
+
+
+class ComplexPReLU(Module):
+    def __init__(self):
+        super().__init__()
+        self.r_prelu = PReLU()        
+        self.i_prelu = PReLU()
+
+
+    def forward(self, input):
+        return self.r_prelu(input.real) + 1j*self.i_prelu(input.imag)
+        
 
 class ComplexConvTranspose2d(Module):
 

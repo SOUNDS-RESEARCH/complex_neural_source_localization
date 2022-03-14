@@ -8,13 +8,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
-    ComplexConv2d, ComplexBatchNorm2d, ComplexDropout
-)
-from complex_neural_source_localization.utils.complexPyTorch.complexFunctions import (
-    complex_avg_pool2d, complex_relu, complex_amp_tanh, complex_tanh
-)
-
 
 def init_layer(layer, nonlinearity='leaky_relu'):
     """Initialize a convolutional or linear layer"""
@@ -55,79 +48,6 @@ def init_gru(rnn):
             [_inner_uniform, _inner_uniform, nn.init.orthogonal_]
         )
         torch.nn.init.constant_(getattr(rnn, 'bias_hh_l{}'.format(i)), 0)
-
-
-class ConvBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, 
-                kernel_size=(3,3), stride=(1,1),
-                padding=(1,1), pool_size=(2, 2),
-                block_type="real_double",
-                init=False,
-                dropout_rate=0.1,
-                activation="relu"):
-        
-        super().__init__()
-        self.block_type = block_type
-        self.pool_size=pool_size
-        self.dropout_rate = dropout_rate
-
-        if "complex" in block_type:
-            conv_block = ComplexConv2d
-            bn_block = ComplexBatchNorm2d
-            dropout_block = ComplexDropout
-            if activation == "relu":
-                self.activation = complex_relu
-            elif activation == "amp_tanh":
-                self.activation = complex_amp_tanh
-            elif activation == "tanh":
-                self.activation = complex_tanh
-            self.pooling = complex_avg_pool2d
-            self.is_real = False
-            out_channels = out_channels//2
-        else:
-            conv_block = nn.Conv2d
-            bn_block = nn.BatchNorm2d
-            dropout_block = nn.Dropout
-            self.activation = F.relu
-            self.pooling = F.avg_pool2d
-            self.is_real = True
-
-        self.conv1 = conv_block(in_channels=in_channels, 
-                            out_channels=out_channels,
-                            kernel_size=kernel_size, stride=stride,
-                            padding=padding, bias=False)
-        self.bn1 = bn_block(out_channels)
-        self.dropout = dropout_block(dropout_rate)
-
-        if "double" in block_type: 
-            self.conv2 = conv_block(in_channels=out_channels, 
-                                out_channels=out_channels,
-                                kernel_size=kernel_size, stride=stride,
-                                padding=padding, bias=False)           
-            self.bn2 = bn_block(out_channels)
-        
-        if "real" in block_type and init: # Complex initialization not yet supported
-            self.init_weights()
-        
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        
-    def init_weights(self):
-        init_layer(self.conv1)
-        init_layer(self.bn1)
-        if self.block_type == "real_double":
-            init_layer(self.conv2)
-            init_layer(self.bn2)
-        
-    def forward(self, x):
-        x = self.activation(self.bn1(self.conv1(x)))
-        if "double" in self.block_type:
-            x = self.activation(self.bn2(self.conv2(x)))
-        x = self.pooling(x, kernel_size=self.pool_size)
-        
-        if self.dropout_rate > 0:
-            x = self.dropout(x)
-        return x
 
 
 def merge_list_of_dicts(list_of_dicts):

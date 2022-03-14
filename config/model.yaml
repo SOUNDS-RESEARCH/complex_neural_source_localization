@@ -3,8 +3,8 @@ model:
   pool_type: avg # max | avg
   pool_size: [2, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
   last_layer_dropout_rate: 0.0
-  activation: amp_tanh # tanh | relu | amp_tanh
-  complex_to_real_mode: amp_phase # amp_phase | real_imag
+  activation: prelu # tanh | relu | prelu | amp_tanh
+  complex_to_real_mode: real_imag # amp_phase | real_imag
 
   # Feature params
   n_input_channels: 4
@@ -23,14 +23,14 @@ model:
       dropout_rate: 0.0
     - layer_2:
       type: complex_single
-      n_channels: 64
+      n_channels: 128
       dropout_rate: 0.0
     - layer_3:
       type: complex_single
-      n_channels: 64
+      n_channels: 256
       dropout_rate: 0.0
     - layer_4:
       type: complex_single
-      n_channels: 64
+      n_channels: 512
       dropout_rate: 0.0
   init_conv_layers: False
