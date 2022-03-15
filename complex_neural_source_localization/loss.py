@@ -75,6 +75,10 @@ class PitLoss(Module):
     def forward(self, model_output, targets, mean_reduce=True):
         target_0 = targets[self.target_keys[0]]
         target_1 = targets[self.target_keys[1]]
+
+        model_output_0 = model_output[:, 0:2]
+        model_output_1 = model_output[:, 2:4]
+
         if model_output[:, 0:2].shape != target_0.shape:
             raise ValueError(
                 "Model output's shape is {}, target's is {}".format(
@@ -83,8 +87,9 @@ class PitLoss(Module):
 
         # Compute loss for every permutation: indexes 0:2 represent the first source prediction,
         # While indexes [2:4] represent the second one
-        loss_0 = self.loss(model_output[:, 0:2], target_0) + self.loss(model_output[:, 2:4], target_1)
-        loss_1 = self.loss(model_output[:, 2:4], target_0) + self.loss(model_output[:, 0:2], target_1)
+        loss_0 = self.loss(model_output_0, target_0, mean_reduce=False) + self.loss(model_output_1, target_1, mean_reduce=False)
+        loss_1 = self.loss(model_output_1, target_0, mean_reduce=False) + self.loss(model_output_0, target_1, mean_reduce=False)
+
         loss = torch.stack([loss_0, loss_1], dim=1)
         loss = loss.min(dim=1)[0]
         

@@ -29,8 +29,7 @@ class DOACNet(nn.Module):
                  init_conv_layers=False,
                  last_layer_dropout_rate=0.5,
                  activation="relu",
-                 complex_to_real_mode="amp_phase",
-                 rnn_type="mag_phase"):
+                 complex_to_real_mode="amp_phase"):
         
         super().__init__()
 
@@ -54,7 +53,7 @@ class DOACNet(nn.Module):
         self.conv_blocks = self._create_conv_blocks(conv_config, init_conv_layers=init_conv_layers)
 
         # 4. Create recurrent block
-        self.rnn = self._create_rnn_block(self.max_filters, rnn_type)
+        self.rnn = self._create_rnn_block(self.max_filters)
 
         # 5. Create linear block
         self.azimuth_fc = self._create_linear_block(n_sources, last_layer_dropout_rate)
@@ -98,7 +97,6 @@ class DOACNet(nn.Module):
 
         if x.is_complex():
             x = complex_to_real(x, mode="real_imag")
-
         return x
 
     def _create_feature_extractor(self, feature_type, stft_config, first_conv_layer_type):
@@ -136,15 +134,10 @@ class DOACNet(nn.Module):
         
         return nn.ModuleList(conv_blocks)
         
-    def _create_rnn_block(self, input_size, rnn_type):
-        if rnn_type == "complex":
-            return ComplexGRU(input_size=input_size//2,
-                            hidden_size=input_size//4,
-                            batch_first=True, bidirectional=True)
-        elif rnn_type == "mag_phase":
-            return MagPhaseGRU(input_size=input_size//2,
-                               hidden_size=input_size//4,
-                               batch_first=True, bidirectional=True)
+    def _create_rnn_block(self, input_size):
+        return ComplexGRU(input_size=input_size//2,
+                        hidden_size=input_size//4,
+                        batch_first=True, bidirectional=True)
 
         # return nn.GRU(input_size=input_size,
         #                 hidden_size=input_size//2, 

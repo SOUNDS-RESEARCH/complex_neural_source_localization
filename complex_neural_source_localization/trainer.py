@@ -43,8 +43,7 @@ class DOACNetLightniningModule(BaseLightningModule):
             pool_type=config["model"]["pool_type"],
             feature_type=config["model"]["feature_type"],
             activation=config["model"]["activation"],
-            complex_to_real_mode=config["model"]["complex_to_real_mode"],
-            rnn_type=config["model"]["rnn_type"]
+            complex_to_real_mode=config["model"]["complex_to_real_mode"]
         )
 
         if n_sources == 2:
