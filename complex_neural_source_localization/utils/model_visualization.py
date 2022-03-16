@@ -1,3 +1,4 @@
+from inspect import unwrap
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ from complex_neural_source_localization.utils.model_utilities import (
 from complex_neural_source_localization.utils.conv_block import ConvBlock
 
 
-def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="column",
+def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, unwrap_mode="freq", mode="column",
                                   axs=None, figsize=(10, 5), output_path=None, close=True, db=True,
                                   colorbar=True):
     
@@ -46,7 +47,7 @@ def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="c
             raise ValueError("Allowed modes are 'row' and 'column'")
 
         (mag_mesh, phase_mesh), _ = plot_spectrogram(multichannel_spectrogram[n_channel],
-                                                axs=channel_axs, unwrap=unwrap,
+                                                axs=channel_axs, unwrap=unwrap, unwrap_mode=unwrap_mode,
                                                 db=db, colorbar=False)
 
     if colorbar:
@@ -54,7 +55,7 @@ def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="c
             location = "right"
             mag_axs, phase_axs = axs[0, :], axs[1, :]
         elif mode == "row":
-            location = "bottom"
+            location = "top"
             mag_axs, phase_axs = axs[:, 0], axs[:, 1]
         
         plt.colorbar(mag_mesh, ax=mag_axs, format="%+2.f",
@@ -70,7 +71,7 @@ def plot_multichannel_spectrogram(multichannel_spectrogram, unwrap=True, mode="c
     return axs
 
 
-def plot_spectrogram(spectrogram, unwrap=True, db=True,
+def plot_spectrogram(spectrogram, unwrap=True, unwrap_mode="freq", db=True,
                      mode="column", figsize=(10, 5), axs=None, output_path=None, close=True,
                      colorbar=True):
     if axs is None:
@@ -91,13 +92,15 @@ def plot_spectrogram(spectrogram, unwrap=True, db=True,
         spectrogram_mag = librosa.amplitude_to_db(spectrogram_mag, ref=np.max)
     spectrogram_phase = np.angle(spectrogram)
     if unwrap:
-        spectrogram_phase = np.unwrap(spectrogram_phase, axis=0)
+        axis = 0 if unwrap_mode == "freq" else 1
+        spectrogram_phase = np.unwrap(spectrogram_phase, axis=axis)
     
     # img_mag = librosa.display.specshow(spectrogram_mag, ax=axs[0])
     # img_phase = librosa.display.specshow(spectrogram_phase, ax=axs[1])
 
+    # https://matplotlib.org/stable/tutorials/colors/colormaps.html for beautiful colormaps
     mag_mesh = axs[0].pcolormesh(spectrogram_mag, cmap="RdBu_r")
-    phase_mesh = axs[1].pcolormesh(spectrogram_phase, cmap="viridis")
+    phase_mesh = axs[1].pcolormesh(spectrogram_phase, cmap="RdBu_r")
 
     axs[0].axis("off")
     axs[1].axis('off')

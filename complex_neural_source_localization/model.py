@@ -7,7 +7,7 @@ from complex_neural_source_localization.feature_extractors import (
 from complex_neural_source_localization.utils.conv_block import ConvBlock
 
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
-    ComplexGRU, MagPhaseGRU, ComplexLinear
+    ComplexGRU, ComplexPReLU, MagPhaseGRU, ComplexLinear
 )
 
 DEFAULT_CONV_CONFIG = [
@@ -155,8 +155,14 @@ class DOACNet(nn.Module):
         #     )
         # else:
         #     return nn.Linear(self.max_filters, n_last_layer, bias=True)
+        activation = ComplexPReLU() if self.activation == "prelu" else None # Patch which will break if other activation is used
 
-        return ComplexLinear(self.max_filters//2, n_sources)
+        return nn.Sequential(
+            ComplexLinear(self.max_filters//2, self.max_filters//4),
+            activation,
+            ComplexLinear(self.max_filters//4, n_sources)
+        )
+        #return ComplexLinear(self.max_filters//2, n_sources)
     
     def track_feature_maps(self):
         "Make all the intermediate layers accessible through the 'feature_maps' dictionary"
