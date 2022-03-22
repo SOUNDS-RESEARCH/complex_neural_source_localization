@@ -7,7 +7,7 @@ from complex_neural_source_localization.feature_extractors import (
 from complex_neural_source_localization.utils.conv_block import ConvBlock
 
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
-    ComplexGRU, ComplexPReLU, MagPhaseGRU, ComplexLinear
+    ComplexGRU, MagPhaseGRU, ComplexLinear
 )
 
 DEFAULT_CONV_CONFIG = [
@@ -22,7 +22,7 @@ DEFAULT_STFT_CONFIG = {"n_fft": 1024}
 
 class DOACNet(nn.Module):
     def __init__(self, output_type="scalar", n_input_channels=4, n_sources=2,
-                 pool_type="avg", pool_size=(1,2),
+                 pool_type="avg", pool_size=(1,2), kernel_size=(1, 1),
                  feature_type="stft",
                  conv_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
@@ -41,6 +41,7 @@ class DOACNet(nn.Module):
         self.n_sources = n_sources
         self.pool_type = pool_type
         self.pool_size = pool_size
+        self.kernel_size = kernel_size
         self.output_type = output_type
         self.complex_to_real_mode = complex_to_real_mode
         self.activation = activation
@@ -115,7 +116,8 @@ class DOACNet(nn.Module):
                       block_type=conv_config[0]["type"],
                       dropout_rate=conv_config[0]["dropout_rate"],
                       pool_size=self.pool_size,
-                      activation=self.activation),
+                      activation=self.activation,
+                      kernel_size=self.kernel_size),
         ]
 
         for i, config in enumerate(conv_config[1:]):
@@ -129,7 +131,8 @@ class DOACNet(nn.Module):
                           block_type=config["type"], init=init_conv_layers,
                           dropout_rate=config["dropout_rate"],
                           pool_size=self.pool_size,
-                          activation=self.activation)
+                          activation=self.activation,
+                          kernel_size=self.kernel_size)
             )
         
         return nn.ModuleList(conv_blocks)
@@ -155,14 +158,8 @@ class DOACNet(nn.Module):
         #     )
         # else:
         #     return nn.Linear(self.max_filters, n_last_layer, bias=True)
-        activation = ComplexPReLU() if self.activation == "prelu" else None # Patch which will break if other activation is used
 
-        return nn.Sequential(
-            ComplexLinear(self.max_filters//2, self.max_filters//4),
-            activation,
-            ComplexLinear(self.max_filters//4, n_sources)
-        )
-        #return ComplexLinear(self.max_filters//2, n_sources)
+        return ComplexLinear(self.max_filters//2, n_sources)
     
     def track_feature_maps(self):
         "Make all the intermediate layers accessible through the 'feature_maps' dictionary"

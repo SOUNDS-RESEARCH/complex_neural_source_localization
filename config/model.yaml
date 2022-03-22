@@ -2,6 +2,7 @@ model:
   # NN Model settings
   pool_type: avg # max | avg
   pool_size: [2, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
+  kernel_size: [3, 3] # [1, 1] = Beamforming convolution | [3, 1] = Time averaging | [1, 3] = Frequency averaging
   last_layer_dropout_rate: 0.0
   activation: prelu # tanh | relu | prelu | amp_tanh
   complex_to_real_mode: real_imag # amp_phase | real_imag

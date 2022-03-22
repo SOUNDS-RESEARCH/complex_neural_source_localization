@@ -9,9 +9,6 @@ Created on Tue Mar 19 10:30:02 2019
 Based on https://openreview.net/forum?id=H1T2hmZAb
 """
 
-from bdb import Breakpoint
-from turtle import forward
-from more_itertools import last
 import torch
 from torch.nn import (
     Module, Parameter, init,
