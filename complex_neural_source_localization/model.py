@@ -32,6 +32,7 @@ class DOACNet(nn.Module):
                  activation="relu",
                  complex_to_real_mode="real_imag",
                  use_complex_rnn=False,
+                 init_real_layers=True,
                  **kwargs):
         
         super().__init__()
@@ -61,7 +62,7 @@ class DOACNet(nn.Module):
         self.azimuth_fc = self._create_linear_block(n_sources, fc_layer_dropout_rate)
 
         # If using a real valued rnn, initialize gru and fc layers
-        if not use_complex_rnn:
+        if not use_complex_rnn and init_real_layers:
             init_gru(self.rnn)
             init_layer(self.azimuth_fc)
     

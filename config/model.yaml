@@ -39,3 +39,4 @@ model:
   complex_to_real_mode: real_imag # amp_phase | real_imag
   pool_type: avg # max | avg
   use_complex_rnn: False
+  init_real_layers: True
