@@ -31,7 +31,6 @@ model:
       type: real_single
       n_channels: 512
       dropout_rate: 0.0
-  init_conv_layers: False
 
   # Miscellaneous model settings
   fc_layer_dropout_rate: 0.0

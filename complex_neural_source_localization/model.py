@@ -27,7 +27,6 @@ class DOACNet(nn.Module):
                  feature_type="stft",
                  conv_layers_config=DEFAULT_CONV_CONFIG,
                  stft_config=DEFAULT_STFT_CONFIG,
-                 init_conv_layers=False,
                  fc_layer_dropout_rate=0.5,
                  activation="relu",
                  complex_to_real_mode="real_imag",
@@ -53,7 +52,7 @@ class DOACNet(nn.Module):
         self.feature_extractor = self._create_feature_extractor(feature_type, stft_config, conv_layers_config[0]["type"])
 
         # 3. Create convolutional blocks
-        self.conv_blocks = self._create_conv_blocks(conv_layers_config, init_conv_layers=init_conv_layers)
+        self.conv_blocks = self._create_conv_blocks(conv_layers_config, init_weights=init_real_layers)
 
         # 4. Create recurrent block
         self.rnn = self._create_rnn_block()
@@ -128,7 +127,7 @@ class DOACNet(nn.Module):
             else:
                 return DecoupledStftArray(stft_config)
 
-    def _create_conv_blocks(self, conv_layers_config, init_conv_layers):
+    def _create_conv_blocks(self, conv_layers_config, init_weights):
         
         conv_blocks = [
             ConvBlock(self.n_input_channels, conv_layers_config[0]["n_channels"],
@@ -136,7 +135,8 @@ class DOACNet(nn.Module):
                       dropout_rate=conv_layers_config[0]["dropout_rate"],
                       pool_size=self.pool_size,
                       activation=self.activation,
-                      kernel_size=self.kernel_size),
+                      kernel_size=self.kernel_size,
+                      init=init_weights),
         ]
 
         for i, config in enumerate(conv_layers_config[1:]):
@@ -147,7 +147,7 @@ class DOACNet(nn.Module):
                 in_channels *= 2
             conv_blocks.append(
                 ConvBlock(in_channels, config["n_channels"],
-                          block_type=config["type"], init=init_conv_layers,
+                          block_type=config["type"], init=init_weights,
                           dropout_rate=config["dropout_rate"],
                           pool_size=self.pool_size,
                           activation=self.activation,

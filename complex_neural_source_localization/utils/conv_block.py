@@ -4,6 +4,7 @@ from complex_neural_source_localization.utils.complexPyTorch.complexLayers impor
     ComplexAmpTanh, ComplexConv2d, ComplexBatchNorm2d, ComplexDropout,
     ComplexReLU, ComplexTanh, ComplexPReLU, ComplexAvgPool2d
 )
+from complex_neural_source_localization.utils.model_utilities import init_layer
 
 
 class ConvBlock(nn.Module):
@@ -60,6 +61,9 @@ class ConvBlock(nn.Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
+
+        if init:
+            self._init_weights()
         
     def forward(self, x):
         x = self.activation(self.bn1(self.conv1(x)))
@@ -70,3 +74,10 @@ class ConvBlock(nn.Module):
         if self.dropout_rate > 0:
             x = self.dropout(x)
         return x
+
+    def _init_weights(self):
+        init_layer(self.conv1)
+        init_layer(self.bn1)
+        if self.block_type == "real_double":
+            init_layer(self.conv2)
+            init_layer(self.bn2)
