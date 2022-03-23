@@ -1,37 +1,40 @@
 model:
-  # NN Model settings
-  pool_type: avg # max | avg
-  pool_size: [2, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
-  kernel_size: [3, 3] # [1, 1] = Beamforming convolution | [3, 1] = Time averaging | [1, 3] = Frequency averaging
-  last_layer_dropout_rate: 0.0
-  activation: prelu # tanh | relu | prelu | amp_tanh
-  complex_to_real_mode: real_imag # amp_phase | real_imag
-
-  # Feature params
+  # Input params
   n_input_channels: 4
   n_fft: 1024
   window: hann
   feature_type: stft # stft | cross_spectra
 
+  # Output and optimization settings
   output_type: scalar # scalar | frame
   target: azimuth_2d_point # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
-  loss: angular # angular | magnitude | angular_and_magnitude 
+  loss: angular # angular | magnitude | angular_and_magnitude
 
-  conv_layers:
+  # Convolutional layer settings
+  pool_size: [2, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
+  kernel_size: [2, 2] # [1, 1] = "Beamforming" convolution | [2, 1] = Time averaging | [1, 2] = Frequency averaging
+  conv_layers_config:
     - layer_1:
       type: complex_single # complex | real | complex_double | real_double
-      n_channels: 128
+      n_channels: 64
       dropout_rate: 0.0
     - layer_2:
       type: complex_single
-      n_channels: 256
+      n_channels: 128
       dropout_rate: 0.0
     - layer_3:
       type: complex_single
-      n_channels: 512
+      n_channels: 128
       dropout_rate: 0.0
     - layer_4:
       type: complex_single
-      n_channels: 1024
+      n_channels: 128
       dropout_rate: 0.0
   init_conv_layers: False
+
+  # Miscellaneous model settings
+  fc_layer_dropout_rate: 0.0
+  activation: prelu # tanh | relu | prelu | amp_tanh
+  complex_to_real_mode: real_imag # amp_phase | real_imag
+  pool_type: avg # max | avg
+  use_complex_rnn: False

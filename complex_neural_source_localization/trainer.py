@@ -35,17 +35,23 @@ class DOACNetLightniningModule(BaseLightningModule):
         
         n_sources = self.config["dataset"]["n_max_sources"]
 
-        model = DOACNet(
-            conv_config=config["model"]["conv_layers"],
-            last_layer_dropout_rate=config["model"]["last_layer_dropout_rate"],
-            n_sources=n_sources,
-            pool_size=config["model"]["pool_size"],
-            pool_type=config["model"]["pool_type"],
-            feature_type=config["model"]["feature_type"],
-            activation=config["model"]["activation"],
-            complex_to_real_mode=config["model"]["complex_to_real_mode"],
-            kernel_size=config["model"]["kernel_size"]
-        )
+
+        # model_config = config["model"]
+        # model = DOACNet(
+        #     conv_config=model_config["conv_layers"],
+        #     fc_layer_dropout_rate=model_config["fc_layer_dropout_rate"],
+        #     n_sources=n_sources,
+        #     pool_size=model_config["pool_size"],
+        #     pool_type=model_config["pool_type"],
+        #     feature_type=model_config["feature_type"],
+        #     activation=model_config["activation"],
+        #     complex_to_real_mode=model_config["complex_to_real_mode"],
+        #     kernel_size=model_config["kernel_size"],
+        #     use_complex_rnn=model_config["use_complex_rnn"]
+        # )
+
+        model = DOACNet(n_sources=n_sources, **config["model"])
+
 
         if n_sources == 2:
             loss = PitLoss(self.config["model"]["loss"])
