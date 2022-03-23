@@ -35,6 +35,7 @@ class StftArray(Module):
         super().__init__()
 
         self.n_fft = model_config["n_fft"]
+        self.onesided = model_config["use_onesided_fft"]
 
     def forward(self, X):
         "Expected input has shape (batch_size, n_arrays, time_steps)"
@@ -44,7 +45,7 @@ class StftArray(Module):
 
         for i in range(n_arrays):
             x = X[:, i, :]
-            stft_output = torch.stft(x, self.n_fft, onesided=True, return_complex=True)
+            stft_output = torch.stft(x, self.n_fft, onesided=self.onesided, return_complex=True)
             result.append(
                 stft_output[:, 1:, :]
             ) # Ignore frequency 0

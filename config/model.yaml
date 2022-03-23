@@ -4,6 +4,7 @@ model:
   n_fft: 1024
   window: hann
   feature_type: stft # stft | cross_spectra
+  use_onesided_fft: False
 
   # Output and optimization settings
   output_type: scalar # scalar | frame
@@ -16,7 +17,7 @@ model:
   conv_layers_config:
     - layer_1:
       type: real_single # complex | real | complex_double | real_double
-      n_channels: 128
+      n_channels: 64
       dropout_rate: 0.0
     - layer_2:
       type: real_single

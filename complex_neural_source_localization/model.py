@@ -17,7 +17,7 @@ DEFAULT_CONV_CONFIG = [
     {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
 ]
 
-DEFAULT_STFT_CONFIG = {"n_fft": 1024}
+DEFAULT_STFT_CONFIG = {"n_fft": 1024, "use_onesided_fft":True}
 
 
 class DOACNet(nn.Module):
