@@ -94,20 +94,20 @@ class DOACNet(nn.Module):
         # 4. Use features as input to RNN
         (x, _) = self.rnn(x)
         # (batch_size, time_steps, feature_maps):
+        # Average across all time steps
+        x = torch.mean(x, dim=1)
 
         # 5. Fully connected layer
         x = self.azimuth_fc(x)
         # (batch_size, time_steps, class_num)
 
-        # Average across all time steps
-        if self.output_type == "scalar":
-            if self.pool_type == "avg":
-                x = torch.mean(x, dim=1)
-            elif self.pool_type == "max":
-                (x, _) = torch.max(x, dim=1)
-        elif self.output_type == "vector":
-            # The network will predict one value per time step
-            pass
+        # # Average across all time steps
+        # if self.output_type == "scalar":
+        #     if self.pool_type == "avg":
+        #         x = torch.mean(x, dim=1)
+        # elif self.output_type == "vector":
+        #     # The network will predict one value per time step
+        #     pass
 
         if x.is_complex():
             x = complex_to_real(x)
