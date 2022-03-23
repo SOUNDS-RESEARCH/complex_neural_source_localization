@@ -1,5 +1,4 @@
 import torch.nn as nn
-import torch.functional as F
 
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
     ComplexAmpTanh, ComplexConv2d, ComplexBatchNorm2d, ComplexDropout,
@@ -42,7 +41,7 @@ class ConvBlock(nn.Module):
             bn_block = nn.BatchNorm2d
             dropout_block = nn.Dropout
             self.activation = nn.ReLU()
-            self.pooling = F.avg_pool2d
+            self.pooling = nn.AvgPool2d(pool_size)
             self.is_real = True
 
         self.conv1 = conv_block(in_channels=in_channels, 
