@@ -9,6 +9,7 @@ from complex_neural_source_localization.utils.conv_block import ConvBlock
 from complex_neural_source_localization.utils.complexPyTorch.complexLayers import (
     ComplexGRU, ComplexLinear
 )
+from complex_neural_source_localization.utils.model_utilities import init_gru, init_layer
 
 DEFAULT_CONV_CONFIG = [
     {"type": "complex_single", "n_channels": 64, "dropout_rate":0},
@@ -58,6 +59,11 @@ class DOACNet(nn.Module):
 
         # 5. Create linear block
         self.azimuth_fc = self._create_linear_block(n_sources, fc_layer_dropout_rate)
+
+        # If using a real valued rnn, initialize gru and fc layers
+        if not use_complex_rnn:
+            init_gru(self.rnn)
+            init_layer(self.azimuth_fc)
     
     def forward(self, x):
         # input: (batch_size, mic_channels, time_steps)
@@ -150,7 +156,6 @@ class DOACNet(nn.Module):
         return nn.ModuleList(conv_blocks)
         
     def _create_rnn_block(self):
-
         if self.is_rnn_complex:
             return ComplexGRU(input_size=self.max_filters//2,
                             hidden_size=self.max_filters//4,
