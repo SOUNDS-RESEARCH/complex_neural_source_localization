@@ -62,7 +62,8 @@ class ConvBlock(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
 
-        if init:
+        if init and "real" in block_type:
+            # TODO: Implement complex-valued initialization
             self._init_weights()
         
     def forward(self, x):

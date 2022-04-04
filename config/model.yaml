@@ -4,7 +4,7 @@ model:
   n_fft: 1024
   window: hann
   feature_type: stft # stft | cross_spectra
-  use_onesided_fft: False
+  use_onesided_fft: True
 
   # Output and optimization settings
   output_type: scalar # scalar | frame
@@ -16,19 +16,19 @@ model:
   kernel_size: [2, 2] # [1, 1] = "Beamforming" convolution | [2, 1] = Time averaging | [1, 2] = Frequency averaging
   conv_layers_config:
     - layer_1:
-      type: real_single # complex_single | real_single | complex_double | real_double
+      type: complex_single # complex_single | real_single | complex_double | real_double
       n_channels: 64
       dropout_rate: 0.0
     - layer_2:
-      type: real_single
+      type: complex_single
       n_channels: 128
       dropout_rate: 0.0
     - layer_3:
-      type: real_single
+      type: complex_single
       n_channels: 256
       dropout_rate: 0.0
     - layer_4:
-      type: real_single
+      type: complex_single
       n_channels: 512
       dropout_rate: 0.0
 
@@ -37,5 +37,5 @@ model:
   activation: prelu # tanh | relu | prelu | amp_tanh
   complex_to_real_mode: real_imag # amp_phase | real_imag
   pool_type: avg # max | avg
-  use_complex_rnn: False
+  use_complex_rnn: True
   init_real_layers: True

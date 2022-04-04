@@ -6,10 +6,12 @@ import torch
 from pytorch_lightning.callbacks import (
     Callback, ModelCheckpoint, TQDMProgressBar
 )
-# from pytorch_lightning.callbacks.progress import TQDMProgressBar
+from pytorch_lightning import loggers as pl_loggers
 
 from complex_neural_source_localization.utils.model_utilities import merge_list_of_dicts
 
+SAVE_DIR = "logs/"
+LOG_EVERY_N_STEPS = 50
 
 class BaseTrainer(pl.Trainer):
     def __init__(self, lightning_module, n_epochs):
@@ -18,20 +20,24 @@ class BaseTrainer(pl.Trainer):
 
         progress_bar = CustomProgressBar()
 
-        #feature_map_callback = FeatureMapLoggerCallback()
         checkpoint_callback = ModelCheckpoint(
-                        monitor="validation_loss",
-                        save_last=True,
-                        filename='weights-{epoch:02d}-{validation_loss:.2f}',
-                        save_weights_only=True
-                        )
+            monitor="validation_loss",
+            save_last=True,
+            filename='weights-{epoch:02d}-{validation_loss:.2f}',
+            save_weights_only=True
+        )
+
+        tb_logger = pl_loggers.TensorBoardLogger(save_dir=SAVE_DIR)
+        csv_logger = pl_loggers.CSVLogger(save_dir=SAVE_DIR)
 
         super().__init__(
             max_epochs=n_epochs,
             callbacks=[
                 checkpoint_callback, progress_bar, # feature_map_callback
             ],
-            gpus=gpus
+            logger=[tb_logger, csv_logger],
+            gpus=gpus,
+            log_every_n_steps=25
         )
         
         self._lightning_module = lightning_module
@@ -76,6 +82,9 @@ class BaseLightningModule(pl.LightningModule):
 
         output_dict["loss"] = output_dict["loss_vector"].mean()
         output_dict["loss_vector"] = output_dict["loss_vector"].detach()
+        
+        # 4. Log step metrics
+        self.log("loss_step", output_dict["loss"], on_step=True, prog_bar=False)
 
         return output_dict
 

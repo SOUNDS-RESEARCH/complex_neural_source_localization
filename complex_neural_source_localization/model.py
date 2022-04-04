@@ -99,7 +99,7 @@ class DOACNet(nn.Module):
 
         # 5. Fully connected layer
         x = self.azimuth_fc(x)
-        # (batch_size, time_steps, class_num)
+        # (batch_size, class_num)
 
         # # Average across all time steps
         # if self.output_type == "scalar":
