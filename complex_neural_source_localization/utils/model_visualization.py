@@ -102,8 +102,10 @@ def plot_spectrogram(spectrogram, unwrap=True, unwrap_mode="freq", db=True,
     mag_mesh = axs[0].pcolormesh(spectrogram_mag, cmap="RdBu_r")
     phase_mesh = axs[1].pcolormesh(spectrogram_phase, cmap="RdBu_r")
 
-    axs[0].axis("off")
-    axs[1].axis('off')
+    axs[0].xaxis.set_ticklabels([])
+    axs[0].yaxis.set_ticklabels([])
+    axs[1].xaxis.set_ticklabels([])
+    axs[1].yaxis.set_ticklabels([])
 
     if colorbar:
         plt.colorbar(mag_mesh, ax=axs[0], format="%+2.f dB")

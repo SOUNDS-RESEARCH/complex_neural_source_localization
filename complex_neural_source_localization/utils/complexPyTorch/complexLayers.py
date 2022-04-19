@@ -537,28 +537,6 @@ class ComplexBNGRUCell(Module):
         return h_new
 
 
-class MagPhaseGRU(Module):
-    def __init__(self, input_size, hidden_size, num_layers=1, bias=True,
-                 batch_first=False, dropout=0, bidirectional=False):
-        super().__init__()
-
-        self.gru_mag = GRU(input_size=input_size, hidden_size=hidden_size,
-                            num_layers=num_layers, bias=bias,
-                            batch_first=batch_first, dropout=dropout,
-                            bidirectional=bidirectional)
-        self.gru_phase = GRU(input_size=input_size, hidden_size=hidden_size,
-                            num_layers=num_layers, bias=bias,
-                            batch_first=batch_first, dropout=dropout,
-                            bidirectional=bidirectional)
-
-    def forward(self, x):
-        mag_out = self.gru_mag(x.abs())[0]
-        phase_out = self.gru_phase(x.angle())[0]
-        output = mag_out * torch.exp(1.j * phase_out)
-
-        return output, None
-
-
 class ComplexGRU(Module):
     def __init__(self, input_size, hidden_size, num_layers=1, bias=True,
                  batch_first=False, dropout=0, bidirectional=False):

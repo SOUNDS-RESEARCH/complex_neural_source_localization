@@ -81,7 +81,7 @@ class BaseLightningModule(pl.LightningModule):
             output_dict.update(y)
 
         output_dict["loss"] = output_dict["loss_vector"].mean()
-        output_dict["loss_vector"] = output_dict["loss_vector"].detach()
+        output_dict["loss_vector"] = output_dict["loss_vector"].detach().cpu()
         
         # 4. Log step metrics
         self.log("loss_step", output_dict["loss"], on_step=True, prog_bar=False)
