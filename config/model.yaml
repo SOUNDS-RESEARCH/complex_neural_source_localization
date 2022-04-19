@@ -8,8 +8,8 @@ model:
 
   # Output and optimization settings
   output_type: scalar # scalar | frame
-  target: azimuth_2d_point # model target: azimuth_in_radians | azimuth_complex_point | azimuth_2d_point | normalized_tdoa  
-  loss: angular # angular | magnitude | angular_and_magnitude
+  target: source_coordinates # model target: azimuth_2d_point | normalized_tdoa | source_coordinates
+  loss: l1 # angular | magnitude | l1
 
   # Convolutional layer settings
   pool_size: [2, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling
@@ -35,7 +35,6 @@ model:
   # Miscellaneous model settings
   fc_layer_dropout_rate: 0.0
   activation: prelu # tanh | relu | prelu | amp_tanh
-  complex_to_real_mode: real_imag # amp_phase | real_imag
   pool_type: avg # max | avg
   use_complex_rnn: True
   init_real_layers: True

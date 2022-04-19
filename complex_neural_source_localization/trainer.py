@@ -4,7 +4,7 @@ import torch
 from torch.optim.lr_scheduler import MultiStepLR
 
 from complex_neural_source_localization.model import DOACNet
-from complex_neural_source_localization.loss import Loss, PitLoss
+from complex_neural_source_localization.loss import LOSS_NAME_TO_CLASS_MAP
 from complex_neural_source_localization.utils.base_trainer import (
     BaseTrainer, BaseLightningModule
 )
@@ -45,14 +45,7 @@ class DOACNetLightniningModule(BaseLightningModule):
                         stft_config=stft_config,
                         **config["model"])
 
-        if n_sources == 2:
-            loss = PitLoss(self.config["model"]["loss"])
-        elif n_sources == 1:
-            loss = Loss(self.config["model"]["loss"])
-        else:
-            raise NotImplementedError(
-                "Loss function was only implemented for one and 2 sources."
-            )
+        loss = LOSS_NAME_TO_CLASS_MAP[self.config["model"]["loss"]]()
 
         super().__init__(model, loss)
 

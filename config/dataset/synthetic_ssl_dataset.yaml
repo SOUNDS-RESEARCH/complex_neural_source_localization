@@ -1,0 +1,8 @@
+sr: 16000
+training_dataset_dir: /Users/ezajlerg/datasets/pnn_dataset
+validation_dataset_dir: /Users/ezajlerg/datasets/pnn_dataset
+test_dataset_dir: /Users/ezajlerg/datasets/pnn_dataset
+num_mics: 4
+sample_duration_in_seconds: 1
+n_max_sources: 1
+name: "synthetic_ssl"

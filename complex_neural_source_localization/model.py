@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from complex_neural_source_localization.feature_extractors import (
-    CrossSpectra, DecoupledStftArray, StftArray
+    FEATURE_NAME_TO_CLASS_MAP
 )
 from complex_neural_source_localization.utils.conv_block import ConvBlock
 
@@ -29,7 +29,6 @@ class DOACNet(nn.Module):
                  stft_config=DEFAULT_STFT_CONFIG,
                  fc_layer_dropout_rate=0.5,
                  activation="relu",
-                 complex_to_real_mode="real_imag",
                  use_complex_rnn=False,
                  init_real_layers=True,
                  **kwargs):
@@ -43,13 +42,12 @@ class DOACNet(nn.Module):
         self.pool_type = pool_type
         self.pool_size = pool_size
         self.kernel_size = kernel_size
-        self.complex_to_real_mode = complex_to_real_mode
         self.activation = activation
         self.max_filters = conv_layers_config[-1]["n_channels"]
         self.is_rnn_complex = use_complex_rnn
 
         # 2. Create feature extractor
-        self.feature_extractor = self._create_feature_extractor(feature_type, stft_config, conv_layers_config[0]["type"])
+        self.feature_extractor = self._create_feature_extractor(feature_type, stft_config)
 
         # 3. Create convolutional blocks
         self.conv_blocks = self._create_conv_blocks(conv_layers_config, init_weights=init_real_layers)
@@ -77,7 +75,7 @@ class DOACNet(nn.Module):
         # 2. Extract features using convolutional layers
         for conv_block in self.conv_blocks:
             if x.is_complex() and conv_block.is_real:
-                x = complex_to_real(x, mode=self.complex_to_real_mode)
+                x = complex_to_real(x)
             x = conv_block(x)
         # (batch_size, feature_maps, time_steps, n_freqs)
 
@@ -87,7 +85,7 @@ class DOACNet(nn.Module):
 
         # Preprocessing for RNN
         if x.is_complex() and not self.is_rnn_complex:
-            x = complex_to_real(x, mode=self.complex_to_real_mode)
+            x = complex_to_real(x)
         x = x.transpose(1,2)
         # (batch_size, time_steps, feature_maps):
         
@@ -101,31 +99,16 @@ class DOACNet(nn.Module):
         x = self.azimuth_fc(x)
         # (batch_size, class_num)
 
-        # # Average across all time steps
-        # if self.output_type == "scalar":
-        #     if self.pool_type == "avg":
-        #         x = torch.mean(x, dim=1)
-        # elif self.output_type == "vector":
-        #     # The network will predict one value per time step
-        #     pass
-
         if x.is_complex():
             x = complex_to_real(x)
         return x
 
-    def _create_feature_extractor(self, feature_type, stft_config, first_conv_layer_type):
-        if feature_type == "stft":
-            self.n_input_channels = self.n_input_channels
-        elif feature_type == "cross_spectra":
+    def _create_feature_extractor(self, feature_type, stft_config):
+        if feature_type == "cross_spectra":
             self.n_input_channels = sum(range(self.n_input_channels + 1))
         
-        if feature_type == "cross_spectra":
-            return CrossSpectra(stft_config)
-        elif feature_type == "stft":  
-            if "complex" in first_conv_layer_type:
-                return StftArray(stft_config)
-            else:
-                return DecoupledStftArray(stft_config)
+        return FEATURE_NAME_TO_CLASS_MAP[feature_type](stft_config)
+
 
     def _create_conv_blocks(self, conv_layers_config, init_weights):
         

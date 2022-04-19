@@ -75,32 +75,9 @@ def load_multichannel_wav(wav_file_path, sr, duration_in_secs):
     return torch.Tensor(padded_signal)
 
 
-def create_dataloaders(config):
-    dataset_train = DCASE2019Task3Dataset(config["dataset"], mode="train")
-    dataset_val = DCASE2019Task3Dataset(config["dataset"], mode="validation")
-    dataset_test = DCASE2019Task3Dataset(config["dataset"], mode="test")
-
-    batch_size = config["training"]["batch_size"]
-    num_workers = config["training"]["num_workers"]
-
-    dataloader_train = _create_torch_dataloader(dataset_train, batch_size, num_workers)
-    dataloader_val = _create_torch_dataloader(dataset_val, batch_size, num_workers)
-    dataloader_test = _create_torch_dataloader(dataset_test, batch_size, num_workers)
-
-    return dataloader_train, dataloader_val, dataloader_test
-
 
 def _angle_to_point(angle):
     return torch.Tensor([
         torch.Tensor([np.cos(angle)]),
         torch.Tensor([np.sin(angle)])
     ])
-
-
-def _create_torch_dataloader(torch_dataset, batch_size, num_workers):
-    return torch.utils.data.DataLoader(torch_dataset,
-                                       batch_size=batch_size,
-                                       shuffle=False,
-                                       pin_memory=True,
-                                       drop_last=False,
-                                       num_workers=num_workers)

@@ -2,7 +2,7 @@ import hydra
 
 from omegaconf import DictConfig
 
-from complex_neural_source_localization.dataset import create_dataloaders
+from complex_neural_source_localization.datasets import create_dataloaders
 from complex_neural_source_localization.trainer import DOACNetTrainer
 
 

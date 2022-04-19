@@ -1,4 +1,4 @@
-from complex_neural_source_localization.dataset import load_multichannel_wav
+from complex_neural_source_localization.datasets.dcase_2019_task3_dataset import load_multichannel_wav
 from complex_neural_source_localization.model import DOACNet
 
 

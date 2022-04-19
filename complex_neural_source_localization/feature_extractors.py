@@ -54,7 +54,7 @@ class StftArray(Module):
         return result
 
 
-class MagnitudeStftArray(StftArray):
+class StftMagnitudeArray(StftArray):
     def forward(self, X):
         stft = super().forward(X)
         return stft.abs()
@@ -108,3 +108,12 @@ class CrossSpectra(Module):
         
         result = torch.stack(cross_spectra, dim=0)
         return result
+
+
+FEATURE_NAME_TO_CLASS_MAP = {
+    "mfcc": MfccArray,
+    "stft": StftArray,
+    "stft_magnitude": StftMagnitudeArray,
+    "stft_phase": StftPhaseArray,
+    "cross_spectra": CrossSpectra
+}
