@@ -1,6 +1,13 @@
-# Neural TDOA
+# Complex neural source localization
+This repository contains the code for the paper
+"DEEP COMPLEX-VALUED CONVOLUTIONAL-RECURRENT NETWORKS FOR SINGLE SOURCE DOA ESTIMATION" to be published at the
+International Workshop on Acoustic Signal Enhancement (IWAENC) 2022.
 
 ## Installation
+
+To test the code without installing anything, we suggest running it using this [Kaggle notebook](https://www.kaggle.com/code/egrinstein/neural-doa-training-notebook). To install it locally, follow the instructions below.
+
+
 ### Requirements
 * Python 3
 
@@ -15,12 +22,3 @@ or
 
 ## Generate synthetic data
 Run `python -m datasets.generate_dataset` to generate synthetic data at the default generated_dataset/ directory
-
-
-## Experiments
-
-### Scenario 1
-A first experiment was carried by placing two microphones and a source within a 5x3x3 room. The microphones were fixed at (1, 1, 1) and (2, 2, 1). In turn, the source was able to move horizontally, having therefore a position of (x, y, 1).
-
-1000 samples were generated under this scenario, 700 for training and 300 for validation.
-The model achieved 1% error in the validation set within 4 epochs, and then started overfitting
