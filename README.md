@@ -1,6 +1,6 @@
 # Complex neural source localization
 This repository contains the code for the paper
-"DEEP COMPLEX-VALUED CONVOLUTIONAL-RECURRENT NETWORKS FOR SINGLE SOURCE DOA ESTIMATION" to be published at the
+"Deep complex-valued convolutional-recurrent networks for single source doa estimation" to be published at the
 International Workshop on Acoustic Signal Enhancement (IWAENC) 2022.
 
 ## Installation
