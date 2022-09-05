@@ -4,7 +4,7 @@ import torch
 from torch.optim.lr_scheduler import MultiStepLR
 
 from complex_neural_source_localization.model import DOACNet
-from complex_neural_source_localization.loss import LOSS_NAME_TO_CLASS_MAP
+from complex_neural_source_localization.loss import AngularLoss
 from complex_neural_source_localization.utils.base_trainer import (
     BaseTrainer, BaseLightningModule
 )
@@ -45,7 +45,7 @@ class DOACNetLightniningModule(BaseLightningModule):
                         stft_config=stft_config,
                         **config["model"])
 
-        loss = LOSS_NAME_TO_CLASS_MAP[self.config["model"]["loss"]]()
+        loss = AngularLoss()
 
         super().__init__(model, loss)
 

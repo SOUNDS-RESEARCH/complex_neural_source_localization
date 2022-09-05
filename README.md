@@ -13,12 +13,15 @@ To test the code without installing anything, we suggest running it using this [
 
 run `pip install -r requirements.txt` to install the python libraries needed
 
+Download the [Kaggle dataset](https://www.kaggle.com/datasets/egrinstein/dcase-2019-single-source) containing the data, and change the file 'config/dcase_2019_task3_dataset.yaml' to point at the correct train, validation and test datasets.
+
+Then, change the working directory to this project and run `python train.py` or `make train` to start training the model. Every time you start training a model, a folder will be created in the outputs/ 
+
+
 ## Unit tests
 To execute all unit tests, run either:
 
 `pytest tests`
 or
 `make tests`
-
-## Generate synthetic data
-Run `python -m datasets.generate_dataset` to generate synthetic data at the default generated_dataset/ directory
+`

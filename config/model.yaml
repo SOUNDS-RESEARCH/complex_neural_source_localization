@@ -9,7 +9,7 @@ model:
   # Output and optimization settings
   output_type: scalar # scalar | frame
   target: source_coordinates # model target: azimuth_2d_point | normalized_tdoa | source_coordinates
-  loss: l1 # angular | magnitude | l1
+  loss: angular # angular | magnitude | l1
 
   # Convolutional layer settings
   pool_size: [2, 2] # [1, 1] = No pooling | [1, 2] = Frequency pooling | [2, 2] = Time and frequency pooling

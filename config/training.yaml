@@ -1,8 +1,8 @@
 training:
-  batch_size: 2
+  batch_size: 32
   n_epochs: 20
-  learning_rate: 0.0001
-  learning_rate_decay_steps: [3, 8]
+  learning_rate: 0.00005
+  learning_rate_decay_steps: [5, 10]
   learning_rate_decay_values: 0.5
-  n_workers: 10
+  n_workers: 4
   delete_datasets_after_training: False

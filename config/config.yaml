@@ -1,4 +1,4 @@
 defaults:
   - model
   - training
-  - dataset: synthetic_ssl_dataset
+  - dataset: dcase_2019_task3_dataset

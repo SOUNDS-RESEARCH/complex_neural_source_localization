@@ -1,20 +1,12 @@
 import torch
 
 from .dcase_2019_task3_dataset import DCASE2019Task3Dataset
-from .synthetic_ssl_dataset import SyntheticSSLDataset
-
-DATASET_NAME_TO_CLASS_MAP = {
-    "synthetic_ssl": SyntheticSSLDataset,
-    "dcase_2019_task3": DCASE2019Task3Dataset
-}
 
 
 def create_dataloaders(config):
-
-    dataset = DATASET_NAME_TO_CLASS_MAP[config["dataset"]["name"]]
-    dataset_train = dataset(config["dataset"]["training_dataset_dir"])
-    dataset_val = dataset(config["dataset"]["validation_dataset_dir"])
-    dataset_test = dataset(config["dataset"]["test_dataset_dir"])
+    dataset_train = DCASE2019Task3Dataset(config["dataset"])
+    dataset_val = DCASE2019Task3Dataset(config["dataset"])
+    dataset_test = DCASE2019Task3Dataset(config["dataset"])
 
     batch_size = config["training"]["batch_size"]
     n_workers = config["training"]["n_workers"]
