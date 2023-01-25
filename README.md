@@ -3,6 +3,10 @@ This repository contains the code for the paper
 "Deep complex-valued convolutional-recurrent networks for single source doa estimation" to be published at the
 International Workshop on Acoustic Signal Enhancement (IWAENC) 2022.
 
+https://hal.science/hal-03779970/document
+https://ieeexplore.ieee.org/abstract/document/9914747
+
+
 ## Installation
 
 To test the code without installing anything, we suggest running it using this [Kaggle notebook](https://www.kaggle.com/code/egrinstein/neural-doa-training-notebook). To install it locally, follow the instructions below.
